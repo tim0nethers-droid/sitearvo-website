@@ -1,0 +1,11 @@
+Options -Indexes
+
+<FilesMatch "^(config\.local\.php|schema\.sql|seed\.json)$">
+  Require all denied
+</FilesMatch>
+
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [QSA,L]
+

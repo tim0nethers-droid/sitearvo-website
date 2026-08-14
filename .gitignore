@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.env
+.env.local
+.env.*.local
+public/api/config.local.php
+public/uploads/services/*
+!public/uploads/services/.gitkeep
+!public/uploads/services/.htaccess
+*.log
+server-data/
+.codex-*
+SiteArvo-*.zip

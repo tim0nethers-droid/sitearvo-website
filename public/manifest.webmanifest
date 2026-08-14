@@ -1,0 +1,25 @@
+{
+  "name": "SiteArvo",
+  "short_name": "SiteArvo",
+  "description": "Web Design, Development and Digital Solutions",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#080A0D",
+  "theme_color": "#080A0D",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
