@@ -1,9 +1,9 @@
 <?php
 return [
     'database' => [
-        'dsn' => 'mysql:host=localhost;dbname=YOUR_DATABASE;charset=utf8mb4',
-        'username' => 'YOUR_DATABASE_USER',
-        'password' => 'YOUR_DATABASE_PASSWORD',
+        'dsn' => 'sqlite:' . __DIR__ . '/data/sitearvo.sqlite',
+        'username' => null,
+        'password' => null,
     ],
     'app' => [
         'base_url' => 'https://sitearvo.site',
@@ -12,4 +12,3 @@ return [
         'max_upload_bytes' => 2097152,
     ],
 ];
-

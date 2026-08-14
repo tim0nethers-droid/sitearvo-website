@@ -69,7 +69,7 @@ function login_admin(): never {
     $password = (string)($body['password'] ?? '');
     if (!filter_var($email, FILTER_VALIDATE_EMAIL) || $password === '') json_error('Enter a valid email and password.', 422);
     $ip = client_ip();
-    $guard = db()->prepare("SELECT COUNT(*) FROM admin_login_attempts WHERE email = ? AND ip_address = ? AND was_successful = 0 AND attempted_at > DATE_SUB(NOW(), INTERVAL 15 MINUTE)");
+    $guard = db()->prepare("SELECT COUNT(*) FROM admin_login_attempts WHERE email = ? AND ip_address = ? AND was_successful = 0 AND attempted_at > datetime('now', '-15 minutes')");
     $guard->execute([$email, $ip]);
     if ((int)$guard->fetchColumn() >= 5) json_error('Too many failed attempts. Try again in 15 minutes.', 429);
     $statement = db()->prepare('SELECT * FROM admins WHERE email = ? AND is_active = 1');
@@ -82,7 +82,7 @@ function login_admin(): never {
     session_regenerate_id(true);
     $_SESSION['admin_id'] = (int)$admin['id'];
     $_SESSION['csrf'] = bin2hex(random_bytes(24));
-    db()->prepare('UPDATE admins SET last_login_at = NOW() WHERE id = ?')->execute([$admin['id']]);
+    db()->prepare("UPDATE admins SET last_login_at = datetime('now') WHERE id = ?")->execute([$admin['id']]);
     json_response(admin_payload($admin));
 }
 
@@ -160,8 +160,8 @@ function route_admin(string $method, string $path): never {
         $pdo = db();
         $totalPageviews = (int)$pdo->query('SELECT COUNT(*) FROM page_views')->fetchColumn();
         $uniqueVisitors = (int)$pdo->query('SELECT COUNT(DISTINCT visitor_hash) FROM page_views')->fetchColumn();
-        $todayPageviews = (int)$pdo->query('SELECT COUNT(*) FROM page_views WHERE DATE(created_at) = CURDATE()')->fetchColumn();
-        $last7DaysTotal = (int)$pdo->query("SELECT COUNT(*) FROM page_views WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)")->fetchColumn();
+        $todayPageviews = (int)$pdo->query("SELECT COUNT(*) FROM page_views WHERE date(created_at) = date('now')")->fetchColumn();
+        $last7DaysTotal = (int)$pdo->query("SELECT COUNT(*) FROM page_views WHERE datetime(created_at) >= datetime('now', '-6 days')")->fetchColumn();
         json_response([
             'active_categories' => (int)db()->query('SELECT COUNT(*) FROM categories WHERE is_active = 1')->fetchColumn(),
             'active_services' => (int)db()->query('SELECT COUNT(*) FROM services WHERE is_active = 1')->fetchColumn(),
@@ -210,18 +210,18 @@ function ensure_analytics_schema(): void {
     static $ready = false;
     if ($ready) return;
     db()->exec("CREATE TABLE IF NOT EXISTS page_views (
-      id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-      visitor_hash CHAR(64) NOT NULL,
-      path VARCHAR(255) NOT NULL,
-      title VARCHAR(255) NULL,
-      referrer VARCHAR(255) NULL,
-      user_agent VARCHAR(255) NULL,
-      ip_hash CHAR(64) NULL,
-      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      INDEX idx_page_views_path (path, created_at),
-      INDEX idx_page_views_visitor (visitor_hash, created_at),
-      INDEX idx_page_views_created_at (created_at)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      visitor_hash TEXT NOT NULL,
+      path TEXT NOT NULL,
+      title TEXT NULL,
+      referrer TEXT NULL,
+      user_agent TEXT NULL,
+      ip_hash TEXT NULL,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )");
+    db()->exec('CREATE INDEX IF NOT EXISTS idx_page_views_path ON page_views (path, created_at)');
+    db()->exec('CREATE INDEX IF NOT EXISTS idx_page_views_visitor ON page_views (visitor_hash, created_at)');
+    db()->exec('CREATE INDEX IF NOT EXISTS idx_page_views_created_at ON page_views (created_at)');
     $ready = true;
 }
 
@@ -253,8 +253,8 @@ function admin_analytics(): never {
     $pdo = db();
     $totalPageviews = (int)$pdo->query('SELECT COUNT(*) FROM page_views')->fetchColumn();
     $uniqueVisitors = (int)$pdo->query('SELECT COUNT(DISTINCT visitor_hash) FROM page_views')->fetchColumn();
-    $todayPageviews = (int)$pdo->query('SELECT COUNT(*) FROM page_views WHERE DATE(created_at) = CURDATE()')->fetchColumn();
-    $last7Days = $pdo->query("SELECT DATE(created_at) AS date, COUNT(*) AS pageviews, COUNT(DISTINCT visitor_hash) AS visitors FROM page_views WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY) GROUP BY DATE(created_at) ORDER BY date ASC")->fetchAll();
+    $todayPageviews = (int)$pdo->query("SELECT COUNT(*) FROM page_views WHERE date(created_at) = date('now')")->fetchColumn();
+    $last7Days = $pdo->query("SELECT date(created_at) AS date, COUNT(*) AS pageviews, COUNT(DISTINCT visitor_hash) AS visitors FROM page_views WHERE datetime(created_at) >= datetime('now', '-6 days') GROUP BY date(created_at) ORDER BY date ASC")->fetchAll();
     $topPages = $pdo->query("SELECT path, COUNT(*) AS pageviews, COUNT(DISTINCT visitor_hash) AS visitors FROM page_views GROUP BY path ORDER BY pageviews DESC, path ASC LIMIT 8")->fetchAll();
     $topReferrers = $pdo->query("SELECT COALESCE(NULLIF(referrer, ''), 'Direct / Unknown') AS referrer, COUNT(*) AS pageviews, COUNT(DISTINCT visitor_hash) AS visitors FROM page_views GROUP BY COALESCE(NULLIF(referrer, ''), 'Direct / Unknown') ORDER BY pageviews DESC, referrer ASC LIMIT 6")->fetchAll();
     $last7DaysTotal = array_sum(array_map(fn($row) => (int)$row['pageviews'], $last7Days));
@@ -273,21 +273,30 @@ function ensure_chat_schema(): void {
     static $ready = false;
     if ($ready) return;
     db()->exec("CREATE TABLE IF NOT EXISTS chat_conversations (
-      id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, public_id CHAR(24) NOT NULL UNIQUE,
-      visitor_token_hash CHAR(64) NOT NULL UNIQUE, visitor_name VARCHAR(120) NOT NULL,
-      visitor_email VARCHAR(190) NULL, visitor_ip VARCHAR(45) NULL,
-      status ENUM('open','closed') NOT NULL DEFAULT 'open', unread_admin INT UNSIGNED NOT NULL DEFAULT 0,
-      unread_visitor INT UNSIGNED NOT NULL DEFAULT 0, last_message_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-      INDEX idx_chat_inbox (status, last_message_at), INDEX idx_chat_ip (visitor_ip, created_at)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      public_id TEXT NOT NULL UNIQUE,
+      visitor_token_hash TEXT NOT NULL UNIQUE,
+      visitor_name TEXT NOT NULL,
+      visitor_email TEXT NULL,
+      visitor_ip TEXT NULL,
+      status TEXT NOT NULL DEFAULT 'open',
+      unread_admin INTEGER NOT NULL DEFAULT 0,
+      unread_visitor INTEGER NOT NULL DEFAULT 0,
+      last_message_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )");
+    db()->exec('CREATE INDEX IF NOT EXISTS idx_chat_inbox ON chat_conversations (status, last_message_at)');
+    db()->exec('CREATE INDEX IF NOT EXISTS idx_chat_ip ON chat_conversations (visitor_ip, created_at)');
     db()->exec("CREATE TABLE IF NOT EXISTS chat_messages (
-      id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, conversation_id BIGINT UNSIGNED NOT NULL,
-      sender ENUM('visitor','admin','system') NOT NULL, message TEXT NOT NULL,
-      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      CONSTRAINT fk_chat_message_conversation FOREIGN KEY (conversation_id) REFERENCES chat_conversations(id) ON DELETE CASCADE,
-      INDEX idx_chat_messages (conversation_id, id)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      conversation_id INTEGER NOT NULL,
+      sender TEXT NOT NULL,
+      message TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (conversation_id) REFERENCES chat_conversations(id) ON DELETE CASCADE
+    )");
+    db()->exec('CREATE INDEX IF NOT EXISTS idx_chat_messages ON chat_messages (conversation_id, id)');
     $ready = true;
 }
 
@@ -330,7 +339,7 @@ function start_chat(): never {
     if (mb_strlen($name) < 2 || mb_strlen($name) > 120) json_error('Enter your name.', 422);
     if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) json_error('Enter a valid email address.', 422);
     $ip = client_ip();
-    $rate = db()->prepare('SELECT COUNT(*) FROM chat_conversations WHERE visitor_ip = ? AND created_at > DATE_SUB(NOW(), INTERVAL 1 HOUR)');
+    $rate = db()->prepare("SELECT COUNT(*) FROM chat_conversations WHERE visitor_ip = ? AND created_at > datetime('now', '-1 hour')");
     $rate->execute([$ip]);
     if ((int)$rate->fetchColumn() >= 5) json_error('Too many chat sessions. Please try again later.', 429);
     $token = bin2hex(random_bytes(32));
@@ -359,11 +368,11 @@ function visitor_chat_message(string $token): never {
     $conversation = chat_by_token($token);
     if ($conversation['status'] === 'closed') json_error('This conversation is closed. Start a new chat for more help.', 409);
     $message = clean_chat_message(request_body()['message'] ?? '');
-    $rate = db()->prepare("SELECT COUNT(*) FROM chat_messages WHERE conversation_id = ? AND sender = 'visitor' AND created_at > DATE_SUB(NOW(), INTERVAL 1 MINUTE)");
+    $rate = db()->prepare("SELECT COUNT(*) FROM chat_messages WHERE conversation_id = ? AND sender = 'visitor' AND created_at > datetime('now', '-1 minute')");
     $rate->execute([$conversation['id']]);
     if ((int)$rate->fetchColumn() >= 8) json_error('Please wait a moment before sending more messages.', 429);
     db()->prepare("INSERT INTO chat_messages (conversation_id, sender, message) VALUES (?, 'visitor', ?)")->execute([$conversation['id'], $message]);
-    db()->prepare('UPDATE chat_conversations SET unread_admin = unread_admin + 1, last_message_at = NOW() WHERE id = ?')->execute([$conversation['id']]);
+    db()->prepare("UPDATE chat_conversations SET unread_admin = unread_admin + 1, last_message_at = datetime('now') WHERE id = ?")->execute([$conversation['id']]);
     json_response(['sent' => true], 201);
 }
 
@@ -391,7 +400,7 @@ function admin_chat_message(int $id): never {
     $statement->execute([$id]);
     if (!$statement->fetch()) json_error('Conversation not found.', 404);
     db()->prepare("INSERT INTO chat_messages (conversation_id, sender, message) VALUES (?, 'admin', ?)")->execute([$id, $message]);
-    db()->prepare("UPDATE chat_conversations SET status = 'open', unread_visitor = unread_visitor + 1, last_message_at = NOW() WHERE id = ?")->execute([$id]);
+    db()->prepare("UPDATE chat_conversations SET status = 'open', unread_visitor = unread_visitor + 1, last_message_at = datetime('now') WHERE id = ?")->execute([$id]);
     json_response(['sent' => true], 201);
 }
 
@@ -508,7 +517,7 @@ function update_order_status(int $id): never {
 function save_settings(): never {
     $body = request_body();
     $allowed = ['page_explanation', 'currency', 'orders_enabled'];
-    $statement = db()->prepare('INSERT INTO settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)');
+    $statement = db()->prepare('INSERT INTO settings (setting_key, setting_value) VALUES (?, ?) ON CONFLICT(setting_key) DO UPDATE SET setting_value = excluded.setting_value, updated_at = CURRENT_TIMESTAMP');
     foreach ($allowed as $key) if (array_key_exists($key, $body)) $statement->execute([$key, is_bool($body[$key]) ? ($body[$key] ? '1' : '0') : trim((string)$body[$key])]);
     json_response(settings_map());
 }
