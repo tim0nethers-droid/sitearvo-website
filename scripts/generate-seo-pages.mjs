@@ -96,6 +96,10 @@ try {
   console.warn('Live catalog unavailable; SEO pages generated from the bundled catalog.');
 }
 
+if (pages.has('/services/website-designing') && !pages.has('/services/3-page-business-website')) {
+  pages.set('/services/3-page-business-website', { ...pages.get('/services/website-designing') });
+}
+
 const serviceItems = [...pages.keys()].filter(route => route.startsWith('/services/') && !route.startsWith('/services/category/')).map(route => ({ title: pages.get(route).title, path: route }));
 pages.get('/').schema = combineSchemas(businessSchema, faqSchema(faqQuestions));
 pages.get('/services').schema = collectionSchema({ name: 'SiteArvo Digital Services', description: pages.get('/services').description, path: '/services', items: serviceItems });
@@ -132,6 +136,7 @@ function addServicePage(target, service, category) {
       priceType: service.price_type || service.priceType,
       basePrice: service.base_price ?? service.basePrice,
       salePrice: service.sale_price ?? service.salePrice,
+      regularPrice: service.regular_price ?? service.regularPrice,
     }),
   });
 }
@@ -184,11 +189,17 @@ function renderServiceBody(service, category) {
   const description = service.description || service.short_description || service.shortDescription || service.seo_description || service.seoDescription;
   const featureItems = service.features || service.capabilities || [];
   const features = featureItems.map(feature => typeof feature === 'string' ? feature : feature.name).filter(Boolean);
+  const heroFacts = [
+    service.pagesIncluded ? { label: 'Pages', value: service.pagesIncluded } : { label: 'Scope', value: 'Custom' },
+    service.deliveryTime ? { label: 'Delivery', value: service.deliveryTime } : { label: 'Timeline', value: 'Flexible' },
+    service.revisions ? { label: 'Revisions', value: service.revisions } : { label: 'Support', value: 'Included' },
+  ];
+  const heroHighlights = (features.length ? features : ['Modern, professional design', 'Responsive development', 'Clean, maintainable implementation', 'Performance and SEO awareness']).slice(0, 4);
   const rawPrice = service.sale_price ?? service.salePrice ?? service.base_price ?? service.basePrice;
   const amount = Number(rawPrice);
   const priceType = service.price_type || service.priceType;
-  const price = Number.isFinite(amount) && amount > 0 ? `${priceType === 'starting_from' ? 'Starting from ' : ''}${new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount)}` : 'Custom Quote';
-  return `<main><section class="service-detail-hero"><div class="container"><nav class="breadcrumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/services">Services</a></li><li><a href="/services/category/${escapeHtml(category.slug || category.id)}">${escapeHtml(category.name || category.title)}</a></li></ol></nav><span class="eyebrow">${escapeHtml(category.name || category.title)}</span><h1>${escapeHtml(name)}</h1><p>${escapeHtml(description)}</p><div class="package-price-line"><strong>${escapeHtml(price)}</strong></div><a class="button" href="/contact?service=${escapeHtml(service.slug)}">Discuss Your Project</a></div></section><section class="section"><div class="container service-overview"><div><span class="eyebrow">Overview</span><h2>Professional ${escapeHtml(name)}</h2></div><p>${escapeHtml(description)}</p></div></section>${features.length ? `<section class="section section--alt"><div class="container"><div class="detail-heading"><span class="eyebrow">What is included</span><h2>Features and Capabilities</h2></div><div class="capability-grid">${features.map(feature => `<article><span>${escapeHtml(feature)}</span></article>`).join('')}</div></div></section>` : ''}</main>`;
+  const price = Number.isFinite(amount) && amount >= 0 ? (amount === 0 ? 'FREE' : `${priceType === 'starting_from' ? 'Starting from ' : ''}${new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount)}`) : 'Custom Quote';
+  return `<main><section class="service-detail-hero"><div class="container"><nav class="breadcrumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/services">Services</a></li><li><a href="/services/category/${escapeHtml(category.slug || category.id)}">${escapeHtml(category.name || category.title)}</a></li></ol></nav><div class="service-detail-hero-grid"><div class="service-detail-hero-copy"><span class="eyebrow">${escapeHtml(category.name || category.title)}</span><h1>${escapeHtml(name)}</h1><p>${escapeHtml(description)}</p><div class="package-price-line"><strong>${escapeHtml(price)}</strong><span>${priceType === 'fixed' ? 'Fixed Price' : 'Custom Quote'}</span></div><div class="package-facts">${heroFacts.map(item => `<span><b>${escapeHtml(item.value)}</b> ${escapeHtml(item.label)}</span>`).join('')}</div><div class="hero-actions"><a class="button button--secondary" href="/website-builder?package=${escapeHtml(service.slug)}">${escapeHtml(price === 'FREE' ? 'Customize Free Website' : 'Customize Package')}</a><a class="button" href="/contact?service=${escapeHtml(service.slug)}">Discuss Your Project</a></div></div><aside class="service-detail-summary"><span class="eyebrow">Project snapshot</span><h2>What this service is built to deliver</h2><p>This package is tailored for businesses that need a polished, responsive presence with a clear path from enquiry to launch.</p><div class="service-detail-summary__price"><strong>${escapeHtml(price)}</strong><span>${priceType === 'fixed' ? 'Transparent pricing' : 'Custom scope planning'}</span></div><div class="service-detail-summary__facts">${heroFacts.map(item => `<div><span>${escapeHtml(item.label)}</span><strong>${escapeHtml(item.value)}</strong></div>`).join('')}</div><ul class="service-detail-summary__list">${heroHighlights.map(feature => `<li><span aria-hidden="true">✓</span><span>${escapeHtml(feature)}</span></li>`).join('')}</ul><div class="service-detail-summary__actions"><a class="button button--secondary" href="/website-builder?package=${escapeHtml(service.slug)}">${escapeHtml(price === 'FREE' ? 'Customize Free Website' : 'Customize Package')}</a><a class="button" href="/contact?service=${escapeHtml(service.slug)}">Discuss Your Project</a></div></aside></div></div></section><section class="section"><div class="container service-overview"><div><span class="eyebrow">Overview</span><h2>Professional ${escapeHtml(name)}</h2></div><p>${escapeHtml(description)}</p></div></section>${features.length ? `<section class="section section--alt"><div class="container"><div class="detail-heading"><span class="eyebrow">What is included</span><h2>Features and Capabilities</h2></div><div class="capability-grid">${features.map(feature => `<article><span>${escapeHtml(feature)}</span></article>`).join('')}</div></div></section>` : ''}</main>`;
 }
 
 function escapeHtml(value = '') {
