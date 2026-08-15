@@ -96,13 +96,6 @@ try {
   console.warn('Live catalog unavailable; SEO pages generated from the bundled catalog.');
 }
 
-if (pages.has('/services/website-designing')) {
-  pages.set('/services/3-page-business-website', {
-    ...pages.get('/services/website-designing'),
-    canonical: '/services/website-designing',
-  });
-}
-
 const serviceItems = [...pages.keys()].filter(route => route.startsWith('/services/') && !route.startsWith('/services/category/')).map(route => ({ title: pages.get(route).title, path: route }));
 pages.get('/').schema = combineSchemas(businessSchema, faqSchema(faqQuestions));
 pages.get('/services').schema = collectionSchema({ name: 'SiteArvo Digital Services', description: pages.get('/services').description, path: '/services', items: serviceItems });

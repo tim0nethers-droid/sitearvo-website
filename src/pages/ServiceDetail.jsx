@@ -20,14 +20,7 @@ export default function ServiceDetail() {
   const navigate = useNavigate();
   const { services, loading, error, refresh, settings } = useCatalog();
   const { addService } = useCart();
-  const serviceAliases = {
-    '3-page-business-website': 'website-designing',
-  };
-  const resolvedSlug = serviceAliases[slug] || slug;
-  if (resolvedSlug !== slug) {
-    return <Navigate replace to={`/services/${resolvedSlug}`} />;
-  }
-  const service = services.find(item => item.slug === resolvedSlug);
+  const service = services.find(item => item.slug === slug);
   const [selected, setSelected] = useState({});
   const selectedAddons = useMemo(() => (service?.addons || []).filter(addon => selected[addon.id]).map(addon => ({ addon, quantity: selected[addon.id] })), [service, selected]);
   const total = effectivePrice(service) + selectedAddons.reduce((sum, item) => sum + effectivePrice(item.addon) * item.quantity, 0);
