@@ -53,7 +53,7 @@ export const defaultConfiguratorGroups = [
     display_order: 2,
     required: true,
     options: [
-      option('tech-react', 'React', { price: 2000, description: 'Fast, modern and reusable component architecture.', featured: true, compatible_technologies: ['React'] }),
+      option('tech-react', 'React', { price: 0, description: 'Fast, modern and reusable component architecture.', featured: true, compatible_technologies: ['React'] }),
       option('tech-wordpress', 'WordPress', { price: 0, price_type: 'included', description: 'Easy content management for business teams.', featured: true, compatible_technologies: ['WordPress'] }),
       option('tech-html', 'HTML/CSS/JavaScript', { price: 0, price_type: 'included', description: 'Lightweight static website stack.', compatible_technologies: ['HTML/CSS/JavaScript'] }),
       option('tech-php', 'PHP', { price: 2500, description: 'Dynamic server-rendered implementation.', compatible_technologies: ['PHP'] }),
