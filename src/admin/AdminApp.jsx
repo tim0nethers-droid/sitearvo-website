@@ -2177,6 +2177,34 @@ function AdminCarts() {
   );
 }
 
+function AdminAddons() {
+  return (
+    <AdminCrudPage
+      title="Add-ons"
+      description="Manage optional extras that can be attached to services and packages."
+      endpoint="/admin/addons"
+      createLabel="New Add-on"
+      searchKeys={['name', 'description', 'pricing_type']}
+      defaultRecord={{ name: '', description: '', price: '', pricing_type: 'fixed', pricing_unit: '', is_active: true, category_ids: '[]' }}
+      fields={[
+        { name: 'name', label: 'Name' },
+        { name: 'description', label: 'Description', type: 'textarea', rows: 4 },
+        { name: 'price', label: 'Price', type: 'number' },
+        { name: 'pricing_type', label: 'Pricing Type', type: 'select', options: ['fixed', 'per_page', 'per_item', 'monthly', 'yearly', 'custom_quote'] },
+        { name: 'pricing_unit', label: 'Pricing Unit' },
+        { name: 'category_ids', label: 'Category IDs (JSON)', type: 'json', rows: 4, placeholder: '[1,2,3]' },
+        { name: 'is_active', label: 'Active', type: 'checkbox' },
+      ]}
+      columns={[
+        { key: 'name', label: 'Name' },
+        { key: 'pricing_type', label: 'Pricing Type' },
+        { key: 'pricing_unit', label: 'Unit' },
+        { key: 'is_active', label: 'Active', render: item => (item.is_active ? 'Yes' : 'No') },
+      ]}
+    />
+  );
+}
+
 function AdminPayments() {
   return (
     <AdminCrudPage
