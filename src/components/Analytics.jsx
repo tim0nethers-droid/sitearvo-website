@@ -19,6 +19,44 @@ const getVisitorId = () => {
   }
 };
 
+const sendAnalyticsPayload = (endpoint, payload) => {
+  if (typeof window === 'undefined') return;
+  const body = JSON.stringify(payload);
+  if (navigator.sendBeacon) {
+    const beaconBlob = new Blob([body], { type: 'application/json' });
+    navigator.sendBeacon(endpoint, beaconBlob);
+    return;
+  }
+  void fetch(endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body,
+    keepalive: true,
+  }).catch(() => {});
+};
+
+export const trackAnalyticsEvent = (type, payload = {}) => {
+  if (typeof window === 'undefined' || !type) return;
+  const dedupeKey = payload.onceKey || payload.dedupeKey;
+  if (dedupeKey) {
+    try {
+      const storageKey = `sitearvo-analytics-event-${dedupeKey}`;
+      if (sessionStorage.getItem(storageKey)) return;
+      sessionStorage.setItem(storageKey, '1');
+    } catch {
+      // Ignore storage failures in private browsing modes.
+    }
+  }
+  sendAnalyticsPayload('/api/analytics/event', {
+    type,
+    path: canonicalPath(window.location.pathname, window.location.search),
+    title: document.title,
+    referrer: document.referrer || '',
+    visitor_id: getVisitorId(),
+    ...payload,
+  });
+};
+
 const loadGoogleAnalytics = id => {
   if (typeof window === 'undefined' || !id) return;
   if (window.gtag) return;
@@ -58,24 +96,13 @@ export default function Analytics() {
       // Ignore storage failures in private browsing modes.
     }
 
-    const payload = JSON.stringify({
+    const payload = {
       path,
       title: document.title,
       referrer: document.referrer || '',
       visitor_id: getVisitorId(),
-    });
-
-    if (navigator.sendBeacon) {
-      const beaconBlob = new Blob([payload], { type: 'application/json' });
-      navigator.sendBeacon('/api/analytics/pageview', beaconBlob);
-    } else {
-      void fetch('/api/analytics/pageview', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: payload,
-        keepalive: true,
-      }).catch(() => {});
-    }
+    };
+    sendAnalyticsPayload('/api/analytics/pageview', payload);
 
     if (!measurementId || typeof window.gtag !== 'function') return;
     window.gtag('event', 'page_view', {

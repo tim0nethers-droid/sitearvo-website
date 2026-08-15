@@ -24,6 +24,7 @@ import Checkout from './pages/Checkout';
 import AdminApp from './admin/AdminApp';
 import SeoLandingPage from './pages/SeoLandingPage';
 import Analytics from './components/Analytics';
+import WebsiteBuilder from './pages/WebsiteBuilder';
 
 export default function App() {
   const location = useLocation();
@@ -39,13 +40,14 @@ export default function App() {
           <Route path="/about" element={<About />} />
           <Route path="/services" element={<Services />} />
           <Route path="/services/category/:slug" element={<ServiceCategory />} />
-          <Route path="/services/:slug" element={<ServiceDetail />} />
+          <Route path="/services/:slug" element={<ServiceDetail key={location.pathname} />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/industries" element={<Industries />} />
           <Route path="/portfolio" element={<Portfolio />} />
           <Route path="/portfolio/:slug" element={<ProjectDetail />} />
           <Route path="/pricing" element={<Pricing />} />
+          <Route path="/website-builder" element={<WebsiteBuilder />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-and-conditions" element={<TermsConditions />} />

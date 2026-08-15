@@ -1,5 +1,6 @@
 import { ArrowLeft, MessageCircle, Send, UserRound, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { trackAnalyticsEvent } from './Analytics';
 import { whatsappUrl } from '../config/company';
 
 const storageKey = 'sitearvo-live-chat-token';
@@ -57,6 +58,7 @@ export default function LiveChatWidget() {
       const data = await chatFetch('/chat/start', { method: 'POST', body: JSON.stringify(form) });
       localStorage.setItem(storageKey, data.token);
       setToken(data.token); setChat(data); setForm({ name: '', email: '', message: '', website: '' });
+      trackAnalyticsEvent('live_chat_widget_started', { source: 'live_chat', entity_id: data.public_id, entity_type: 'live_chat', onceKey: `live_chat_started:${data.public_id}` });
     } catch (requestError) { setError(requestError.message); }
     finally { setBusy(false); }
   };
@@ -68,6 +70,7 @@ export default function LiveChatWidget() {
     try {
       await chatFetch(`/chat/${token}/messages`, { method: 'POST', body: JSON.stringify({ message }) });
       setMessage(''); await load();
+      trackAnalyticsEvent('chat_message_sent', { source: 'live_chat_message', onceKey: `live_chat_message:${token}:${message.slice(0, 32)}` });
     } catch (requestError) { setError(requestError.message); }
     finally { setBusy(false); }
   };

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ChevronDown, ChevronRight, Mail, Menu, MessageCircle, Phone, ShoppingCart, X } from 'lucide-react';
 import { NavLink, Link, useLocation } from 'react-router-dom';
 import Logo from './Logo';
+import { trackAnalyticsEvent } from './Analytics';
 import { company, contactAvailability, phoneUrl, whatsappUrl } from '../config/company';
 import { useCatalog } from '../catalog/CatalogContext';
 import { getCatalogIcon } from '../catalog/icons';
@@ -96,7 +97,7 @@ export default function Navbar() {
   };
 
   return <header className={`site-header ${scrolled ? 'site-header--scrolled' : ''}`}>
-    <div className="topbar"><div className="container topbar-inner"><span>Need a website for your business? Let's talk.</span><div className="topbar-links">{contactAvailability.email && <a href={`mailto:${company.email}`}><Mail />{company.email}</a>}{contactAvailability.phone && <a href={phoneUrl()}><Phone />{company.phone}</a>}{contactAvailability.whatsapp && <a href={whatsappUrl()} target="_blank" rel="noreferrer"><MessageCircle />WhatsApp</a>}<Link to="/contact">Post Your Enquiry</Link></div></div></div>
+    <div className="topbar"><div className="container topbar-inner"><span>Need a website for your business? Let's talk.</span><div className="topbar-links">{contactAvailability.email && <a href={`mailto:${company.email}`} onClick={() => trackAnalyticsEvent('email_click', { source: 'navbar_topbar' })}><Mail />{company.email}</a>}{contactAvailability.phone && <a href={phoneUrl()} onClick={() => trackAnalyticsEvent('phone_click', { source: 'navbar_topbar' })}><Phone />{company.phone}</a>}{contactAvailability.whatsapp && <a href={whatsappUrl()} target="_blank" rel="noreferrer" onClick={() => trackAnalyticsEvent('whatsapp_click', { source: 'navbar_topbar' })}><MessageCircle />WhatsApp</a>}<Link to="/contact">Post Your Enquiry</Link></div></div></div>
     <div className="navbar"><div className="container nav-inner">
       <Logo />
       <Link to="/contact" className="mobile-header-quote">Get a Quote</Link>
@@ -149,7 +150,7 @@ export default function Navbar() {
           </div>
         </div>
         {links.slice(2).map(([to, label]) => <NavLink key={to} to={to} className={({ isActive }) => isActive ? 'active' : ''}>{label}</NavLink>)}
-        <NavLink to="/cart" className={({ isActive }) => `nav-cart ${isActive ? 'active' : ''}`} aria-label={`Shopping cart with ${cartCount} ${cartCount === 1 ? 'item' : 'items'}`}>
+        <NavLink to="/cart" className={({ isActive }) => `nav-cart ${isActive ? 'active' : ''}`} aria-label={`Shopping cart with ${cartCount} ${cartCount === 1 ? 'item' : 'items'}`} onClick={() => trackAnalyticsEvent('cart_viewed', { source: 'navbar', onceKey: 'cart_viewed' })}>
           <ShoppingCart aria-hidden="true" />
           <span className="nav-cart-label">Cart</span>
           {cartCount > 0 && <span className="nav-cart-badge" aria-hidden="true">{cartCount > 99 ? '99+' : cartCount}</span>}

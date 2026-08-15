@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { serviceCategories } from '../src/data/services.js';
+import { starterCatalogProducts } from '../src/data/starterCatalog.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const categoryIcons = {
@@ -47,16 +48,26 @@ const seed = {
       features: service.capabilities || service.features || [],
     })),
   })),
-  packages: [5, 7, 10].map((pages, index) => ({
-    category_slug: 'web-development', name: `${pages} Page Website`, slug: `${pages}-page-business-website`, icon: 'globe',
-    short_description: `A configurable ${pages}-page responsive business website package.`,
-    description: `A fixed website package ready for the owner to configure with the final approved price, delivery time and revisions.`,
-    price_type: 'fixed', base_price: null, sale_price: null, pages_included: pages, delivery_time: '', revisions: '',
-    is_featured: false, is_active: false, display_order: index + 1,
-    cta_text: 'Customize Package', seo_title: `${pages} Page Business Website Package | SiteArvo`,
-    seo_description: `Configure a ${pages}-page responsive business website package from SiteArvo.`,
-    features: ['Responsive Website', 'Contact Form', 'WhatsApp Integration', 'Basic SEO', 'Social Media Links', 'SSL Setup Assistance'],
-  })),
+  packages: [
+    ...starterCatalogProducts.map((product, index) => ({
+      ...product,
+      category_slug: product.category_slug,
+      price_type: product.price_type || 'custom_quote',
+      base_price: product.base_price ?? null,
+      regular_price: product.regular_price ?? null,
+      sale_price: product.sale_price ?? null,
+      pages_included: product.pages_included ?? null,
+      delivery_time: product.delivery_time || '',
+      revisions: product.revisions || '',
+      is_featured: Boolean(product.is_featured),
+      is_active: product.is_active !== false,
+      display_order: product.display_order || index + 1,
+      cta_text: product.add_to_cart_enabled ? 'Add to Cart' : product.price_type === 'fixed' ? 'Request Quote' : 'Request Quote',
+      seo_title: product.seo_title || `${product.name} | SiteArvo`,
+      seo_description: product.seo_description || product.short_description || ``,
+      features: product.features || [],
+    })),
+  ],
   addons: [
     ['Additional Website Page', 'Additional unique website page.', 'per_page', 'page'], ['Logo Design', 'Professional logo design add-on.', 'custom_quote', ''],
     ['Content Writing', 'Website copywriting based on the approved scope.', 'custom_quote', ''], ['Blog Setup', 'Blog structure and publishing setup.', 'custom_quote', ''],
@@ -68,4 +79,3 @@ const seed = {
 
 fs.mkdirSync(path.join(root, 'public', 'api', 'data'), { recursive: true });
 fs.writeFileSync(path.join(root, 'public', 'api', 'data', 'seed.json'), JSON.stringify(seed, null, 2));
-

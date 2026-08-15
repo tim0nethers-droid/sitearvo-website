@@ -125,7 +125,7 @@ export const serviceSchema = service => {
   const description = service.seoDescription || service.shortDescription || service.description;
   const price = Number(service.salePrice ?? service.sale_price ?? service.basePrice ?? service.base_price);
   const priceType = service.priceType || service.price_type;
-  const isFixedPackage = priceType === 'fixed' && Number.isFinite(price) && price > 0;
+  const isFixedPackage = priceType === 'fixed' && Number.isFinite(price) && price >= 0;
   const primaryNode = isFixedPackage ? {
     '@type': 'Product',
     '@id': `${company.domain}${path}#product`,
@@ -152,7 +152,7 @@ export const serviceSchema = service => {
     serviceType: service.title,
     provider: { '@id': organizationId },
     areaServed: { '@type': 'Country', name: company.location },
-    ...(Number.isFinite(price) && price > 0 ? {
+    ...(Number.isFinite(price) && price >= 0 ? {
       offers: { '@type': 'Offer', price, priceCurrency: 'INR', url: `${company.domain}${path}` },
     } : {}),
   };

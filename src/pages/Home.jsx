@@ -6,6 +6,7 @@ import ServiceCard from '../components/ServiceCard';
 import PortfolioGrid from '../components/PortfolioGrid';
 import PricingCards from '../components/PricingCards';
 import CTA from '../components/CTA';
+import HomeMarketplace from '../components/HomeMarketplace';
 import { homepageServiceCategories } from '../data/services';
 import { testimonials } from '../data/testimonials';
 import { combineSchemas, faqSchema, homeSchema } from '../config/seo';
@@ -56,7 +57,7 @@ function Counter({ target, suffix }) {
 
 export default function Home() {
   const { services } = useCatalog();
-  const featuredServices = services.filter(service => service.isFeatured && service.isActive !== false).slice(0, 6);
+  const featuredServices = services.filter(service => service.isFeatured && service.isActive !== false && String(service.serviceType || '').toLowerCase() !== 'package').slice(0, 6);
   const homeServices = featuredServices.length ? featuredServices : homepageServiceCategories;
   return <>
     <SEO title="Web Design & React Development Agency" description="SiteArvo creates premium, responsive and SEO-friendly websites that help businesses build trust, attract customers and grow online." schema={combineSchemas(homeSchema, faqSchema(faqQuestions))} />
@@ -70,6 +71,8 @@ export default function Home() {
     </section>
 
     <section className="stats"><div className="container stats-grid">{stats.map(([target, suffix, label]) => <div key={label}><Counter target={target} suffix={suffix} /><span>{label}</span></div>)}</div></section>
+
+    <HomeMarketplace />
 
     <section className="section"><div className="container"><SectionTitle eyebrow="Dynamic service catalog" title="Complete Digital Solutions" description="From websites and mobile apps to e-commerce and digital marketing, we provide everything your business needs to grow online." /><div className="services-grid">{homeServices.map(service => <ServiceCard key={service.slug || service.title} icon={getCatalogIcon(service.icon)} title={service.title} description={service.shortDescription || service.short} href={service.slug ? `/services/${service.slug}` : '/services'} />)}</div><div className="center-action"><Link to="/services" className="button button--secondary">View All Services <ArrowRight size={18} /></Link></div></div></section>
 

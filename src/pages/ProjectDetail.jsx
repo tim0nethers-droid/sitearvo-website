@@ -1,9 +1,11 @@
 import { ArrowLeft, ArrowRight, Check, Code2, Gauge, Layers3, LayoutTemplate, MessageCircle, Monitor, Smartphone, Tablet, Target } from 'lucide-react';
+import { useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import SEO from '../components/SEO';
 import NotFound from './NotFound';
 import PortfolioCard from '../components/PortfolioCard';
 import ProjectMockup from '../components/ProjectMockup';
+import { trackAnalyticsEvent } from '../components/Analytics';
 import { projectBySlug, projects } from '../data/portfolio';
 import { whatsappUrl } from '../config/company';
 import { projectSchema } from '../config/seo';
@@ -13,6 +15,17 @@ const featureIcons = [Monitor, LayoutTemplate, Target, Layers3, Gauge, Smartphon
 export default function ProjectDetail() {
   const { slug } = useParams();
   const project = projectBySlug(slug);
+  useEffect(() => {
+    if (!project) return;
+    trackAnalyticsEvent('portfolio_viewed', {
+      entity_id: project.id,
+      entity_type: 'portfolio_project',
+      project_slug: project.slug,
+      project_title: project.title,
+      onceKey: `portfolio_viewed:${project.slug}`,
+    });
+  }, [project?.id, project?.slug]);
+
   if (!project) return <NotFound />;
 
   const related = projects.filter(item => item.slug !== project.slug && item.category === project.category).concat(projects.filter(item => item.slug !== project.slug && item.category !== project.category)).slice(0, 3);

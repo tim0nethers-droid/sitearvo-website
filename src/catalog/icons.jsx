@@ -1,5 +1,5 @@
 import {
-  AppWindow, Atom, BrainCircuit, BriefcaseBusiness, Code2, Database, Globe2,
+  AppWindow, Atom, Blocks, BrainCircuit, BriefcaseBusiness, Building2, Code2, Database, Globe2,
   Megaphone, Monitor, Palette, Search, Settings, ShoppingCart, Smartphone, Wrench,
 } from 'lucide-react';
 
@@ -8,6 +8,8 @@ const iconMap = {
   atom: Atom,
   brain: BrainCircuit,
   briefcase: BriefcaseBusiness,
+  building: Building2,
+  blocks: Blocks,
   code: Code2,
   database: Database,
   globe: Globe2,
@@ -27,4 +29,3 @@ export function getCatalogIcon(icon) {
   if (typeof icon === 'function' || (typeof icon === 'object' && icon)) return icon;
   return iconMap[icon] || Code2;
 }
-

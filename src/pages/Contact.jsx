@@ -3,6 +3,7 @@ import { ArrowRight, Clock3, Mail, MapPin, MessageCircle, Phone } from 'lucide-r
 import { useSearchParams } from 'react-router-dom';
 import SEO from '../components/SEO';
 import PageHero from '../components/PageHero';
+import { trackAnalyticsEvent } from '../components/Analytics';
 import { company, contactAvailability, phoneUrl, whatsappUrl } from '../config/company';
 import { serviceBySlug, serviceCategories } from '../data/services';
 
@@ -49,7 +50,14 @@ export default function Contact() {
     if (!form.budget) next.budget = 'Please select a project budget.';
     if (form.message.trim().length < 20) next.message = 'Please share at least 20 characters about your project.';
     setErrors(next);
-    if (!Object.keys(next).length) setSubmitted(true);
+    if (!Object.keys(next).length) {
+      trackAnalyticsEvent('contact_form_submitted', {
+        service_slug: form.service,
+        service_name: selectedService?.title || form.service,
+        onceKey: `contact_form_submitted:${form.service || 'any'}:${form.projectTitle || 'untitled'}`,
+      });
+      setSubmitted(true);
+    }
   };
   return <><SEO title="Contact SiteArvo" description="Tell SiteArvo about your website project and get a clear, no-pressure recommendation for the right next step." path="/contact" /><PageHero eyebrow="Let's talk" title="Let's Build Something Great">Share what you are planning. We will review your requirements and help you find the clearest way forward.</PageHero><section className="section"><div className="container contact-grid"><aside className="contact-aside"><span className="eyebrow">Start a project</span><h2>Good websites start with a good conversation.</h2><p>Whether you need a focused landing page, a complete business website or custom development, tell us what success looks like.</p><div className="contact-options">{contactAvailability.email && <a href={`mailto:${company.email}`}><Mail /><span><b>Email</b>{company.email}</span></a>}{contactAvailability.phone && <a href={phoneUrl()}><Phone /><span><b>Phone</b>{company.phone}</span></a>}{contactAvailability.whatsapp && <a href={generalWhatsAppUrl} target="_blank" rel="noreferrer"><MessageCircle /><span><b>WhatsApp</b>Start a quick chat</span></a>}<div><MapPin /><span><b>Location</b>{company.location}</span></div><div><Clock3 /><span><b>Response time</b>Usually within one business day</span></div></div></aside><div className="form-panel">{submitted ? <div className="success-message"><span>✓</span><h2>Your project details are ready.</h2><p>{formWhatsAppUrl ? 'Continue on WhatsApp to send your enquiry, or connect a form service before production.' : 'Connect a form service or add the business WhatsApp number in the company configuration before production.'}</p>{formWhatsAppUrl && <a href={formWhatsAppUrl} target="_blank" rel="noreferrer" className="button"><MessageCircle /> Continue on WhatsApp</a>}<button className="text-button" onClick={() => { setSubmitted(false); setForm(initial); }}>Edit or start another enquiry</button></div> : <form onSubmit={submit} noValidate><div className="form-grid"><Field label="Full Name" name="name" value={form.name} onChange={update} error={errors.name} required /><Field label="Email" name="email" type="email" value={form.email} onChange={update} error={errors.email} required /><Field label="Phone" name="phone" type="tel" value={form.phone} onChange={update} error={errors.phone} required /><Field label="Company Name" name="company" value={form.company} onChange={update} /><Field label="Project Title" name="projectTitle" value={form.projectTitle} onChange={update} error={errors.projectTitle} required /><Field label="Country" name="country" value={form.country} onChange={update} error={errors.country} required /><ServiceSelect value={form.service} onChange={update} error={errors.service} /><Select label="Project Budget" name="budget" value={form.budget} onChange={update} error={errors.budget} options={['Under ₹10,000', '₹10,000 – ₹25,000', '₹25,000 – ₹50,000', '₹50,000+', "Let's Discuss"]} /></div><label className="field field--full"><span>Message *</span><textarea name="message" rows="6" value={form.message} onChange={update} aria-invalid={!!errors.message} aria-describedby={errors.message ? 'message-error' : undefined} placeholder="Tell us about your business, goals and ideal timeline..."></textarea>{errors.message && <small id="message-error">{errors.message}</small>}</label><button className="button submit-button" type="submit">Prepare Project Enquiry <ArrowRight /></button><p className="form-disclaimer">This form validates and prepares your details locally. It does not send data until WhatsApp or a form service is used.</p></form>}</div></div></section></>;
 }
