@@ -96,8 +96,11 @@ try {
   console.warn('Live catalog unavailable; SEO pages generated from the bundled catalog.');
 }
 
-if (pages.has('/services/website-designing') && !pages.has('/services/3-page-business-website')) {
-  pages.set('/services/3-page-business-website', { ...pages.get('/services/website-designing') });
+if (pages.has('/services/website-designing')) {
+  pages.set('/services/3-page-business-website', {
+    ...pages.get('/services/website-designing'),
+    canonical: '/services/website-designing',
+  });
 }
 
 const serviceItems = [...pages.keys()].filter(route => route.startsWith('/services/') && !route.startsWith('/services/category/')).map(route => ({ title: pages.get(route).title, path: route }));
@@ -147,9 +150,10 @@ async function writeRoute(route, metadata) {
   await writeFile(path.join(outputDirectory, 'index.html'), renderHtml({ route, ...metadata }), 'utf8');
 }
 
-function renderHtml({ route, title, description, type = 'website', noIndex = false, schema, bodyHtml = '' }) {
+function renderHtml({ route, title, description, type = 'website', noIndex = false, schema, bodyHtml = '', canonical: canonicalOverride }) {
   const fullTitle = title.includes(company.name) ? title : `${title} | ${company.name}`;
-  const canonical = `${company.domain}${route === '/' ? '/' : route.replace(/\/$/, '')}`;
+  const canonicalPath = canonicalOverride || route;
+  const canonical = `${company.domain}${canonicalPath === '/' ? '/' : canonicalPath.replace(/\/$/, '')}`;
   const robots = noIndex ? 'noindex, nofollow' : indexDirective;
   const values = {
     title: escapeHtml(fullTitle), description: escapeHtml(description), canonical: escapeHtml(canonical),
