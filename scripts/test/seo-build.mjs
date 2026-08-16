@@ -46,7 +46,7 @@ if (fixedPackageHtml) {
   assert(/<div id="root">[\s\S]*?<h1>/.test(fixedPackageHtml), 'Fixed package is missing pre-rendered content');
 }
 
-for (const route of ['/cart', '/checkout', '/admin', '/admin/dashboard', '/admin/login']) {
+for (const route of ['/cart', '/checkout', '/admin', '/admin/dashboard', '/admin/analytics', '/admin/login']) {
   const html = await readRoute(route);
   assert(/<meta name="robots" content="noindex, nofollow"/.test(html), `${route}: missing noindex`);
 }

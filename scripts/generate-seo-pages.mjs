@@ -103,9 +103,9 @@ pages.get('/pricing').schema = collectionSchema({ name: 'SiteArvo Service Packag
 pages.get('/portfolio').schema = collectionSchema({ name: 'SiteArvo Website Design Portfolio', description: pages.get('/portfolio').description, path: '/portfolio', items: projects.map(project => ({ title: project.title, path: `/portfolio/${project.slug}` })) });
 
 for (const [route, metadata] of pages) await writeRoute(route, metadata);
-for (const route of ['/cart', '/checkout', '/admin', '/admin/dashboard', '/admin/login']) {
+for (const route of ['/cart', '/checkout', '/admin', '/admin/dashboard', '/admin/analytics', '/admin/login']) {
   await writeRoute(route, {
-    title: route.startsWith('/admin') ? 'SiteArvo Admin' : 'Private Service Enquiry',
+    title: route.startsWith('/admin') ? (route === '/admin/analytics' ? 'SiteArvo Analytics' : 'SiteArvo Admin') : 'Private Service Enquiry',
     description: 'This page is not intended for search engine results.',
     noIndex: true,
     canonical: route === '/admin/dashboard' ? '/admin' : undefined,
