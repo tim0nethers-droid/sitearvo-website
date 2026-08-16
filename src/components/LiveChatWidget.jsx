@@ -46,10 +46,20 @@ export default function LiveChatWidget() {
   useEffect(() => { if (token) load(); }, [token, load]);
   useEffect(() => {
     if (!token || !open || chat?.status === 'closed') return undefined;
-    const timer = window.setInterval(() => load(true), 5000);
+    const timer = window.setInterval(() => load(true), 1000);
     return () => window.clearInterval(timer);
   }, [token, open, chat?.status, load]);
-  useEffect(() => { if (open) listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: 'smooth' }); }, [open, chat?.messages?.length]);
+  useEffect(() => {
+    const refresh = () => load(true);
+    const onVisibilityChange = () => { if (document.visibilityState === 'visible') refresh(); };
+    window.addEventListener('focus', refresh);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => {
+      window.removeEventListener('focus', refresh);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+  }, [load]);
+  useEffect(() => { if (open) listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: 'smooth' }); }, [open, chat?.messages?.length, chat?.updated_at]);
 
   const start = async event => {
     event.preventDefault();

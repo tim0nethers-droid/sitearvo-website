@@ -1722,8 +1722,33 @@ function AdminChats() {
     try { setChat(await apiFetch(`/admin/chats/${id}`)); setError(''); }
     catch (requestError) { setError(requestError.message); }
   };
-  useEffect(() => { loadList(); const timer = window.setInterval(() => loadList(true), 5000); return () => window.clearInterval(timer); }, []);
-  useEffect(() => { if (selectedId) { loadChat(selectedId); const timer = window.setInterval(() => loadChat(selectedId), 4000); return () => window.clearInterval(timer); } return undefined; }, [selectedId]);
+  useEffect(() => {
+    loadList();
+    const timer = window.setInterval(() => loadList(true), 1000);
+    const refresh = () => loadList(true);
+    const onVisibilityChange = () => { if (document.visibilityState === 'visible') refresh(); };
+    window.addEventListener('focus', refresh);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener('focus', refresh);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+  }, []);
+  useEffect(() => {
+    if (!selectedId) return undefined;
+    loadChat(selectedId);
+    const timer = window.setInterval(() => loadChat(selectedId), 1000);
+    const refresh = () => loadChat(selectedId);
+    const onVisibilityChange = () => { if (document.visibilityState === 'visible') refresh(); };
+    window.addEventListener('focus', refresh);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener('focus', refresh);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+  }, [selectedId]);
   const send = async event => {
     event.preventDefault(); if (!message.trim() || !selectedId) return;
     setBusy(true);
