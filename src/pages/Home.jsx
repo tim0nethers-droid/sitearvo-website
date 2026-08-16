@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, BadgeCheck, Braces, Code2, Gauge, Headphones, Laptop, LayoutTemplate, Search, ShieldCheck, ShoppingBag, Smartphone, Sparkles, Star, Workflow } from 'lucide-react';
+import { ArrowRight, Star } from 'lucide-react';
 import SEO from '../components/SEO';
 import SectionTitle from '../components/SectionTitle';
 import ServiceCard from '../components/ServiceCard';
@@ -15,14 +15,14 @@ import IndustryCard from '../components/IndustryCard';
 import FAQ from '../components/FAQ';
 import { faqQuestions } from '../data/faqs';
 import { useEffect, useRef, useState } from 'react';
+import { AppIcon, getCatalogIcon } from '../catalog/icons';
 import { useCatalog } from '../catalog/CatalogContext';
-import { getCatalogIcon } from '../catalog/icons';
 
 const stats = [['50', '+', 'Projects Completed'], ['30', '+', 'Happy Clients'], ['100', '%', 'Responsive Design'], ['24', '/7', 'Support']];
 const features = [
-  [Sparkles, 'Modern & Professional Design'], [Smartphone, 'Mobile-First Development'], [Search, 'SEO-Friendly Structure'],
-  [Gauge, 'Fast Loading Performance'], [Workflow, 'Clean & Maintainable Code'], [Headphones, 'Transparent Communication'],
-  [ShieldCheck, 'Secure Development'], [BadgeCheck, 'Post-Launch Support'],
+  ['sparkles', 'Modern & Professional Design'], ['smartphone', 'Mobile-First Development'], ['search', 'SEO-Friendly Structure'],
+  ['gauge', 'Fast Loading Performance'], ['workflow', 'Clean & Maintainable Code'], ['headphones', 'Transparent Communication'],
+  ['shield-check', 'Secure Development'], ['badge-check', 'Post-Launch Support'],
 ];
 const process = [
   ['01', 'Discovery', 'Understand the business, audience and goals.'], ['02', 'Strategy', 'Plan website structure, user journey and visual direction.'],
@@ -30,11 +30,11 @@ const process = [
   ['05', 'Testing', 'Test responsiveness, performance, usability and browsers.'], ['06', 'Launch', 'Deploy the website and provide post-launch support.'],
 ];
 const technologyGroups = [
-  [Code2, 'Frontend', ['ReactJS', 'Angular', 'HTML5', 'CSS3', 'JavaScript', 'Vite']],
-  [Workflow, 'Backend', ['Node.js', 'Python', 'Ruby on Rails', 'PHP', 'Laravel']],
-  [Smartphone, 'Mobile', ['React Native', 'Ionic', 'iOS', 'Android']],
-  [ShoppingBag, 'CMS & E-commerce', ['WordPress', 'WooCommerce', 'Shopify', 'Magento', 'Spree Commerce']],
-  [Laptop, 'Desktop / Realtime', ['Electron JS', 'WebSocket']],
+  ['code2', 'Frontend', ['ReactJS', 'Angular', 'HTML5', 'CSS3', 'JavaScript', 'Vite']],
+  ['workflow', 'Backend', ['Node.js', 'Python', 'Ruby on Rails', 'PHP', 'Laravel']],
+  ['smartphone', 'Mobile', ['React Native', 'Ionic', 'iOS', 'Android']],
+  ['shopping-bag', 'CMS & E-commerce', ['WordPress', 'WooCommerce', 'Shopify', 'Magento', 'Spree Commerce']],
+  ['laptop', 'Desktop / Realtime', ['Electron JS', 'WebSocket']],
 ];
 
 function Counter({ target, suffix }) {
@@ -65,8 +65,8 @@ export default function Home() {
       <div className="hero-orb hero-orb--one"></div><div className="hero-orb hero-orb--two"></div>
       <div className="container hero-grid">
         <div className="hero-copy"><span className="eyebrow"><i></i> We design, develop &amp; deliver</span><h1>Powerful Websites.<br /><span>Real Results.</span></h1><p>We design and develop fast, responsive and SEO-friendly websites that help businesses grow online.</p><div className="hero-actions"><Link to="/contact" className="button">Let's Build Your Website <ArrowRight size={18} /></Link><Link to="/portfolio" className="button button--secondary">View Our Work</Link><Link to="/admin/login" className="text-link hero-admin-link">Admin Login</Link></div></div>
-        <div className="hero-visual" aria-label="SiteArvo website dashboard preview" role="img"><div className="dashboard-shell"><div className="browser-bar"><div><i></i><i></i><i></i></div><span>sitearvo.site</span><b></b></div><div className="dash-nav"><span className="mini-logo">SA</span><div><i></i><i></i><i></i></div><span className="dash-action" aria-hidden="true">Start</span></div><div className="dash-body"><span className="dash-chip">DIGITAL EXPERIENCES</span><h2>Built to make an<br /><em>impact.</em></h2><p></p><p></p><span className="dash-explore" aria-hidden="true">Explore work <ArrowRight size={14} /></span><div className="dash-cards"><div><LayoutTemplate /><b>Purposeful UI</b><span>Clear by design</span></div><div><Gauge /><b>Fast by default</b><span>Built to perform</span></div></div></div></div><div className="float-card float-card--top"><Gauge /><span><b>98</b> Performance</span></div><div className="float-card float-card--bottom"><BadgeCheck /><span><b>Built right</b> Responsive &amp; SEO-ready</span></div></div>
-        <div className="trust-row">{['Responsive Design', 'SEO Friendly', 'Fast Performance', 'Modern UI/UX'].map(item => <span key={item}><BadgeCheck size={15} />{item}</span>)}</div>
+        <div className="hero-visual" aria-label="SiteArvo website dashboard preview" role="img"><div className="dashboard-shell"><div className="browser-bar"><div><i></i><i></i><i></i></div><span>sitearvo.site</span><b></b></div><div className="dash-nav"><span className="mini-logo">SA</span><div><i></i><i></i><i></i></div><span className="dash-action" aria-hidden="true">Start</span></div><div className="dash-body"><span className="dash-chip">DIGITAL EXPERIENCES</span><h2>Built to make an<br /><em>impact.</em></h2><span className="dash-line dash-line--one" aria-hidden="true"></span><span className="dash-line dash-line--two" aria-hidden="true"></span><span className="dash-explore" aria-hidden="true">Explore work <ArrowRight size={14} /></span><div className="dash-cards"><div><AppIcon icon="layout-template" /><b>Purposeful UI</b><span>Clear by design</span></div><div><AppIcon icon="gauge" /><b>Fast by default</b><span>Built to perform</span></div></div></div></div><div className="float-card float-card--top"><AppIcon icon="gauge" /><span><b>98</b> Performance</span></div><div className="float-card float-card--bottom"><AppIcon icon="badge-check" /><span><b>Built right</b> Responsive &amp; SEO-ready</span></div></div>
+        <div className="trust-row">{['Responsive Design', 'SEO Friendly', 'Fast Performance', 'Modern UI/UX'].map(item => <span key={item}><AppIcon icon="badge-check" size={15} />{item}</span>)}</div>
       </div>
     </section>
 
@@ -76,9 +76,9 @@ export default function Home() {
 
     <section className="section"><div className="container"><SectionTitle eyebrow="Dynamic service catalog" title="Complete Digital Solutions" description="From websites and mobile apps to e-commerce and digital marketing, we provide everything your business needs to grow online." /><div className="services-grid">{homeServices.map(service => <ServiceCard key={service.slug || service.title} icon={getCatalogIcon(service.icon)} title={service.title} description={service.shortDescription || service.short} href={service.slug ? `/services/${service.slug}` : '/services'} />)}</div><div className="center-action"><Link to="/services" className="button button--secondary">View All Services <ArrowRight size={18} /></Link></div></div></section>
 
-    <section className="section section--alt"><div className="container"><SectionTitle eyebrow="Our toolkit" title="Technologies We Work With" description="A focused stack selected for speed, maintainability and practical business outcomes—not an oversized logo cloud." /><div className="technology-grid">{technologyGroups.map(([Icon, title, items]) => <article className="technology-card" key={title}><Icon /><h3>{title}</h3><div>{items.map(item => <span key={item}>{item}</span>)}</div></article>)}</div></div></section>
+    <section className="section section--alt"><div className="container"><SectionTitle eyebrow="Our toolkit" title="Technologies We Work With" description="A focused stack selected for speed, maintainability and practical business outcomes - not an oversized logo cloud." /><div className="technology-grid">{technologyGroups.map(([icon, title, items]) => <article className="technology-card" key={title}><AppIcon icon={icon} /><h3>{title}</h3><div>{items.map(item => <span key={item}>{item}</span>)}</div></article>)}</div></div></section>
 
-    <section className="section section--alt"><div className="container why-grid"><div className="why-intro"><SectionTitle align="left" eyebrow="The SiteArvo standard" title="We Build Websites That Deliver Results" description="No templates-for-everyone approach. Your website is thoughtfully planned, professionally built and ready to support what comes next." /><Link to="/about" className="text-link">Meet SiteArvo <ArrowRight size={17} /></Link></div><div className="feature-grid">{features.map(([Icon, label]) => <div className="feature-item" key={label}><Icon /><span>{label}</span></div>)}</div></div></section>
+    <section className="section section--alt"><div className="container why-grid"><div className="why-intro"><SectionTitle align="left" eyebrow="The SiteArvo standard" title="We Build Websites That Deliver Results" description="No templates-for-everyone approach. Your website is thoughtfully planned, professionally built and ready to support what comes next." /><Link to="/about" className="text-link">Meet SiteArvo <ArrowRight size={17} /></Link></div><div className="feature-grid">{features.map(([icon, label]) => <div className="feature-item" key={label}><AppIcon icon={icon} /><span>{label}</span></div>)}</div></div></section>
 
     <section className="section process-section"><div className="container"><SectionTitle eyebrow="Our process" title="From Idea to Launch" description="A straightforward process designed for clarity, collaboration and consistent momentum." /><div className="process-timeline">{process.map(([number, title, description]) => <article key={number} className="process-card"><span className="process-marker">{number}</span><div><h3>{title}</h3><p>{description}</p></div></article>)}</div></div></section>
 
@@ -94,3 +94,5 @@ export default function Home() {
     <CTA />
   </>;
 }
+
+

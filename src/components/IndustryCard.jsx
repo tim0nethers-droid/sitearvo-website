@@ -1,4 +1,5 @@
 import { ArrowRight } from 'lucide-react';
+import { AppIcon } from '../catalog/icons';
 import { Link } from 'react-router-dom';
 
 export default function IndustryCard({ industry, compact = false }) {
@@ -12,3 +13,4 @@ export default function IndustryCard({ industry, compact = false }) {
     {!compact && <Link to="/contact" className="text-link">Discuss Your Website <ArrowRight size={17} /></Link>}
   </article>;
 }
+

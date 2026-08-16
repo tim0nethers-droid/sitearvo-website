@@ -1,7 +1,7 @@
 import { ArrowRight, ShoppingCart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { trackAnalyticsEvent } from './Analytics';
-import { getCatalogIcon } from '../catalog/icons';
+import { AppIcon, getCatalogIcon } from '../catalog/icons';
 import { effectivePrice, hasValidPrice, priceLabel } from '../catalog/format';
 import { useCart } from '../cart/CartContext';
 
@@ -15,7 +15,7 @@ export default function ServiceCatalogCard({ service }) {
   const customizeLabel = salePrice === 0 ? 'Customize Free Website' : 'Customize';
   const features = (service.features || []).map(feature => typeof feature === 'string' ? feature : feature.name).filter(Boolean);
   return <article className="catalog-service-card">
-    <div className="icon-box"><Icon strokeWidth={1.9} aria-hidden="true" /></div>
+    <div className="icon-box"><AppIcon icon={Icon} size={20} /></div>
     {service.categoryTitle && <span className="package-category">{service.categoryTitle}</span>}
     <h3>{service.title}</h3>
     <p>{service.shortDescription}</p>

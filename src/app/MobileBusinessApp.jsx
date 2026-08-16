@@ -33,29 +33,30 @@ import { Link, Navigate, NavLink, Outlet, Route, Routes, useLocation, useNavigat
 import Logo from '../components/Logo';
 import { AnalyticsDateRange, AnalyticsLineChart, formatAnalyticsRangeLabel, formatAnalyticsValue } from '../components/analytics/AnalyticsUI';
 import { apiFetch } from '../catalog/api';
+import { AppIcon } from '../catalog/icons';
 import { company, phoneUrl, whatsappUrl } from '../config/company';
 import { effectivePrice, formatPrice } from '../catalog/format';
 import { useCatalog } from '../catalog/CatalogContext';
 
 const AppContext = createContext(null);
 const bottomNav = [
-  ['/app', 'Dashboard', LayoutDashboard],
-  ['/app/orders', 'Orders', ShoppingBag],
-  ['/app/projects', 'Projects', FolderKanban],
-  ['/app/support', 'Support', Headphones],
-  ['/app/profile', 'Profile', CircleUserRound],
+  ['/app', 'Dashboard', 'dashboard'],
+  ['/app/orders', 'Orders', 'orders'],
+  ['/app/projects', 'Projects', 'projects'],
+  ['/app/support', 'Support', 'support'],
+  ['/app/profile', 'Profile', 'profile'],
 ];
 
 const drawerNav = [
-  ['/app', 'Dashboard', LayoutDashboard],
-  ['/app/orders', 'Orders', ShoppingBag],
-  ['/app/projects', 'Projects', FolderKanban],
-  ['/app/support', 'Support', Headphones],
-  ['/app/reports', 'Reports', Sparkles],
-  ['/app/clients', 'Clients', UserRound],
-  ['/app/notifications', 'Notifications', Bell],
-  ['/app/settings', 'Settings', Settings],
-  ['/app/profile', 'Profile', CircleUserRound],
+  ['/app', 'Dashboard', 'dashboard'],
+  ['/app/orders', 'Orders', 'orders'],
+  ['/app/projects', 'Projects', 'projects'],
+  ['/app/support', 'Support', 'support'],
+  ['/app/reports', 'Reports', 'reports'],
+  ['/app/clients', 'Clients', 'clients'],
+  ['/app/notifications', 'Notifications', 'notifications'],
+  ['/app/settings', 'Settings', 'settings'],
+  ['/app/profile', 'Profile', 'profile'],
 ];
 
 const statusTone = {
@@ -111,6 +112,24 @@ function initials(name = '') {
 
 function safeList(value) {
   return Array.isArray(value) ? value : [];
+}
+
+function normalizeIconLookup(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '');
+}
+
+function resolveCatalogIconKey(services, ...terms) {
+  const normalizedTerms = terms.map(normalizeIconLookup).filter(Boolean);
+  const match = safeList(services).find(service => normalizedTerms.some(term => {
+    const fields = [service.slug, service.title, service.name, service.shortDescription, service.categorySlug, service.categoryTitle];
+    return fields.some(field => {
+      const normalizedField = normalizeIconLookup(field);
+      return normalizedField && (normalizedField.includes(term) || term.includes(normalizedField));
+    });
+  }));
+  return match?.icon || 'orders';
 }
 
 function useAppSession() {
@@ -179,7 +198,7 @@ function AppMetricCard({ icon: Icon, label, value, hint, tone = 'gold' }) {
 
 function AppQuickAction({ to, icon: Icon, label, hint }) {
   return <Link className="app-quick-action" to={to}>
-    <span><Icon size={18} /></span>
+    <span><AppIcon icon={Icon} size={18} /></span>
     <b>{label}</b>
     <small>{hint}</small>
   </Link>;
@@ -278,7 +297,7 @@ function Shell({ admin, onLogout }) {
           <button type="button" className="app-sidebar__close" onClick={() => setDrawerOpen(false)} aria-label="Close menu"><X size={18} /></button>
         </div>
         <nav className="app-sidebar__nav">
-          {drawerNav.map(([to, label, Icon]) => <NavLink key={to} to={to} end={to === '/app'} onClick={() => setDrawerOpen(false)}><Icon size={18} />{label}</NavLink>)}
+          {drawerNav.map(([to, label, icon]) => <NavLink key={to} to={to} end={to === '/app'} onClick={() => setDrawerOpen(false)}><AppIcon icon={icon} size={18} />{label}</NavLink>)}
         </nav>
         <div className="app-sidebar__footer">
           <Link to="/" target="_blank" rel="noreferrer">View Website</Link>
@@ -313,7 +332,7 @@ function Shell({ admin, onLogout }) {
       </div>
 
       <nav className="app-bottom-nav" aria-label="Primary app navigation">
-        {bottomNav.map(([to, label, Icon]) => <NavLink key={to} to={to} end={to === '/app'} className={({ isActive }) => isActive ? 'is-active' : ''}><Icon size={18} /><span>{label}</span></NavLink>)}
+        {bottomNav.map(([to, label, icon]) => <NavLink key={to} to={to} end={to === '/app'} className={({ isActive }) => isActive ? 'is-active' : ''}><AppIcon icon={icon} size={18} /><span>{label}</span></NavLink>)}
       </nav>
       {drawerOpen && <button type="button" className="app-drawer-backdrop" onClick={() => setDrawerOpen(false)} aria-label="Close menu overlay" />}
     </div>
@@ -326,6 +345,7 @@ function useAppContext() {
 
 function AppDashboard() {
   const { admin } = useAppContext();
+  const { services: catalogServices } = useCatalog();
   const { data: dashboard, loading: dashboardLoading } = useResource('/admin/dashboard');
   const { data: analytics, loading: analyticsLoading } = useResource('/admin/analytics');
   const { data: orders, loading: ordersLoading } = useResource('/admin/orders');
@@ -394,7 +414,7 @@ function AppDashboard() {
       </div>
       <div className="app-list">
         {recentOrders.length ? recentOrders.map(order => <Link key={order.id} to={`/app/orders/${order.id}`} className="app-list__item">
-          <div className="app-list__icon"><ShoppingBag size={16} /></div>
+          <div className="app-list__icon"><AppIcon icon={resolveCatalogIconKey(catalogServices, order.service_name, order.package_name, order.order_number)} size={16} /></div>
           <div className="app-list__content">
             <b>{order.service_name || order.order_number}</b>
             <span>{order.order_number} · {formatShortDate(order.created_at)}</span>
@@ -414,12 +434,12 @@ function AppDashboard() {
       </div>
       <div className="app-list app-list--compact">
         {topPages.length ? topPages.map(item => <div key={item.path} className="app-list__item is-static">
-          <div className="app-list__icon"><LayoutDashboard size={16} /></div>
+          <div className="app-list__icon"><AppIcon icon="dashboard" size={16} /></div>
           <div className="app-list__content">
             <b>{item.label || item.path}</b>
             <span>{item.pageviews} views · {item.visitors} visitors</span>
           </div>
-        </div>) : <EmptyState title="No analytics data yet." description="Page-level analytics will appear here when the site records visits." icon={LayoutDashboard} />}
+        </div>) : <EmptyState title="No analytics data yet." description="Page-level analytics will appear here when the site records visits." icon="dashboard" />}
       </div>
     </section>
   </AppPage>;
@@ -621,7 +641,7 @@ function AppProjectsPage() {
     </div>
     <div className="app-list">
       {filtered.length ? filtered.map(project => <button key={project.id} type="button" className="app-list__item is-button" onClick={() => navigate(`/app/projects/${project.id}`)}>
-        <div className="app-list__icon"><FolderKanban size={16} /></div>
+        <div className="app-list__icon"><AppIcon icon="projects" size={16} /></div>
         <div className="app-list__content">
           <b>{project.project_name}</b>
           <span>{project.package_name || 'Project package'} · Due {formatShortDate(project.due_date)}</span>
@@ -745,7 +765,7 @@ function AppSupportPage() {
     </div>
     <div className="app-list">
       {filtered.length ? filtered.map(item => <button key={item.id} type="button" className="app-list__item is-button" onClick={() => navigate(`/app/support/${item.id}`)}>
-        <div className="app-list__icon"><MessageSquareText size={16} /></div>
+        <div className="app-list__icon"><AppIcon icon="support" size={16} /></div>
         <div className="app-list__content">
           <b>{item.public_id}</b>
           <span>{item.visitor_name}</span>
@@ -941,7 +961,7 @@ function AppClientDetailPage() {
       <h2>Recent Orders</h2>
       <div className="app-list app-list--compact">
         {clientOrders.length ? clientOrders.slice(0, 3).map(order => <Link key={order.id} className="app-list__item" to={`/app/orders/${order.id}`}>
-          <div className="app-list__icon"><ShoppingBag size={16} /></div>
+          <div className="app-list__icon"><AppIcon icon="orders" size={16} /></div>
           <div className="app-list__content"><b>{order.order_number}</b><span>{order.service_name}</span></div>
           <div className="app-list__meta"><AppStatusBadge status={order.status} /><strong>{formatPrice(order.total_amount || 0)}</strong></div>
         </Link>) : <EmptyState title="No recent orders." description="Orders linked to this customer will appear here." icon={ShoppingBag} />}
@@ -951,7 +971,7 @@ function AppClientDetailPage() {
       <h2>Active Projects</h2>
       <div className="app-list app-list--compact">
         {clientProjects.length ? clientProjects.slice(0, 3).map(project => <Link key={project.id} className="app-list__item" to={`/app/projects/${project.id}`}>
-          <div className="app-list__icon"><FolderKanban size={16} /></div>
+          <div className="app-list__icon"><AppIcon icon="projects" size={16} /></div>
           <div className="app-list__content"><b>{project.project_name}</b><span>{project.package_name || 'Package'}</span></div>
           <div className="app-list__meta"><AppStatusBadge status={project.status} /><strong>{Math.max(0, Math.min(100, Number(project.progress || 0)))}%</strong></div>
         </Link>) : <EmptyState title="No active projects." description="Projects linked to this client will show here." icon={FolderKanban} />}
@@ -1082,7 +1102,7 @@ function AppNotificationsPage() {
   return <AppPage title="Notifications" description="Unread order, payment and project updates." action={<button type="button" className="button button--secondary" onClick={markAll}>Mark all as read</button>}>
     <div className="app-list">
       {notifications.length ? notifications.map(notification => <div key={notification.id} className={`app-list__item is-static ${notification.is_read ? 'is-read' : 'is-unread'}`}>
-        <div className="app-list__icon"><Bell size={16} /></div>
+        <div className="app-list__icon"><AppIcon icon="notifications" size={16} /></div>
         <div className="app-list__content">
           <b>{notification.title}</b>
           <span>{notification.message}</span>

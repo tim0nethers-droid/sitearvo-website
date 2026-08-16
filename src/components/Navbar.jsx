@@ -5,7 +5,7 @@ import Logo from './Logo';
 import { trackAnalyticsEvent } from './Analytics';
 import { company, contactAvailability, phoneUrl, whatsappUrl } from '../config/company';
 import { useCatalog } from '../catalog/CatalogContext';
-import { getCatalogIcon } from '../catalog/icons';
+import { AppIcon, getCatalogIcon } from '../catalog/icons';
 import { useCart } from '../cart/CartContext';
 
 const links = [['/', 'Home'], ['/about', 'About Us'], ['/industries', 'Industries'], ['/portfolio', 'Portfolio'], ['/pricing', 'Pricing'], ['/contact', 'Contact']];
@@ -97,11 +97,11 @@ export default function Navbar() {
   };
 
   return <header className={`site-header ${scrolled ? 'site-header--scrolled' : ''}`}>
-    <div className="topbar"><div className="container topbar-inner"><span>Need a website for your business? Let's talk.</span><div className="topbar-links">{contactAvailability.email && <a href={`mailto:${company.email}`} onClick={() => trackAnalyticsEvent('email_click', { source: 'navbar_topbar' })}><Mail />{company.email}</a>}{contactAvailability.phone && <a href={phoneUrl()} onClick={() => trackAnalyticsEvent('phone_click', { source: 'navbar_topbar' })}><Phone />{company.phone}</a>}{contactAvailability.whatsapp && <a href={whatsappUrl()} target="_blank" rel="noreferrer" onClick={() => trackAnalyticsEvent('whatsapp_click', { source: 'navbar_topbar' })}><MessageCircle />WhatsApp</a>}<Link to="/contact">Post Your Enquiry</Link></div></div></div>
+    <div className="topbar"><div className="container topbar-inner"><span>Need a website for your business? Let's talk.</span><div className="topbar-links">{contactAvailability.email && <a href={`mailto:${company.email}`} onClick={() => trackAnalyticsEvent('email_click', { source: 'navbar_topbar' })}><AppIcon icon="mail" />{company.email}</a>}{contactAvailability.phone && <a href={phoneUrl()} onClick={() => trackAnalyticsEvent('phone_click', { source: 'navbar_topbar' })}><AppIcon icon="phone" />{company.phone}</a>}{contactAvailability.whatsapp && <a href={whatsappUrl()} target="_blank" rel="noreferrer" onClick={() => trackAnalyticsEvent('whatsapp_click', { source: 'navbar_topbar' })}><AppIcon icon="message-circle" />WhatsApp</a>}<Link to="/contact">Post Your Enquiry</Link></div></div></div>
     <div className="navbar"><div className="container nav-inner">
       <Logo />
       <Link to="/contact" className="mobile-header-quote">Get a Quote</Link>
-      <button className="menu-toggle" onClick={() => setOpen(!open)} aria-expanded={open} aria-controls="main-menu" aria-label={open ? 'Close menu' : 'Open menu'}>{open ? <X /> : <Menu />}</button>
+      <button className="menu-toggle" onClick={() => setOpen(!open)} aria-expanded={open} aria-controls="main-menu" aria-label={open ? 'Close menu' : 'Open menu'}>{open ? <AppIcon icon="close" /> : <AppIcon icon="menu" />}</button>
       <nav id="main-menu" className={`nav-menu ${open ? 'is-open' : ''}`} aria-label="Primary navigation">
         {links.slice(0, 2).map(([to, label]) => <NavLink key={to} to={to} end={to === '/'} className={({ isActive }) => isActive ? 'active' : ''}>{label}</NavLink>)}
         <div
@@ -110,7 +110,7 @@ export default function Navbar() {
           onMouseEnter={() => { if (isDesktopMenu()) openServices(); }}
           onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) setServicesOpen(false); }}
         >
-          <button ref={servicesButtonRef} type="button" aria-expanded={servicesOpen} aria-controls="services-mega-menu" onClick={() => isDesktopMenu() ? openServices() : toggleServices()}>Services <ChevronDown /></button>
+          <button ref={servicesButtonRef} type="button" aria-expanded={servicesOpen} aria-controls="services-mega-menu" onClick={() => isDesktopMenu() ? openServices() : toggleServices()}>Services <AppIcon icon="chevron-down" /></button>
           <div id="services-mega-menu" className="services-mega-menu" aria-label="Services navigation">
             <div className="mega-layout">
               <section className="mega-category-list" aria-label="Service categories">
@@ -129,8 +129,8 @@ export default function Navbar() {
                     >
                       <CategoryIcon className="mega-category-icon" size={18} strokeWidth={1.9} aria-hidden="true" />
                       <span>{categoryMenuTitle(category)}</span>
-                      <ChevronRight className="category-chevron category-chevron--desktop" aria-hidden="true" />
-                      <ChevronDown className="category-chevron category-chevron--mobile" aria-hidden="true" />
+                      <AppIcon icon="chevron-right" className="category-chevron category-chevron--desktop" />
+                      <AppIcon icon="chevron-down" className="category-chevron category-chevron--mobile" />
                     </button>
                     <div id={`mobile-services-${category.id}`} className="mega-mobile-services" hidden={!expanded}>
                       {(category.services || []).map(service => { const ServiceIcon = getCatalogIcon(service.icon); return <Link key={service.slug} to={`/services/${service.slug}`} onClick={closeNavigation}><ServiceIcon size={15} strokeWidth={1.9} aria-hidden="true" /><span>{serviceMenuTitle(service.title)}</span></Link>; })}
@@ -142,20 +142,20 @@ export default function Navbar() {
               {activeCategory && <section className="mega-service-panel" aria-live="polite" aria-label={`${activeCategory.title} services`}>
                 <div className="mega-service-heading"><span>Selected category</span><h3>{(() => { const ActiveCategoryIcon = getCatalogIcon(activeCategory.icon); return <><ActiveCategoryIcon size={20} strokeWidth={1.9} aria-hidden="true" />{categoryMenuTitle(activeCategory)}</>; })()}</h3><p>{activeCategory.description}</p></div>
                 <div className="mega-service-links">
-                  {(activeCategory.services || []).map(service => { const ServiceIcon = getCatalogIcon(service.icon); return <Link key={service.slug} to={`/services/${service.slug}`} onClick={closeNavigation}><ServiceIcon size={17} strokeWidth={1.9} aria-hidden="true" /><span>{serviceMenuTitle(service.title)}</span><ChevronRight aria-hidden="true" /></Link>; })}
+                  {(activeCategory.services || []).map(service => { const ServiceIcon = getCatalogIcon(service.icon); return <Link key={service.slug} to={`/services/${service.slug}`} onClick={closeNavigation}><ServiceIcon size={17} strokeWidth={1.9} aria-hidden="true" /><span>{serviceMenuTitle(service.title)}</span><AppIcon icon="chevron-right" aria-hidden="true" /></Link>; })}
                 </div>
               </section>}
             </div>
-            <div className="mega-menu-footer"><Link className="mega-view-all" to="/services" onClick={closeNavigation}>View All Services <ChevronRight aria-hidden="true" /></Link></div>
+            <div className="mega-menu-footer"><Link className="mega-view-all" to="/services" onClick={closeNavigation}>View All Services <AppIcon icon="chevron-right" aria-hidden="true" /></Link></div>
           </div>
         </div>
         <div className="nav-utility-cluster">
           <NavLink to="/admin/login" className={({ isActive }) => `nav-auth-link ${isActive ? 'active' : ''}`} aria-label="Admin login">
-            <LogIn aria-hidden="true" />
+            <AppIcon icon="login" aria-hidden="true" />
             <span>Login</span>
           </NavLink>
           <NavLink to="/cart" className={({ isActive }) => `nav-cart ${isActive ? 'active' : ''}`} aria-label={`Shopping cart with ${cartCount} ${cartCount === 1 ? 'item' : 'items'}`} onClick={() => trackAnalyticsEvent('cart_viewed', { source: 'navbar', onceKey: 'cart_viewed' })}>
-            <ShoppingCart aria-hidden="true" />
+            <AppIcon icon="cart" aria-hidden="true" />
             <span className="nav-cart-label">Cart</span>
             {cartCount > 0 && <span className="nav-cart-badge" aria-hidden="true">{cartCount > 99 ? '99+' : cartCount}</span>}
           </NavLink>
@@ -166,3 +166,5 @@ export default function Navbar() {
     {open && <button type="button" className="mobile-menu-backdrop" onClick={() => setOpen(false)} aria-label="Close navigation menu" />}
   </header>;
 }
+
+

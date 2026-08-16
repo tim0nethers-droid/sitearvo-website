@@ -6,7 +6,7 @@ import CTA from '../components/CTA';
 import WebsiteConfigurator from '../components/WebsiteConfigurator';
 import { trackAnalyticsEvent } from '../components/Analytics';
 import { useCatalog } from '../catalog/CatalogContext';
-import { getCatalogIcon } from '../catalog/icons';
+import { AppIcon, getCatalogIcon } from '../catalog/icons';
 import { effectivePrice, formatPrice, hasValidPrice, priceLabel } from '../catalog/format';
 import { useCart } from '../cart/CartContext';
 import { serviceSchema } from '../config/seo';
@@ -111,5 +111,6 @@ export default function ServiceDetail() {
 }
 
 function ServiceNotFound({ error, onRetry }) {
-  return <><SEO title="Service Not Found" description="The requested SiteArvo service page is not available. Explore the complete service catalog." path="/404" noIndex /><section className="service-not-found"><div className="container"><span className="eyebrow">Service not found</span><h1>This Service Page Isn't Available</h1><p>{error || 'The service may be inactive, moved or the address may be incorrect.'}</p>{error && <button type="button" className="button button--secondary" onClick={onRetry}>Retry</button>} <Link to="/services" className="button"><ArrowLeft /> View All Services</Link></div></section></>;
+  return <><SEO title="Service Not Found" description="The requested SiteArvo service page is not available. Explore the complete service catalog." path="/404" noIndex /><section className="service-not-found"><div className="container"><span className="eyebrow">Service not found</span><h1>This Service Page Isn't Available</h1><p>{error || 'The service may be inactive, moved or the address may be incorrect.'}</p>{error && <button type="button" className="button button--secondary" onClick={onRetry}>Retry</button>} <Link to="/services" className="button"><AppIcon icon="arrow-left" /> View All Services</Link></div></section></>;
 }
+

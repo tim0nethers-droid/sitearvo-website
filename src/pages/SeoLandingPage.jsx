@@ -1,4 +1,5 @@
 import { ArrowRight, BadgeCheck, Check, CircleHelp } from 'lucide-react';
+import { AppIcon } from '../catalog/icons';
 import { Link, useParams } from 'react-router-dom';
 import SEO from '../components/SEO';
 import CTA from '../components/CTA';
@@ -33,3 +34,4 @@ export default function SeoLandingPage({ guide = false }) {
     <CTA />
   </>;
 }
+

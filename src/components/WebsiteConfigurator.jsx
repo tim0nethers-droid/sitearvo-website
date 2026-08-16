@@ -1,20 +1,21 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Check, Globe2, Layers3, MessageCircle, Minus, Plus, RefreshCcw, ShieldCheck, ShoppingCart, Sparkles } from 'lucide-react';
+import { Check, Minus, Plus, ShoppingCart } from 'lucide-react';
 import { useCart } from '../cart/CartContext';
 import { useConfigurator } from '../configurator/ConfiguratorContext';
 import { buildConfiguratorSelectionState, createConfiguratorSnapshot, formatConfiguratorMoney, getConfiguratorCompletionState, normalizeConfiguratorGroups } from '../data/configurator';
+import { AppIcon } from '../catalog/icons';
 import { priceLabel } from '../catalog/format';
 import { trackAnalyticsEvent } from './Analytics';
 import { whatsappUrl } from '../config/company';
 
 const groupIconMap = {
-  'page-packages': Layers3,
-  technology: Sparkles,
-  'domain-hosting': Globe2,
-  design: ShieldCheck,
-  marketing: MessageCircle,
-  support: RefreshCcw,
+  'page-packages': 'layers3',
+  technology: 'brain-circuit',
+  'domain-hosting': 'globe',
+  design: 'palette',
+  marketing: 'megaphone',
+  support: 'wrench',
 };
 
 const resolvePresetSelection = (groups = [], presetPackage = null) => {
@@ -207,14 +208,14 @@ export default function WebsiteConfigurator({
       <div className={`builder-layout ${compact ? 'is-compact' : ''}`}>
         <div className="builder-configurator">
           {activeGroups.map(group => {
-            const Icon = groupIconMap[group.slug] || Layers3;
+            const iconKey = groupIconMap[group.slug] || 'code2';
             const current = selectionState[group.slug] || {};
             return (
               <article className="builder-group" key={group.id}>
                 <header className="builder-group__header">
                   <div>
                     <span className="builder-group__eyebrow">{group.selection_type === 'single' ? 'Single select' : group.selection_type === 'multiple' ? 'Multiple select' : 'Quantity'}</span>
-                    <h3><Icon size={18} /> {group.name}</h3>
+                    <h3><AppIcon icon={iconKey} size={18} /> {group.name}</h3>
                     <p>{group.description}</p>
                   </div>
                   {group.required && <span className="builder-required">Required</span>}

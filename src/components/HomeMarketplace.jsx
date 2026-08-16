@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Search, ShoppingCart, X } from 'lucide-react';
 import { useCatalog } from '../catalog/CatalogContext';
 import { effectivePrice, formatPrice, hasValidPrice, priceLabel } from '../catalog/format';
-import { getCatalogIcon } from '../catalog/icons';
+import { AppIcon, getCatalogIcon } from '../catalog/icons';
 import { useCart } from '../cart/CartContext';
 import { starterCatalogProducts } from '../data/starterCatalog';
 import { serviceCategories as legacyCategories } from '../data/services';
@@ -105,7 +105,7 @@ function ProductCard({ product, onCustomize, onQuickAdd, onRequestQuote }) {
         ) : (
           <ProjectMockup project={preview} device={preview.device} />
         )}
-        <span className="marketplace-card__preview-badge"><Icon size={14} /> {product.categoryTitle || 'SiteArvo'}</span>
+        <span className="marketplace-card__preview-badge"><AppIcon icon={Icon} size={14} /> {product.categoryTitle || 'SiteArvo'}</span>
       </div>
       <div className="marketplace-card__body">
         <div className="marketplace-card__topline">

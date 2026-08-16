@@ -3,12 +3,13 @@ import { Link } from 'react-router-dom';
 import { trackAnalyticsEvent } from './Analytics';
 import { useCatalog } from '../catalog/CatalogContext';
 import { effectivePrice, hasValidPrice, priceLabel, formatPrice } from '../catalog/format';
+import { AppIcon } from '../catalog/icons';
 import { useCart } from '../cart/CartContext';
 
 const fallbackPlans = [
-  { slug: 'starter', title: 'Starter', shortDescription: 'Best for small businesses.', priceType: 'custom_quote', features: ['Up to 5 pages', 'Responsive design', 'Contact form', 'WhatsApp integration', 'Basic SEO', 'Social links'] },
-  { slug: 'business', title: 'Business', shortDescription: 'For ambitious, growing brands.', priceType: 'custom_quote', isFeatured: true, features: ['Up to 10 pages', 'Premium UI', 'Responsive design', 'Advanced contact forms', 'SEO setup', 'Speed optimization'] },
-  { slug: 'custom', title: 'Custom', shortDescription: 'For advanced requirements.', priceType: 'custom_quote', features: ['Custom functionality', 'React development', 'API integrations', 'E-commerce', 'Advanced UI/UX'] },
+  { slug: 'starter', title: 'Starter', shortDescription: 'Best for small businesses.', priceType: 'custom_quote', icon: 'layers3', features: ['Up to 5 pages', 'Responsive design', 'Contact form', 'WhatsApp integration', 'Basic SEO', 'Social links'] },
+  { slug: 'business', title: 'Business', shortDescription: 'For ambitious, growing brands.', priceType: 'custom_quote', isFeatured: true, icon: 'briefcase', features: ['Up to 10 pages', 'Premium UI', 'Responsive design', 'Advanced contact forms', 'SEO setup', 'Speed optimization'] },
+  { slug: 'custom', title: 'Custom', shortDescription: 'For advanced requirements.', priceType: 'custom_quote', icon: 'blocks', features: ['Custom functionality', 'React development', 'API integrations', 'E-commerce', 'Advanced UI/UX'] },
 ];
 
 export default function PricingCards({ limit = 6, categoryId = '' }) {
@@ -35,6 +36,7 @@ export default function PricingCards({ limit = 6, categoryId = '' }) {
     const hasDiscount = Number.isFinite(regularPrice) && regularPrice > salePrice;
     const customizeLabel = salePrice === 0 ? 'Get Started' : 'Customize';
     return <article key={plan.id || plan.slug} className={`pricing-card ${plan.isFeatured ? 'popular' : ''}`}>
+      <div className="pricing-card__icon"><AppIcon icon={plan.icon || 'layers3'} size={18} /></div>
       {plan.isFeatured && <span className="popular-label">{salePrice === 0 ? 'FREE STARTER' : 'Featured'}</span>}
       {plan.categoryTitle && <span className="package-category">{plan.categoryTitle}</span>}
       <h3>{plan.title}</h3><p>{plan.shortDescription}</p>

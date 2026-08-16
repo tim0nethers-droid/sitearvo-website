@@ -1,10 +1,13 @@
-﻿import { ArrowDown, ArrowLeftRight, ArrowRight, ArrowUp, Banknote, BarChart3, BadgePercent, Boxes, CalendarRange, ChevronDown, CircleDollarSign, Copy, Download, Eye, EyeOff, FileText, FolderTree, Gauge, Landmark, LayoutDashboard, LogOut, Menu, MessageSquareText, MoreVertical, PackagePlus, PiggyBank, Plus, ReceiptText, Save, Search, Send, Settings, SlidersHorizontal, Trash2, TrendingDown, TrendingUp, Wallet, X } from 'lucide-react';
+import { ArrowDown, ArrowLeftRight, ArrowRight, ArrowUp, Banknote, BarChart3, BadgePercent, Boxes, CalendarRange, ChevronDown, CircleDollarSign, Copy, Download, Eye, EyeOff, FileText, FolderTree, Gauge, Landmark, LayoutDashboard, LogOut, Menu, MessageSquareText, MoreVertical, PackagePlus, PiggyBank, Plus, ReceiptText, Save, Search, Send, Settings, SlidersHorizontal, Trash2, TrendingDown, TrendingUp, Wallet, X } from 'lucide-react';
+import { Bell, Blocks, BriefcaseBusiness, CalendarCheck2, CircleCheck, Clock3, Code2, CreditCard, Database, FilePlus2, FolderPlus, Gamepad2, Globe, LayoutGrid, Mail, MessageCircle, MessagesSquare, Monitor, MoreHorizontal, Package, PenTool, Puzzle, ReceiptIndianRupee, Server, ServerCog, ShoppingBag, ShoppingCart, Smartphone, UserPlus, Users } from 'lucide-react';
+import { TicketPercent } from 'lucide-react';
+import ColoredIconBox from './ColoredIconBox';
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, NavLink, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import Logo from '../components/Logo';
 import { AnalyticsDateRange, AnalyticsExportButton, AnalyticsLineChart, AnalyticsSummaryCard, formatAnalyticsRangeLabel, formatAnalyticsValue } from '../components/analytics/AnalyticsUI';
 import { apiFetch } from '../catalog/api';
-import { getCatalogIcon, iconOptions } from '../catalog/icons';
+import { getCatalogIcon, iconChoices } from '../catalog/icons';
 import { effectivePrice, formatPrice, priceLabel } from '../catalog/format';
 import { useCatalog } from '../catalog/CatalogContext';
 import { calculateConfiguratorSummary, cloneConfiguratorGroups, defaultConfiguratorGroups, formatConfiguratorMoney, normalizeConfiguratorGroups } from '../data/configurator';
@@ -16,6 +19,85 @@ const blankCategory = { name: '', slug: '', icon: 'code', short_description: '',
 const blankService = { category_id: '', name: '', slug: '', service_type: 'custom_quote', icon: 'code', short_description: '', description: '', price_type: 'custom_quote', billing_type: 'one-time', base_price: '', sale_price: '', pages_included: '', delivery_time: '', revisions: '', display_order: 0, is_featured: false, is_active: true, add_to_cart_enabled: false, cta_text: 'View Service', seo_title: '', seo_description: '', features: [], addon_ids: [], image: '' };
 const blankAddon = { name: '', description: '', price: '', pricing_type: 'fixed', pricing_unit: '', is_active: true, category_ids: [] };
 const starterCatalogSlugSet = new Set(starterCatalogProducts.map(product => String(product.slug || '').toLowerCase()));
+const adminMobileNavItems = [
+  { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, color: 'gold' },
+  { to: '/admin/leads', label: 'Leads', icon: Users, color: 'green' },
+  { to: '/admin/orders', label: 'Orders', icon: ShoppingBag, color: 'blue' },
+  { to: '/admin/chats', label: 'Chats', icon: MessageSquareText, color: 'purple' },
+];
+const adminMobileMenuItems = [
+  { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, color: 'gold' },
+  { to: '/admin/leads', label: 'Leads', icon: Users, color: 'green' },
+  { to: '/admin/customers', label: 'Customers', icon: UserPlus, color: 'blue' },
+  { to: '/admin/chats', label: 'Live Chats', icon: MessagesSquare, color: 'purple' },
+  { to: '/admin/quotations', label: 'Quotations', icon: FileText, color: 'orange' },
+  { to: '/admin/carts', label: 'Carts', icon: ShoppingCart, color: 'cyan' },
+  { to: '/admin/orders', label: 'Orders', icon: ShoppingBag, color: 'blue' },
+  { to: '/admin/finance', label: 'Finance', icon: Wallet, color: 'gold' },
+  { to: '/admin/categories', label: 'Categories', icon: LayoutGrid, color: 'purple' },
+  { to: '/admin/services', label: 'Services & Packages', icon: Package, color: 'green' },
+  { to: '/admin/add-ons', label: 'Add-ons', icon: Puzzle, color: 'pink' },
+  { to: '/admin/coupons', label: 'Coupons', icon: TicketPercent, color: 'orange' },
+  { to: '/admin/projects', label: 'Projects', icon: FolderPlus, color: 'blue' },
+  { to: '/admin/portfolio', label: 'Portfolio', icon: BriefcaseBusiness, color: 'cyan' },
+  { to: '/admin/settings', label: 'Settings', icon: Settings, color: 'gray' },
+];
+
+function useAdminViewport() {
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 900px)').matches);
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const media = window.matchMedia('(max-width: 900px)');
+    const update = event => setIsMobile(event.matches);
+    setIsMobile(media.matches);
+    if (media.addEventListener) media.addEventListener('change', update);
+    else media.addListener(update);
+    return () => {
+      if (media.removeEventListener) media.removeEventListener('change', update);
+      else media.removeListener(update);
+    };
+  }, []);
+  return isMobile;
+}
+
+function getAdminMobileMeta(pathname) {
+  if (pathname === '/admin' || pathname === '/admin/dashboard') return { title: 'Dashboard', subtitle: 'A real-time overview of stored catalog content, enquiries and visitor traffic.', icon: LayoutDashboard, color: 'gold' };
+  if (pathname.startsWith('/admin/leads')) return { title: 'Leads', subtitle: 'Manage all leads and enquiries.', icon: Users, color: 'green' };
+  if (pathname.startsWith('/admin/orders')) return { title: 'Orders', subtitle: 'Manage all customer orders.', icon: ShoppingBag, color: 'blue' };
+  if (pathname.startsWith('/admin/chats')) return { title: 'Live Chats', subtitle: 'Manage all live chat conversations.', icon: MessageSquareText, color: 'purple' };
+  if (pathname.startsWith('/admin/quotations')) return { title: 'Quotations', subtitle: 'Search quotations and track status changes.', icon: FileText, color: 'orange' };
+  if (pathname.startsWith('/admin/services')) return { title: 'Services & Packages', subtitle: 'Manage all services, packages and pricing.', icon: Package, color: 'green' };
+  if (pathname.startsWith('/admin/projects')) return { title: 'Projects', subtitle: 'Manage all client projects.', icon: FolderPlus, color: 'blue' };
+  if (pathname.startsWith('/admin/finance')) return { title: 'Finance', subtitle: 'Overview of income, expenses and payments.', icon: Wallet, color: 'gold' };
+  if (pathname.startsWith('/admin/categories')) return { title: 'Categories', subtitle: 'Manage all service categories.', icon: LayoutGrid, color: 'purple' };
+  if (pathname.startsWith('/admin/settings')) return { title: 'Settings', subtitle: 'Manage system settings.', icon: Settings, color: 'gray' };
+  if (pathname.startsWith('/admin/notifications')) return { title: 'Notifications', subtitle: 'Track important updates and alerts.', icon: Bell, color: 'cyan' };
+  return { title: 'SiteArvo Catalog Manager', subtitle: 'Manage the live catalog, packages and enquiries.', icon: LayoutDashboard, color: 'gold' };
+}
+
+function getAdminActivityIcon(action = '', entity = '') {
+  const text = `${action} ${entity}`.toLowerCase();
+  if (text.includes('lead')) return UserPlus;
+  if (text.includes('order')) return ShoppingBag;
+  if (text.includes('payment') || text.includes('invoice') || text.includes('income')) return CreditCard;
+  if (text.includes('quote')) return FilePlus2;
+  if (text.includes('project') && text.includes('complete')) return CircleCheck;
+  if (text.includes('project')) return FolderPlus;
+  if (text.includes('chat') || text.includes('message')) return MessageCircle;
+  if (text.includes('category')) return LayoutGrid;
+  if (text.includes('service') || text.includes('package')) return Package;
+  if (text.includes('notification')) return Bell;
+  return Clock3;
+}
+
+function getAdminStatusTone(value = '') {
+  const text = String(value || '').toLowerCase();
+  if (['new', 'draft', 'pending', 'open', 'unread'].some(token => text.includes(token))) return 'orange';
+  if (['qualified', 'contacted', 'accepted', 'completed', 'converted', 'replied', 'in progress', 'in-progress', 'active', 'published'].some(token => text.includes(token))) return 'green';
+  if (text.includes('cancel') || text.includes('lost') || text.includes('rejected') || text.includes('closed')) return 'red';
+  if (text.includes('hold') || text.includes('paused')) return 'purple';
+  return 'gray';
+}
 
 export default function AdminApp() {
   const [admin, setAdmin] = useState(undefined);
@@ -25,7 +107,7 @@ export default function AdminApp() {
     <AdminContext.Provider value={{ admin, setAdmin, notice, setNotice }}>
       <Routes>
         <Route path="login" element={admin === true ? <Navigate to="/admin" replace /> : <AdminLogin />} />
-        <Route element={admin === undefined ? <div className="admin-loading" aria-live="polite" /> : admin ? <AdminShell /> : <Navigate to="/admin/login" replace />}>
+        <Route element={admin === undefined ? <AdminLoading /> : admin ? <AdminShell /> : <Navigate to="/admin/login" replace />}>
           <Route index element={<AdminDashboardNew />} />
           <Route path="dashboard" element={<Navigate to="/admin" replace />} />
           <Route path="analytics" element={<AdminAnalyticsNew />} />
@@ -100,18 +182,20 @@ function AdminShell() {
   const { admin, setAdmin, notice } = useContext(AdminContext);
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+  const isMobile = useAdminViewport();
   useEffect(() => { document.title = 'Catalog Admin | SiteArvo'; }, []);
   const logout = async () => { await apiFetch('/auth/logout', { method: 'POST' }).catch(() => {}); setAdmin(null); navigate('/admin/login'); };
   const groups = [
-    { title: 'Overview', items: [[LayoutDashboard, '/admin', 'Dashboard'], [BarChart3, '/admin/analytics', 'Analytics']] },
-    { title: 'CRM', items: [[MessageSquareText, '/admin/leads', 'Leads'], [MessageSquareText, '/admin/customers', 'Customers'], [MessageSquareText, '/admin/chats', 'Live Chats']] },
-    { title: 'Sales', items: [[ReceiptText, '/admin/quotations', 'Quotations'], [ReceiptText, '/admin/carts', 'Carts'], [ReceiptText, '/admin/orders', 'Orders'], [ReceiptText, '/admin/payments', 'Payments'], [ReceiptText, '/admin/invoices', 'Invoices']] },
-    { title: 'Finance', items: [[Banknote, '/admin/finance', 'Overview'], [TrendingUp, '/admin/finance/income', 'Income'], [TrendingDown, '/admin/finance/expenses', 'Expenses'], [Wallet, '/admin/finance/accounts', 'Accounts'], [ArrowLeftRight, '/admin/finance/transactions', 'Transactions'], [CircleDollarSign, '/admin/finance/receivables', 'Receivables'], [CircleDollarSign, '/admin/finance/payables', 'Payables'], [Landmark, '/admin/finance/vendors', 'Vendors'], [CircleDollarSign, '/admin/finance/refunds', 'Refunds'], [PiggyBank, '/admin/finance/budgets', 'Budgets'], [BadgePercent, '/admin/finance/tax', 'Tax'], [BarChart3, '/admin/finance/reports', 'Reports']] },
-    { title: 'Catalog', items: [[FolderTree, '/admin/categories', 'Categories'], [PackagePlus, '/admin/services', 'Services & Packages'], [SlidersHorizontal, '/admin/configurator', 'Configurator'], [Boxes, '/admin/add-ons', 'Add-ons'], [Boxes, '/admin/coupons', 'Coupons']] },
-    { title: 'Projects', items: [[Boxes, '/admin/projects', 'Projects'], [Boxes, '/admin/portfolio', 'Portfolio']] },
-    { title: 'Content', items: [[Boxes, '/admin/content', 'Website Content'], [Boxes, '/admin/faqs', 'FAQs'], [Boxes, '/admin/testimonials', 'Testimonials'], [Boxes, '/admin/media', 'Media Library']] },
-    { title: 'System', items: [[Boxes, '/admin/notifications', 'Notifications'], [Boxes, '/admin/activity-logs', 'Activity Logs'], [Boxes, '/admin/backup', 'Backup / Export'], [Settings, '/admin/settings', 'Settings'], [Boxes, '/admin/users', 'Admin Users']] },
+    { title: 'Overview', tone: 'gold', items: [['dashboard', '/admin', 'Dashboard', 'gold'], ['analytics', '/admin/analytics', 'Analytics', 'purple']] },
+    { title: 'CRM', tone: 'green', items: [['leads', '/admin/leads', 'Leads', 'green'], ['customers', '/admin/customers', 'Customers', 'blue'], ['chats', '/admin/chats', 'Live Chats', 'purple']] },
+    { title: 'Sales', tone: 'orange', items: [['quotations', '/admin/quotations', 'Quotations', 'orange'], ['carts', '/admin/carts', 'Carts', 'cyan'], ['orders', '/admin/orders', 'Orders', 'blue'], ['payments', '/admin/payments', 'Payments', 'gold'], ['invoices', '/admin/invoices', 'Invoices', 'pink']] },
+    { title: 'Finance', tone: 'gold', items: [['finance', '/admin/finance', 'Overview', 'gold'], ['income', '/admin/finance/income', 'Income', 'green'], ['expenses', '/admin/finance/expenses', 'Expenses', 'red'], ['accounts', '/admin/finance/accounts', 'Accounts', 'blue'], ['transactions', '/admin/finance/transactions', 'Transactions', 'purple'], ['receivables', '/admin/finance/receivables', 'Receivables', 'cyan'], ['payables', '/admin/finance/payables', 'Payables', 'orange'], ['vendors', '/admin/finance/vendors', 'Vendors', 'green'], ['refunds', '/admin/finance/refunds', 'Refunds', 'red'], ['budgets', '/admin/finance/budgets', 'Budgets', 'blue'], ['tax', '/admin/finance/tax', 'Tax', 'gold'], ['reports', '/admin/finance/reports', 'Reports', 'purple']] },
+    { title: 'Catalog', tone: 'cyan', items: [['categories', '/admin/categories', 'Categories', 'purple'], ['services', '/admin/services', 'Services & Packages', 'green'], ['configurator', '/admin/configurator', 'Configurator', 'cyan'], ['add-ons', '/admin/add-ons', 'Add-ons', 'pink'], ['coupons', '/admin/coupons', 'Coupons', 'orange']] },
+    { title: 'Projects', tone: 'blue', items: [['projects', '/admin/projects', 'Projects', 'blue'], ['portfolio', '/admin/portfolio', 'Portfolio', 'cyan']] },
+    { title: 'Content', tone: 'purple', items: [['content', '/admin/content', 'Website Content', 'gold'], ['faqs', '/admin/faqs', 'FAQs', 'blue'], ['testimonials', '/admin/testimonials', 'Testimonials', 'green'], ['media', '/admin/media', 'Media Library', 'purple']] },
+    { title: 'System', tone: 'gray', items: [['notifications', '/admin/notifications', 'Notifications', 'cyan'], ['activity-logs', '/admin/activity-logs', 'Activity Logs', 'orange'], ['backup', '/admin/backup', 'Backup / Export', 'blue'], ['settings', '/admin/settings', 'Settings', 'gray'], ['users', '/admin/users', 'Admin Users', 'green']] },
   ];
+  if (isMobile) return <AdminMobileShell admin={admin} notice={notice} logout={logout} groups={groups} />;
   return (
     <div className="admin-app">
       <aside className={open ? 'is-open' : ''}>
@@ -121,11 +205,12 @@ function AdminShell() {
         </div>
         <nav className="admin-nav-groups">
           {groups.map(group => (
-            <section key={group.title} className="admin-nav-group">
+            <section key={group.title} className="admin-nav-group" data-tone={group.tone}>
               <span>{group.title}</span>
-              {group.items.map(([Icon, path, label]) => (
+              {group.items.map(([Icon, path, label, color]) => (
                 <NavLink key={path} to={path} end={path === '/admin'} onClick={() => setOpen(false)}>
-                  <Icon />{label}
+                  <ColoredIconBox icon={Icon} color={color} size={17} />
+                  <span>{label}</span>
                 </NavLink>
               ))}
             </section>
@@ -146,6 +231,118 @@ function AdminShell() {
         {notice && <div className="admin-notice" role="status">{notice}</div>}
         <div className="admin-content"><AdminOutlet /></div>
       </div>
+    </div>
+  );
+}
+
+function AdminMobileShell({ admin, notice, logout }) {
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const location = useLocation();
+  const meta = getAdminMobileMeta(location.pathname);
+  useEffect(() => { setDrawerOpen(false); }, []);
+  useEffect(() => { setDrawerOpen(false); }, [location.pathname]);
+  useEffect(() => {
+    const toggle = () => setDrawerOpen(current => !current);
+    window.addEventListener('sitearvo:toggle-admin-menu', toggle);
+    return () => window.removeEventListener('sitearvo:toggle-admin-menu', toggle);
+  }, []);
+  const openDrawer = () => setDrawerOpen(true);
+  const closeDrawer = () => setDrawerOpen(false);
+  return (
+    <div className={`admin-app admin-app--mobile ${drawerOpen ? 'is-drawer-open' : ''}`}>
+      <div className="admin-mobile-shell">
+        <header className="admin-mobile-header">
+          <button type="button" className="admin-mobile-header__button" onClick={openDrawer} aria-label="Open admin menu"><Menu /></button>
+          <div className="admin-mobile-header__brand">
+            <Logo />
+            <div>
+              <b>SiteArvo Catalog Manager</b>
+              <span>{meta.title}</span>
+            </div>
+          </div>
+          <a href="/" target="_blank" rel="noreferrer" className="admin-mobile-header__link">View Website</a>
+        </header>
+        {notice && <div className="admin-notice admin-notice--mobile" role="status">{notice}</div>}
+        <main className="admin-mobile-main">
+          <div className="admin-mobile-page-meta">
+            <ColoredIconBox icon={meta.icon} color={meta.color} size={19} />
+            <div>
+              <h1>{meta.title}</h1>
+              <p>{meta.subtitle}</p>
+            </div>
+          </div>
+          <div className="admin-content admin-content--mobile"><AdminOutlet /></div>
+        </main>
+        <AdminMobileBottomNav onMore={openDrawer} />
+        <AdminMobileDrawer admin={admin} open={drawerOpen} onClose={closeDrawer} onLogout={logout} />
+      </div>
+    </div>
+  );
+}
+
+function AdminMobileBottomNav({ onMore }) {
+  const location = useLocation();
+  return (
+    <nav className="admin-mobile-nav" aria-label="Admin navigation">
+      {adminMobileNavItems.map(item => (
+        <NavLink
+          key={item.to}
+          to={item.to}
+          end={item.to === '/admin'}
+          className={({ isActive }) => isActive || (item.to !== '/admin' && location.pathname.startsWith(item.to)) ? 'active' : ''}
+        >
+          <span className="admin-mobile-nav__icon"><ColoredIconBox icon={item.icon} color={item.color} size={17} /></span>
+          <span>{item.label}</span>
+        </NavLink>
+      ))}
+      <button type="button" onClick={onMore} aria-label="Open more admin options">
+        <span className="admin-mobile-nav__icon"><ColoredIconBox icon={MoreHorizontal} color="gray" size={17} /></span>
+        <span>More</span>
+      </button>
+    </nav>
+  );
+}
+
+function AdminMobileDrawer({ admin, open, onClose, onLogout }) {
+  const location = useLocation();
+  return (
+    <div className={`admin-mobile-drawer ${open ? 'is-open' : ''}`} aria-hidden={!open}>
+      <button type="button" className="admin-mobile-drawer__backdrop" onClick={onClose} aria-label="Close menu" />
+      <section className="admin-mobile-drawer__panel" role="dialog" aria-label="Admin menu">
+        <header className="admin-mobile-drawer__header">
+          <div>
+            <span>Menu</span>
+            <h2>SiteArvo Admin</h2>
+          </div>
+          <button type="button" className="admin-mobile-drawer__close" onClick={onClose} aria-label="Close drawer"><X /></button>
+        </header>
+        <div className="admin-mobile-profile">
+          <div className="admin-mobile-profile__avatar">{String(admin?.name || admin?.email || 'A').slice(0, 1).toUpperCase()}</div>
+          <div>
+            <b>{admin?.name || 'SiteArvo Admin'}</b>
+            <span>{admin?.email || 'info@sitearvo.site'}</span>
+            <small>Administrator</small>
+          </div>
+        </div>
+        <nav className="admin-mobile-menu">
+          {adminMobileMenuItems.map(item => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              className={({ isActive }) => isActive || location.pathname.startsWith(item.to) ? 'active' : ''}
+              onClick={onClose}
+            >
+              <ColoredIconBox icon={item.icon} color={item.color} size={16} />
+              <span>{item.label}</span>
+              <ArrowRight />
+            </NavLink>
+          ))}
+        </nav>
+        <div className="admin-mobile-drawer__footer">
+          <button type="button" onClick={onLogout}><LogOut /> Logout</button>
+          <a href="/" target="_blank" rel="noreferrer" onClick={onClose}>View Website</a>
+        </div>
+      </section>
     </div>
   );
 }
@@ -553,7 +750,7 @@ function FinanceCrudPage({
       {data?.items && (
         <div className="finance-pagination">
           <button type="button" className="button button--secondary" disabled={(data.items.page || 1) <= 1} onClick={() => setPage(current => Math.max(1, current - 1))}>Previous</button>
-          <span>Page {data.items.page || 1} of {data.items.total_pages || 1} Â· {data.items.total || items.length} records</span>
+          <span>Page {data.items.page || 1} of {data.items.total_pages || 1} · {data.items.total || items.length} records</span>
           <button type="button" className="button button--secondary" disabled={(data.items.page || 1) >= (data.items.total_pages || 1)} onClick={() => setPage(current => current + 1)}>Next</button>
         </div>
       )}
@@ -650,7 +847,7 @@ function AdminDashboard() {
       const chatId = String(item.id);
       const isActive = String(activeId) === chatId;
       const isOpen = openIds.includes(chatId);
-      return <button type="button" className={`${isActive ? 'is-active' : ''} ${isOpen ? 'is-open' : ''}`.trim()} key={item.id} onClick={() => openConversation(chatId)}><div><b>{item.visitor_name}</b><span>{item.unread_admin > 0 ? item.unread_admin : isOpen ? 'Open' : 'Preview'}</span></div><p>{item.last_message}</p><small>#{item.public_id} ? {new Date(item.last_message_at.replace(' ', 'T')).toLocaleString('en-IN')}</small></button>;
+      return <button type="button" className={`${isActive ? 'is-active' : ''} ${isOpen ? 'is-open' : ''}`.trim()} key={item.id} onClick={() => openConversation(chatId)}><div><b>{item.visitor_name}</b><span>{item.unread_admin > 0 ? item.unread_admin : isOpen ? 'Open' : 'Preview'}</span></div><p>{item.last_message}</p><small>#{item.public_id} · {new Date(item.last_message_at.replace(' ', 'T')).toLocaleString('en-IN')}</small></button>;
     }) : <div className="admin-chat-empty"><MessageSquareText /><b>No conversations yet</b><p>New website chats will appear here.</p></div>}</aside><section className="admin-chat-workspace"><div className="admin-chat-tabs">{openIds.length ? openIds.map(id => {
       const chat = chatsById[id] || conversations.find(item => String(item.id) === String(id));
       return <div key={id} className={`admin-chat-tab ${String(activeId) === String(id) ? 'is-active' : ''}`} role="button" tabIndex={0} onClick={() => setActiveId(String(id))} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setActiveId(String(id)); } }}><span>{chat?.visitor_name || `Chat #${id}`}</span>{chat?.unread_admin > 0 && <b>{chat.unread_admin}</b>}<small>#{chat?.public_id || id}</small><button type="button" className="admin-chat-tab__close" aria-label={`Close ${chat?.visitor_name || `chat ${id}`}`} onClick={event => { event.stopPropagation(); closeConversation(id); }}><X /></button></div>;
@@ -672,20 +869,20 @@ function AdminAnalytics() {
     <div className="admin-panel">
       <h2>Top Pages</h2>
       <div className="admin-mini-list">
-        {(data.top_pages || []).length ? data.top_pages.map(item => <div key={item.path}><b>{item.path}</b><span>{item.pageviews} views Â· {item.visitors} visitors</span></div>) : <p>No page views tracked yet.</p>}
+        {(data.top_pages || []).length ? data.top_pages.map(item => <div key={item.path}><b>{item.path}</b><span>{item.pageviews} views · {item.visitors} visitors</span></div>) : <p>No page views tracked yet.</p>}
       </div>
     </div>
     <div className="admin-analytics-grid">
       <div className="admin-panel">
         <h2>Daily Trend</h2>
         <div className="admin-mini-list">
-          {(data.daily_views || []).length ? data.daily_views.map(item => <div key={item.date}><b>{new Date(item.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</b><span>{item.pageviews} views Â· {item.visitors} visitors</span></div>) : <p>No trend data yet.</p>}
+          {(data.daily_views || []).length ? data.daily_views.map(item => <div key={item.date}><b>{new Date(item.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</b><span>{item.pageviews} views · {item.visitors} visitors</span></div>) : <p>No trend data yet.</p>}
         </div>
       </div>
       <div className="admin-panel">
         <h2>Top Referrers</h2>
         <div className="admin-mini-list">
-          {(data.top_referrers || []).length ? data.top_referrers.map(item => <div key={item.referrer}><b>{item.referrer}</b><span>{item.pageviews} views Â· {item.visitors} visitors</span></div>) : <p>No referrer data yet.</p>}
+          {(data.top_referrers || []).length ? data.top_referrers.map(item => <div key={item.referrer}><b>{item.referrer}</b><span>{item.pageviews} views · {item.visitors} visitors</span></div>) : <p>No referrer data yet.</p>}
         </div>
       </div>
     </div>
@@ -727,30 +924,114 @@ function relativeAnalyticsTimeLabel(value) {
 function AdminDashboardNew() {
   const { data, loading } = useAdminData('/admin/dashboard');
   const { data: analytics, loading: analyticsLoading } = useAdminData('/admin/analytics');
+  const isMobile = useAdminViewport();
   if (loading || analyticsLoading) return <AdminLoading />;
   const analyticsReport = analytics.report || {};
   const analyticsCards = [
-    ['Total Pageviews', analytics.total_pageviews],
-    ['Unique Visitors', analytics.unique_visitors],
-    ['Today Visits', analytics.today_pageviews],
-    ['7-Day Visits', analytics.last_7_days_total],
+    { label: 'Total Pageviews', value: analytics.total_pageviews, icon: Eye, color: 'purple' },
+    { label: 'Unique Visitors', value: analytics.unique_visitors, icon: Users, color: 'blue' },
+    { label: 'Today Visits', value: analytics.today_pageviews, icon: CalendarCheck2, color: 'green' },
+    { label: '7-Day Visits', value: analytics.last_7_days_total, icon: TrendingUp, color: 'orange' },
   ];
   const financeSnapshot = data.finance_snapshot || {};
   const managementCards = [
-    ['Active Categories', data.active_categories],
-    ['Active Services', data.active_services],
-    ['Fixed Packages', data.packages],
-    ['New Leads', data.new_leads],
-    ['Unread Chats', data.unread_chats],
-    ['Pending Quotes', data.pending_quotations],
-    ['Abandoned Carts', data.abandoned_carts],
-    ['New Orders', data.new_orders],
-    ['Pending Payments', data.pending_payments],
-    ['Active Projects', data.active_projects],
-    ['Today Follow-ups', data.today_followups],
-    ['Overdue Follow-ups', data.overdue_followups],
-    ['Unread Notifications', data.unread_notifications],
+    { label: 'Active Categories', value: data.active_categories, icon: LayoutGrid, color: 'cyan' },
+    { label: 'Active Services', value: data.active_services, icon: Package, color: 'blue' },
+    { label: 'Fixed Packages', value: data.packages, icon: ShoppingBag, color: 'orange' },
+    { label: 'New Leads', value: data.new_leads, icon: UserPlus, color: 'green' },
+    { label: 'Unread Chats', value: data.unread_chats, icon: MessagesSquare, color: 'purple' },
+    { label: 'Pending Quotes', value: data.pending_quotations, icon: FileText, color: 'pink' },
+    { label: 'Abandoned Carts', value: data.abandoned_carts, icon: ShoppingCart, color: 'cyan' },
+    { label: 'New Orders', value: data.new_orders, icon: ShoppingBag, color: 'blue' },
+    { label: 'Pending Payments', value: data.pending_payments, icon: ReceiptText, color: 'gold' },
+    { label: 'Active Projects', value: data.active_projects, icon: FolderPlus, color: 'green' },
+    { label: 'Today Follow-ups', value: data.today_followups, icon: CalendarRange, color: 'orange' },
+    { label: 'Overdue Follow-ups', value: data.overdue_followups, icon: Clock3, color: 'red' },
+    { label: 'Unread Notifications', value: data.unread_notifications, icon: Bell, color: 'cyan' },
   ];
+  const quickActions = [
+    { to: '/admin/analytics', label: 'Open Analytics', icon: BarChart3, color: 'gold' },
+    { to: '/admin/leads', label: 'New Lead', icon: UserPlus, color: 'green' },
+    { to: '/admin/quotations', label: 'New Quote', icon: FilePlus2, color: 'blue' },
+    { to: '/admin/services', label: 'New Package', icon: Package, color: 'purple' },
+    { to: '/admin/projects', label: 'New Project', icon: FolderPlus, color: 'orange' },
+    { to: '/admin/portfolio', label: 'Add Portfolio Project', icon: BriefcaseBusiness, color: 'cyan' },
+    { to: '/admin/chats', label: 'Open Live Chats', icon: MessageSquareText, color: 'cyan' },
+    { to: '/admin/orders', label: 'Review Enquiries', icon: FileText, color: 'gold' },
+    { to: '/admin/finance', label: 'Open Finance', icon: Wallet, color: 'green' },
+  ];
+  const recentActivity = (data.recent_activity || []).slice(0, 6);
+  if (isMobile) {
+    return <>
+      <AdminHeading title="Dashboard" description="A real-time overview of stored catalog content, enquiries and visitor traffic." />
+      <section className="admin-panel admin-panel--hero admin-panel--mobile-hero">
+        <div className="admin-panel__topline">
+          <div>
+            <span className="eyebrow">Analytics Snapshot</span>
+            <h2>Visitor Metrics</h2>
+          </div>
+          <Link className="text-link" to="/admin/analytics">Open full analytics <BarChart3 size={16} /></Link>
+        </div>
+        <div className="admin-mobile-metrics">
+          {analyticsCards.map(card => (
+            <article key={card.label} className="admin-mobile-metric-card">
+              <ColoredIconBox icon={card.icon} color={card.color} size={17} />
+              <div>
+                <span>{card.label}</span>
+                <strong>{card.value ?? 0}</strong>
+              </div>
+            </article>
+          ))}
+        </div>
+        <div className="admin-mobile-section">
+          <div className="admin-mobile-section__head">
+            <h3>Business Overview</h3>
+          </div>
+          <div className="admin-mobile-metrics">
+            {managementCards.slice(0, 6).map(card => (
+              <article key={card.label} className="admin-mobile-metric-card">
+                <ColoredIconBox icon={card.icon} color={card.color} size={17} />
+                <div>
+                  <span>{card.label}</span>
+                  <strong>{card.value ?? 0}</strong>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+        <div className="admin-mobile-section">
+          <div className="admin-mobile-section__head">
+            <h3>Finance Snapshot</h3>
+          </div>
+          <div className="admin-mobile-metrics">
+            <article className="admin-mobile-metric-card"><ColoredIconBox icon={Wallet} color="green" size={17} /><div><span>Collected This Month</span><strong>{formatMoney(financeSnapshot.collected_this_month || 0)}</strong></div></article>
+            <article className="admin-mobile-metric-card"><ColoredIconBox icon={TrendingDown} color="red" size={17} /><div><span>Expenses This Month</span><strong>{formatMoney(financeSnapshot.expenses_this_month || 0)}</strong></div></article>
+            <article className="admin-mobile-metric-card"><ColoredIconBox icon={CircleDollarSign} color="purple" size={17} /><div><span>Net This Month</span><strong>{formatMoney(financeSnapshot.net_this_month || 0)}</strong></div></article>
+            <article className="admin-mobile-metric-card"><ColoredIconBox icon={ReceiptIndianRupee} color="blue" size={17} /><div><span>Outstanding Receivables</span><strong>{formatMoney(financeSnapshot.outstanding_receivables || 0)}</strong></div></article>
+          </div>
+        </div>
+        <div className="admin-mobile-section">
+          <div className="admin-mobile-section__head">
+            <h3>Quick Actions</h3>
+          </div>
+          <div className="admin-mobile-actions">
+            {quickActions.map(action => <Link key={action.to} to={action.to} className="admin-mobile-action"><ColoredIconBox icon={action.icon} color={action.color} size={18} /><b>{action.label}</b></Link>)}
+          </div>
+        </div>
+        <div className="admin-mobile-section">
+          <div className="admin-mobile-section__head">
+            <h3>Recent Activity</h3>
+          </div>
+          <div className="admin-mobile-list">
+            {recentActivity.length ? recentActivity.map(item => {
+              const Icon = getAdminActivityIcon(item.action, item.entity);
+              return <article key={item.id} className="admin-mobile-list__item"><ColoredIconBox icon={Icon} color={getAdminStatusTone(item.action || item.entity)} size={16} /><div><b>{item.action}</b><span>{item.entity} • {new Date(item.created_at).toLocaleString('en-IN')}</span></div></article>;
+            }) : <p className="admin-empty-state">No recent activity yet.</p>}
+          </div>
+        </div>
+      </section>
+    </>;
+  }
   return <>
     <AdminHeading title="Dashboard" description="A real-time overview of stored catalog content, enquiries and visitor traffic." />
     <div className="admin-panel admin-panel--hero">
@@ -761,8 +1042,8 @@ function AdminDashboardNew() {
         </div>
         <Link className="text-link" to="/admin/analytics">Open full analytics <BarChart3 size={16} /></Link>
       </div>
-      <div className="admin-summary admin-summary--analytics admin-summary--featured">
-        {analyticsCards.map(([label, value]) => <article key={label}><span>{label}</span><strong>{value ?? 0}</strong></article>)}
+    <div className="admin-summary admin-summary--analytics admin-summary--featured">
+        {analyticsCards.map(card => <article key={card.label} className={`admin-summary-card admin-summary-card--${card.color}`}><ColoredIconBox icon={card.icon} color={card.color} size={18} /><div><span>{card.label}</span><strong>{card.value ?? 0}</strong></div></article>)}
       </div>
       <div className="admin-analytics-grid">
         <section className="admin-panel admin-panel--mini-chart">
@@ -788,12 +1069,12 @@ function AdminDashboardNew() {
         <section className="admin-panel">
           <h3>Top Pages</h3>
           <div className="admin-mini-list">
-            {(analytics.top_pages || []).length ? analytics.top_pages.map(item => <div key={item.path}><b>{item.label || item.path}</b><span>{item.pageviews} views Â· {item.visitors} visitors</span></div>) : <p>No page views tracked yet.</p>}
+            {(analytics.top_pages || []).length ? analytics.top_pages.map(item => <div key={item.path}><b>{item.label || item.path}</b><span>{item.pageviews} views · {item.visitors} visitors</span></div>) : <p>No page views tracked yet.</p>}
           </div>
         </section>
       </div>
     </div>
-    <div className="admin-summary">{managementCards.map(([label, value]) => <article key={label}><span>{label}</span><strong>{value ?? 0}</strong></article>)}</div>
+    <div className="admin-summary">{managementCards.map(card => <article key={card.label} className={`admin-summary-card admin-summary-card--${card.color}`}><ColoredIconBox icon={card.icon} color={card.color} size={18} /><div><span>{card.label}</span><strong>{card.value ?? 0}</strong></div></article>)}</div>
     <div className="admin-panel">
       <div className="admin-panel__topline">
         <div>
@@ -823,13 +1104,14 @@ function AdminDashboardNew() {
     <div className="admin-panel">
       <h2>Recent Activity</h2>
       <div className="admin-mini-list">
-        {(data.recent_activity || []).length ? data.recent_activity.map(item => <div key={item.id}><b>{item.action}</b><span>{item.entity} Â· {new Date(item.created_at).toLocaleString('en-IN')}</span></div>) : <p>No recent activity yet.</p>}
+        {(data.recent_activity || []).length ? data.recent_activity.map(item => <div key={item.id}><b>{item.action}</b><span>{item.entity} · {new Date(item.created_at).toLocaleString('en-IN')}</span></div>) : <p>No recent activity yet.</p>}
       </div>
     </div>
   </>;
 }
 
 function AdminAnalyticsNew() {
+  const isMobile = useAdminViewport();
   const [range, setRange] = useState(() => (typeof window !== 'undefined' && sessionStorage.getItem('sitearvo-admin-analytics-range')) || 'last_7_days');
   const [metric, setMetric] = useState('visits');
   const [compareEnabled, setCompareEnabled] = useState(false);
@@ -862,6 +1144,65 @@ function AdminAnalyticsNew() {
   }, [compareEnabled]);
   if (loading && !data) return <AdminLoading />;
   if (error) return <AdminLoadError message={error} onRetry={load} />;
+  if (isMobile) {
+    return <div className="admin-mobile-list admin-mobile-list--analytics">
+      <section className="admin-mobile-section">
+        <div className="admin-mobile-section__head">
+          <div><h2>Analytics</h2><p>{rangeLabel} · {updatedLabel}</p></div>
+          <AnalyticsExportButton filename={`sitearvo-analytics-${report.range?.key || range}.csv`} rows={report.timeseries || []} />
+        </div>
+        <div className="admin-mobile-metrics">
+          {summaryCards.map(card => (
+            <button key={card.key} type="button" className={`admin-mobile-metric-card ${card.active ? 'is-active' : ''}`} onClick={() => setMetric(card.key)}>
+              <span>{card.label}</span>
+              <strong>{card.value}</strong>
+              <small>{card.change === null || card.change === undefined ? 'No change' : `${card.change > 0 ? '+' : ''}${card.change}%`}</small>
+            </button>
+          ))}
+        </div>
+      </section>
+      <section className="admin-mobile-section">
+        <div className="admin-mobile-section__head"><div><h2>Traffic Trend</h2><p>{analyticsMetricMeta[metric]?.label || metric}{compareEnabled ? ` vs ${analyticsMetricMeta[compareMetric]?.label || compareMetric}` : ''}</p></div></div>
+        <AnalyticsLineChart
+          title=""
+          subtitle=""
+          data={report.timeseries || []}
+          series={series}
+          currency={report.currency || data?.currency || 'INR'}
+          emptyMessage="No analytics data for this period. Try selecting another date range."
+          height={260}
+          action={compareAction}
+        />
+      </section>
+      {[
+        ['Traffic Breakdown', report.traffic_sources || [], item => [item.source, `${item.pageviews} visits · ${item.share}%`]],
+        ['Campaign Sources', report.campaign_sources || [], item => [item.source, `${item.pageviews} visits · ${item.share}%`]],
+        ['Devices', report.devices || [], item => [item.device, `${item.pageviews} visits · ${item.share}%`]],
+        ['Top Pages', report.top_pages || [], item => [item.label || item.path, `${item.pageviews} views · ${item.visitors} visitors`]],
+        ['Top Services', report.top_services || [], item => [item.label, `${item.views} views · ${item.visitors} visitors`]],
+        ['Popular Packages', report.top_packages || [], item => [item.label, `${item.views} views · ${item.add_to_cart} add to cart · ${item.orders} orders`]],
+      ].map(([title, items, mapItem]) => (
+        <section key={title} className="admin-mobile-section">
+          <div className="admin-mobile-section__head"><div><h2>{title}</h2><p>Live SiteArvo data</p></div></div>
+          <div className="admin-mobile-list">
+            {items.length ? items.map(item => {
+              const [label, meta] = mapItem(item);
+              return <article key={`${title}-${label}`} className="admin-mobile-list__item"><div><b>{label}</b><span>{meta}</span></div></article>;
+            }) : <article className="admin-mobile-list__item"><div><b>No data yet</b><span>Nothing tracked for this section.</span></div></article>}
+          </div>
+        </section>
+      ))}
+      <section className="admin-mobile-section">
+        <div className="admin-mobile-section__head"><div><h2>Conversion Funnel</h2><p>Important tracked actions</p></div></div>
+        <div className="admin-mobile-metrics">
+          <article className="admin-mobile-metric-card"><span>Visitors</span><strong>{report.funnel?.visitors ?? 0}</strong></article>
+          <article className="admin-mobile-metric-card"><span>Service Views</span><strong>{report.funnel?.service_views ?? 0}</strong></article>
+          <article className="admin-mobile-metric-card"><span>Package Views</span><strong>{report.funnel?.package_views ?? 0}</strong></article>
+          <article className="admin-mobile-metric-card"><span>Add to Cart</span><strong>{report.funnel?.add_to_cart ?? 0}</strong></article>
+        </div>
+      </section>
+    </div>;
+  }
   const selectedMetrics = compareEnabled ? [metric, compareMetric].filter((item, index, array) => item && array.indexOf(item) === index).slice(0, 2) : [metric];
   const series = selectedMetrics.map((item, index) => ({
     key: item,
@@ -949,7 +1290,7 @@ function AdminAnalyticsNew() {
           onStartChange={setStart}
           onEndChange={setEnd}
         />
-        <p className="admin-analytics-hero__meta admin-analytics-hero__meta--status">{rangeLabel} Â· {updatedLabel}</p>
+        <p className="admin-analytics-hero__meta admin-analytics-hero__meta--status">{rangeLabel} · {updatedLabel}</p>
       </div>
     </section>
     <div className="admin-summary admin-summary--analytics admin-summary--featured analytics-summary-grid">
@@ -978,37 +1319,37 @@ function AdminAnalyticsNew() {
       <section className="admin-panel">
         <h2>Traffic Breakdown</h2>
         <div className="admin-mini-list analytics-breakdown-list">
-          {(report.traffic_sources || []).length ? report.traffic_sources.map(item => <div key={item.source}><b>{item.source}</b><span>{item.pageviews} visits Â· {item.share}%</span></div>) : <p>No traffic source data yet.</p>}
+          {(report.traffic_sources || []).length ? report.traffic_sources.map(item => <div key={item.source}><b>{item.source}</b><span>{item.pageviews} visits · {item.share}%</span></div>) : <p>No traffic source data yet.</p>}
         </div>
       </section>
       <section className="admin-panel">
         <h2>Campaign Sources</h2>
         <div className="admin-mini-list analytics-breakdown-list">
-          {(report.campaign_sources || []).length ? report.campaign_sources.map(item => <div key={item.source}><b>{item.source}</b><span>{item.pageviews} visits Â· {item.share}%</span></div>) : <p>No campaign source data yet.</p>}
+          {(report.campaign_sources || []).length ? report.campaign_sources.map(item => <div key={item.source}><b>{item.source}</b><span>{item.pageviews} visits · {item.share}%</span></div>) : <p>No campaign source data yet.</p>}
         </div>
       </section>
       <section className="admin-panel">
         <h2>Devices</h2>
         <div className="admin-mini-list analytics-breakdown-list">
-          {(report.devices || []).length ? report.devices.map(item => <div key={item.device}><b>{item.device}</b><span>{item.pageviews} visits Â· {item.share}%</span></div>) : <p>No device data yet.</p>}
+          {(report.devices || []).length ? report.devices.map(item => <div key={item.device}><b>{item.device}</b><span>{item.pageviews} visits · {item.share}%</span></div>) : <p>No device data yet.</p>}
         </div>
       </section>
       <section className="admin-panel">
         <h2>Top Pages</h2>
         <div className="admin-mini-list analytics-breakdown-list">
-          {(report.top_pages || []).length ? report.top_pages.map(item => <div key={item.path}><b>{item.label || item.path}</b><span>{item.pageviews} views Â· {item.visitors} visitors</span></div>) : <p>No page views tracked yet.</p>}
+          {(report.top_pages || []).length ? report.top_pages.map(item => <div key={item.path}><b>{item.label || item.path}</b><span>{item.pageviews} views · {item.visitors} visitors</span></div>) : <p>No page views tracked yet.</p>}
         </div>
       </section>
       <section className="admin-panel">
         <h2>Top Services</h2>
         <div className="admin-mini-list analytics-breakdown-list">
-          {(report.top_services || []).length ? report.top_services.map(item => <div key={item.slug || item.id}><b>{item.label}</b><span>{item.views} views Â· {item.visitors} visitors</span></div>) : <p>No service data yet.</p>}
+          {(report.top_services || []).length ? report.top_services.map(item => <div key={item.slug || item.id}><b>{item.label}</b><span>{item.views} views · {item.visitors} visitors</span></div>) : <p>No service data yet.</p>}
         </div>
       </section>
       <section className="admin-panel">
         <h2>Popular Packages</h2>
         <div className="admin-mini-list analytics-breakdown-list">
-          {(report.top_packages || []).length ? report.top_packages.map(item => <div key={item.slug || item.id}><b>{item.label}</b><span>{item.views} views ? {item.add_to_cart} add to cart ? {item.orders} orders</span></div>) : <p>No package data yet.</p>}
+          {(report.top_packages || []).length ? report.top_packages.map(item => <div key={item.slug || item.id}><b>{item.label}</b><span>{item.views} views · {item.add_to_cart} add to cart · {item.orders} orders</span></div>) : <p>No package data yet.</p>}
         </div>
       </section>
       <section className="admin-panel">
@@ -1184,7 +1525,7 @@ function AdminCategories() {
           </div>
         </td>
         <td>
-          <Link className="category-services-link" to={`/admin/services?category=${encodeURIComponent(category.slug)}`}>{serviceCount} {serviceCount === 1 ? 'Service' : 'Services'} â€¢ {packageCount} {packageCount === 1 ? 'Product' : 'Products'} <ArrowRight size={14} /></Link>
+          <Link className="category-services-link" to={`/admin/services?category=${encodeURIComponent(category.slug)}`}>{serviceCount} {serviceCount === 1 ? 'Service' : 'Services'} • {packageCount} {packageCount === 1 ? 'Product' : 'Products'} <ArrowRight size={14} /></Link>
         </td>
         <td>
           <div className="category-order-control">
@@ -1310,7 +1651,7 @@ function AdminCategories() {
                   </header>
                   <p>{category.short_description || category.description || 'No description provided.'}</p>
                   <div className="category-card__meta">
-                    <Link to={`/admin/services?category=${encodeURIComponent(category.slug)}`}>{serviceCount} {serviceCount === 1 ? 'Service' : 'Services'} â€¢ {packageCount} {packageCount === 1 ? 'Product' : 'Products'} <ArrowRight size={14} /></Link>
+                    <Link to={`/admin/services?category=${encodeURIComponent(category.slug)}`}>{serviceCount} {serviceCount === 1 ? 'Service' : 'Services'} • {packageCount} {packageCount === 1 ? 'Product' : 'Products'} <ArrowRight size={14} /></Link>
                     {serviceCount === 0 && <span className="category-empty-pill">Empty Category</span>}
                   </div>
                   <div className="category-card__toggles">
@@ -1436,20 +1777,7 @@ function CategoryForm({ initial, categories, onSave, onCancel }) {
   );
 }
 
-const categoryIconChoices = [
-  { key: 'smartphone', label: 'Smartphone', hint: 'Mobile app development' },
-  { key: 'code', label: 'Code2', hint: 'Web development' },
-  { key: 'shopping-cart', label: 'Commerce', hint: 'CMS & e-commerce' },
-  { key: 'monitor', label: 'Monitor', hint: 'Desktop applications' },
-  { key: 'megaphone', label: 'Megaphone', hint: 'Digital marketing' },
-  { key: 'building', label: 'Building2', hint: 'Industry solutions' },
-  { key: 'blocks', label: 'Blocks', hint: 'Specialized development' },
-  { key: 'palette', label: 'Palette', hint: 'Design' },
-  { key: 'search', label: 'Search', hint: 'SEO' },
-  { key: 'brain', label: 'BrainCircuit', hint: 'AI and automation' },
-  { key: 'globe', label: 'Globe', hint: 'Global services' },
-  { key: 'briefcase', label: 'Briefcase', hint: 'Business services' },
-];
+const categoryIconChoices = iconChoices;
 
 function slugifyCategoryText(value = '') {
   return String(value || '')
@@ -1551,7 +1879,7 @@ function CategoryToggle({ active, label = 'Toggle', busy = false, onToggle }) {
       onClick={onToggle}
     >
       <span>{label}</span>
-      <strong>{busy ? 'â€¦' : active ? 'ON' : 'OFF'}</strong>
+      <strong>{busy ? '…' : active ? 'ON' : 'OFF'}</strong>
     </button>
   );
 }
@@ -1588,11 +1916,18 @@ function AdminServices() {
   const { data: services, loading, load } = useAdminData('/admin/services');
   const { data: categories } = useAdminData('/admin/categories');
   const { data: addons } = useAdminData('/admin/addons');
+  const navigate = useNavigate();
+  const isMobile = useAdminViewport();
   const [editing, setEditing] = useState(null);
   const { setNotice } = useContext(AdminContext);
   const { refresh } = useCatalog();
   const categoryFilter = categories.find(category => category.slug === categorySlug || String(category.id) === categorySlug);
   const filteredServices = useMemo(() => (categoryFilter ? services.filter(service => (String(service.category_id) === String(categoryFilter.id) || service.category_slug === categoryFilter.slug) && starterCatalogSlugSet.has(String(service.slug || '').toLowerCase())) : services), [services, categoryFilter]);
+  const mobileCategories = useMemo(() => categories.map((category, index) => ({
+    ...category,
+    count: services.filter(service => String(service.category_id) === String(category.id) || service.category_slug === category.slug).length,
+    tone: ['blue', 'green', 'orange', 'purple', 'cyan', 'pink'][index % 6],
+  })), [categories, services]);
   const isPurchasable = service => service.price_type === 'fixed' && hasValidPrice(service) && service.add_to_cart_enabled !== false;
   const save = async form => { await apiFetch(editing?.id ? `/admin/services/${editing.id}` : '/admin/services', { method: editing?.id ? 'PUT' : 'POST', body: JSON.stringify(form) }); setNotice(`Service ${editing?.id ? 'updated' : 'created'} successfully.`); setEditing(null); await load(); refresh(); };
   const deactivate = async service => { if (!window.confirm(`Deactivate "${service.name}"?`)) return; await apiFetch(`/admin/services/${service.id}`, { method: 'DELETE' }); setNotice('Service deactivated.'); load(); refresh(); };
@@ -1604,7 +1939,23 @@ function AdminServices() {
     />
     {editing && <ServiceForm initial={editing} categories={categories} addons={addons} onSave={save} onCancel={() => setEditing(null)} />}
     {categoryFilter && <div className="admin-notice admin-notice--inline">Viewing products from <b>{categoryFilter.name}</b>.</div>}
-    {loading ? <AdminLoading /> : (
+    {loading ? <AdminLoading /> : isMobile ? (
+      <div className="admin-mobile-list admin-mobile-list--categories">
+        {mobileCategories.map(category => {
+          const Icon = getCatalogIcon(category.icon);
+          return <article key={category.id} className="admin-mobile-card admin-mobile-card--category">
+            <button type="button" className="admin-mobile-card__top admin-mobile-card__top--button" onClick={() => navigate(`/admin/services?category=${encodeURIComponent(category.slug || category.id)}`)}>
+              <ColoredIconBox icon={Icon} color={category.tone} size={18} />
+              <div>
+                <b>{category.name}</b>
+                <span>{category.count} {category.count === 1 ? 'Service' : 'Services'}</span>
+              </div>
+              <ArrowRight size={16} />
+            </button>
+          </article>;
+        })}
+      </div>
+    ) : (
       <AdminTable headers={['Product', 'Category', 'Price Type', 'Price', 'Featured', 'Add to Cart', 'Status', 'Actions']}>
         {filteredServices.map(service => (
           <tr key={service.id}>
@@ -1669,9 +2020,54 @@ function AddonForm({ initial, categories, onSave, onCancel }) {
 
 function AdminOrders() {
   const { data: orders, loading, load } = useAdminData('/admin/orders');
+  const isMobile = useAdminViewport();
+  const [query, setQuery] = useState('');
+  const [tab, setTab] = useState('All');
   const statuses = ['New', 'Contacted', 'In Discussion', 'Confirmed', 'In Progress', 'Completed', 'Cancelled'];
   const update = async (id, status) => { await apiFetch(`/admin/orders/${id}`, { method: 'PUT', body: JSON.stringify({ status }) }); load(); };
-  return <><AdminHeading title="Orders & Enquiries" description="Stored customer enquiries with verified server-side totals. No revenue is implied." />{loading ? <AdminLoading /> : <AdminTable headers={['Order ID', 'Customer', 'Service', 'Total', 'Date', 'Status']}>{orders.map(order => <tr key={order.id}><td><b>{order.order_number}</b></td><td>{order.full_name}<small>{order.phone}</small></td><td>{order.service_name}</td><td>{formatPrice(order.total_amount)}</td><td>{new Date(order.created_at).toLocaleDateString('en-IN')}</td><td><select value={order.status} onChange={e => update(order.id, e.target.value)}>{statuses.map(status => <option key={status}>{status}</option>)}</select></td></tr>)}</AdminTable>}</>;
+  const filteredOrders = useMemo(() => (orders || []).filter(order => {
+    const text = `${order.order_number} ${order.full_name} ${order.phone} ${order.service_name} ${order.status}`.toLowerCase();
+    const matchesQuery = !query.trim() || text.includes(query.toLowerCase());
+    const matchesTab = tab === 'All' || String(order.status || '').toLowerCase() === tab.toLowerCase();
+    return matchesQuery && matchesTab;
+  }), [orders, query, tab]);
+  return <>
+    <AdminHeading title="Orders" description="Manage all customer orders." />
+    {isMobile && (
+      <>
+        <div className="admin-mobile-search-row">
+          <label className="admin-mobile-search"><Search size={16} /><input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search orders..." /></label>
+          <button type="button" className="admin-mobile-filter-button" aria-label="Filter orders"><SlidersHorizontal size={16} /></button>
+        </div>
+        <div className="admin-mobile-tabs">
+          {['All', 'Pending', 'In Progress', 'Completed', 'Cancelled'].map(item => <button key={item} type="button" className={tab === item ? 'is-active' : ''} aria-pressed={tab === item} onClick={() => setTab(item)}>{item}</button>)}
+        </div>
+      </>
+    )}
+    {loading ? <AdminLoading /> : isMobile ? <div className="admin-mobile-list admin-mobile-list--orders">{filteredOrders.map(order => {
+      const serviceName = String(order.service_name || '').toLowerCase();
+      const Icon = serviceName.includes('mobile') ? Smartphone : serviceName.includes('e-commerce') || serviceName.includes('commerce') ? ShoppingCart : serviceName.includes('marketing') ? BarChart3 : serviceName.includes('maintenance') ? ServerCog : Code2;
+      const tone = serviceName.includes('mobile') ? 'orange' : serviceName.includes('commerce') ? 'green' : serviceName.includes('marketing') ? 'orange' : serviceName.includes('maintenance') ? 'gray' : 'blue';
+      return <article key={order.id} className="admin-mobile-card">
+        <div className="admin-mobile-card__top">
+          <ColoredIconBox icon={Icon} color={tone} size={17} />
+          <div>
+            <b>{order.order_number}</b>
+            <span>{order.full_name} · {order.phone}</span>
+          </div>
+          <span className={`admin-status-pill is-${getAdminStatusTone(order.status)}`}>{order.status}</span>
+        </div>
+        <div className="admin-mobile-card__meta">
+          <div><span>Service</span><strong>{order.service_name}</strong></div>
+          <div><span>Total</span><strong>{formatPrice(order.total_amount)}</strong></div>
+          <div><span>Date</span><strong>{new Date(order.created_at).toLocaleDateString('en-IN')}</strong></div>
+        </div>
+        <div className="admin-mobile-card__actions">
+          <label className="admin-mobile-inline-select"><span>Status</span><select value={order.status} onChange={e => update(order.id, e.target.value)}>{statuses.map(status => <option key={status}>{status}</option>)}</select></label>
+        </div>
+      </article>;
+    })}</div> : <AdminTable headers={['Order ID', 'Customer', 'Service', 'Total', 'Date', 'Status']}>{orders.map(order => <tr key={order.id}><td><b>{order.order_number}</b></td><td>{order.full_name}<small>{order.phone}</small></td><td>{order.service_name}</td><td>{formatPrice(order.total_amount)}</td><td>{new Date(order.created_at).toLocaleDateString('en-IN')}</td><td><select value={order.status} onChange={e => update(order.id, e.target.value)}>{statuses.map(status => <option key={status}>{status}</option>)}</select></td></tr>)}</AdminTable>}
+  </>;
 }
 
 function AdminChats() {
@@ -1875,7 +2271,7 @@ function AdminChats() {
     />
     {toast && <div className="admin-chat-toast" role="status" aria-live="polite"><MessageSquareText /><div><strong>{toast.title}</strong><p>{toast.message}</p></div><button type="button" aria-label="Dismiss notification" onClick={() => setToast(null)}><X /></button></div>}
     {error && <div className="admin-error" role="alert">{error}</div>}
-    {loading ? <AdminLoading /> : <div className="admin-chat-layout"><aside className="admin-chat-list">{conversations.length ? conversations.map(item => { const chatId = String(item.id); const isActive = String(activeId) === chatId; const isOpen = openIds.includes(chatId); return <button type="button" className={`${isActive ? 'is-active' : ''} ${isOpen ? 'is-open' : ''}`.trim()} key={item.id} onClick={() => openConversation(chatId)}><div><b>{item.visitor_name}</b><span>{item.unread_admin > 0 ? item.unread_admin : isOpen ? 'Open' : 'Preview'}</span></div><p>{item.last_message}</p><small>#{item.public_id} ? {new Date(item.last_message_at.replace(' ', 'T')).toLocaleString('en-IN')}</small></button>; }) : <div className="admin-chat-empty"><MessageSquareText /><b>No conversations yet</b><p>New website chats will appear here.</p></div>}</aside><section className="admin-chat-workspace"><div className="admin-chat-tabs">{openIds.length ? openIds.map(id => { const chat = chatsById[id] || conversations.find(item => String(item.id) === String(id)); return <button type="button" key={id} className={`admin-chat-tab ${String(activeId) === String(id) ? 'is-active' : ''}`} onClick={() => setActiveId(String(id))}><span>{chat?.visitor_name || `Chat #${id}`}</span>{chat?.unread_admin > 0 && <b>{chat.unread_admin}</b>}<small>#{chat?.public_id || id}</small><i type="button" aria-label={`Close ${chat?.visitor_name || `chat ${id}`}`} onClick={event => { event.stopPropagation(); closeConversation(id); }}><X /></i></button>; }) : <div className="admin-chat-tabs__empty">Open conversations from the list to compare chats side by side.</div>}</div>{openIds.length ? <div className={`admin-chat-workspace__grid ${openIds.length > 1 ? 'is-multi' : ''}`}>{openIds.map(id => { const chat = chatsById[id] || conversations.find(item => String(item.id) === String(id)); if (!chat) return <article className="admin-chat-thread-card" key={id}><div className="admin-chat-empty"><MessageSquareText /><b>Loading conversation...</b></div></article>; return <article className={`admin-chat-thread-card ${String(activeId) === String(id) ? 'is-active' : ''}`} key={id}><header><div><h2>{chat.visitor_name}</h2><p>{chat.visitor_email || 'Email not provided'} ? #{chat.public_id}</p></div><div className="admin-chat-thread-card__actions"><button type="button" className={`admin-chat-status is-${chat.status}`} onClick={() => changeStatus(id, chat.status === 'open' ? 'closed' : 'open')}>{chat.status === 'open' ? 'Close conversation' : 'Reopen conversation'}</button><button type="button" className="admin-chat-close" aria-label={`Close ${chat.visitor_name}`} onClick={() => closeConversation(id)}><X /></button></div></header><div className="admin-chat-messages">{chat.messages.map(item => <article className={`is-${item.sender}`} key={item.id}><b>{item.sender === 'visitor' ? chat.visitor_name : 'SiteArvo'}</b><p>{item.message}</p><time>{new Date(item.created_at.replace(' ', 'T')).toLocaleString('en-IN')}</time></article>)}</div><form onSubmit={event => send(id, event)}><textarea rows="2" maxLength="1500" value={drafts[id] || ''} onChange={event => setDrafts(current => ({ ...current, [id]: event.target.value }))} placeholder="Type your reply..." disabled={chat.status === 'closed'} /><button className="button" disabled={busyById[id] || chat.status === 'closed' || !(drafts[id] || '').trim()}><Send /> {busyById[id] ? 'Sending...' : 'Send Reply'}</button></form></article>; })}</div> : <div className="admin-chat-empty admin-chat-empty--workspace"><MessageSquareText /><b>Select a conversation</b><p>Pick one or more chats from the left list to keep multiple conversations open at once.</p></div>}</section></div>}
+    {loading ? <AdminLoading /> : <div className="admin-chat-layout"><aside className="admin-chat-list">{conversations.length ? conversations.map(item => { const chatId = String(item.id); const isActive = String(activeId) === chatId; const isOpen = openIds.includes(chatId); return <button type="button" className={`${isActive ? 'is-active' : ''} ${isOpen ? 'is-open' : ''}`.trim()} key={item.id} onClick={() => openConversation(chatId)}><div><b>{item.visitor_name}</b><span>{item.unread_admin > 0 ? item.unread_admin : isOpen ? 'Open' : 'Preview'}</span></div><p>{item.last_message}</p><small>#{item.public_id} · {new Date(item.last_message_at.replace(' ', 'T')).toLocaleString('en-IN')}</small></button>; }) : <div className="admin-chat-empty"><MessageSquareText /><b>No conversations yet</b><p>New website chats will appear here.</p></div>}</aside><section className="admin-chat-workspace"><div className="admin-chat-tabs">{openIds.length ? openIds.map(id => { const chat = chatsById[id] || conversations.find(item => String(item.id) === String(id)); return <div role="button" tabIndex={0} key={id} className={`admin-chat-tab ${String(activeId) === String(id) ? 'is-active' : ''}`} onClick={() => setActiveId(String(id))} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setActiveId(String(id)); } }}><span>{chat?.visitor_name || `Chat #${id}`}</span>{chat?.unread_admin > 0 && <b>{chat.unread_admin}</b>}<small>#{chat?.public_id || id}</small><button type="button" className="admin-chat-tab__close" aria-label={`Close ${chat?.visitor_name || `chat ${id}`}`} onClick={event => { event.stopPropagation(); closeConversation(id); }}><X /></button></div>; }) : <div className="admin-chat-tabs__empty">Open conversations from the list to compare chats side by side.</div>}</div>{openIds.length ? <div className={`admin-chat-workspace__grid ${openIds.length > 1 ? 'is-multi' : ''}`}>{openIds.map(id => { const chat = chatsById[id] || conversations.find(item => String(item.id) === String(id)); if (!chat) return <article className="admin-chat-thread-card" key={id}><div className="admin-chat-empty"><MessageSquareText /><b>Loading conversation...</b></div></article>; const messageItems = Array.isArray(chat.messages) ? chat.messages : []; return <article className={`admin-chat-thread-card ${String(activeId) === String(id) ? 'is-active' : ''}`} key={id}><header><div><h2>{chat.visitor_name}</h2><p>{chat.visitor_email || 'Email not provided'} · #{chat.public_id}</p></div><div className="admin-chat-thread-card__actions"><button type="button" className={`admin-chat-status is-${chat.status}`} onClick={() => changeStatus(id, chat.status === 'open' ? 'closed' : 'open')}>{chat.status === 'open' ? 'Close conversation' : 'Reopen conversation'}</button><button type="button" className="admin-chat-close" aria-label={`Close ${chat.visitor_name}`} onClick={() => closeConversation(id)}><X /></button></div></header><div className="admin-chat-messages">{messageItems.length ? messageItems.map(item => <article className={`is-${item.sender}`} key={item.id}><b>{item.sender === 'visitor' ? chat.visitor_name : 'SiteArvo'}</b><p>{item.message}</p><time>{new Date(item.created_at.replace(' ', 'T')).toLocaleString('en-IN')}</time></article>) : <div className="admin-chat-empty admin-chat-empty--thread"><MessageSquareText /><b>No messages yet</b><p>This conversation summary is still loading or the visitor has not sent any messages.</p></div>}</div><form onSubmit={event => send(id, event)}><textarea rows="2" maxLength="1500" value={drafts[id] || ''} onChange={event => setDrafts(current => ({ ...current, [id]: event.target.value }))} placeholder="Type your reply..." disabled={chat.status === 'closed'} /><button className="button" disabled={busyById[id] || chat.status === 'closed' || !(drafts[id] || '').trim()}><Send /> {busyById[id] ? 'Sending...' : 'Send Reply'}</button></form></article>; })}</div> : <div className="admin-chat-empty admin-chat-empty--workspace"><MessageSquareText /><b>Select a conversation</b><p>Pick one or more chats from the left list to keep multiple conversations open at once.</p></div>}</section></div>}
   </>;
 }
 
@@ -2031,9 +2427,9 @@ function AdminConfigurator() {
           <span>Estimated one-time total</span>
           <strong>{formatConfiguratorMoney(preview.oneTimeTotal)}</strong>
           <span>Recurring</span>
-          <strong>{preview.recurringTotal ? `${formatConfiguratorMoney(preview.recurringTotal)}${preview.recurringMonthly ? '/month' : '/year'}` : 'â€”'}</strong>
+          <strong>{preview.recurringTotal ? `${formatConfiguratorMoney(preview.recurringTotal)}${preview.recurringMonthly ? '/month' : '/year'}` : '—'}</strong>
           <span>Total pages</span>
-          <strong>{preview.totalPages || 'â€”'}</strong>
+          <strong>{preview.totalPages || '—'}</strong>
           <p>Preview uses the live configurator pricing data you save here.</p>
         </AdminPanel>
       </aside>
@@ -2052,7 +2448,7 @@ function AdminHeading({ title, description, action }) { return <div className="a
 function AdminLoading() { return <div className="admin-loading">Loading stored data...</div>; }
 function Status({ active }) { return <span className={`admin-status ${active ? 'is-active' : ''}`}>{active ? 'Active' : 'Inactive'}</span>; }
 function Field({ label, children }) { return <label className="admin-field"><span>{label}</span>{children}</label>; }
-function IconField({ value, onChange }) { return <Field label="Icon"><select value={value || 'code'} onChange={e => onChange(e.target.value)}>{iconOptions.map(icon => <option key={icon} value={icon}>{icon}</option>)}</select></Field>; }
+function IconField({ value, onChange }) { return <Field label="Icon"><select value={value || 'code'} onChange={e => onChange(e.target.value)}>{iconChoices.map(choice => <option key={choice.key} value={choice.key}>{choice.label}</option>)}</select></Field>; }
 function CheckField({ label, checked, onChange }) { return <label className="admin-checkbox"><input type="checkbox" checked={Boolean(checked)} onChange={e => onChange(e.target.checked)} /><span>{label}</span></label>; }
 function AdminTable({ headers, children }) { return <div className="admin-table-wrap"><table><thead><tr>{headers.map(header => <th key={header}>{header}</th>)}</tr></thead><tbody>{children}</tbody></table></div>; }
 function AdminEditor({ title, onSubmit, onCancel, children }) { const submit = event => { event.preventDefault(); onSubmit(); }; return <form className="admin-editor" onSubmit={submit}><header><h2>{title}</h2><button type="button" onClick={onCancel} aria-label="Close editor"><X /></button></header>{children}<footer><button type="button" className="button button--secondary" onClick={onCancel}>Cancel</button><button className="button"><Save /> Save</button></footer></form>; }
@@ -2105,11 +2501,15 @@ function AdminCrudPage({
   detailFormatter,
   allowCreate = true,
   allowDelete = true,
+  mobileRender,
+  mobileIcon,
+  mobileColor = 'gold',
 }) {
   const { data, loading, load } = useAdminData(endpoint);
   const [editing, setEditing] = useState(null);
   const [query, setQuery] = useState('');
   const { setNotice } = useContext(AdminContext);
+  const isMobile = useAdminViewport();
   const search = safe => String(safe || '').toLowerCase();
   const filtered = (data || []).filter(item => {
     if (!query.trim()) return true;
@@ -2159,7 +2559,38 @@ function AdminCrudPage({
           {detailFormatter && detailFormatter(editing, setEditing)}
         </AdminEditor>
       )}
-      {loading ? <AdminLoading /> : (
+      {loading ? <AdminLoading /> : isMobile ? (
+        <div className="admin-mobile-list admin-mobile-list--crud">
+          {filtered.length ? filtered.map(item => mobileRender ? mobileRender(item, load, setNotice, setEditing) : (
+            <article key={item.id} className="admin-mobile-card">
+              <div className="admin-mobile-card__top">
+                <ColoredIconBox icon={mobileIcon || FileText} color={mobileColor} size={17} />
+                <div>
+                  <b>{item[columns[0]?.key] || item.name || item.title || item.id}</b>
+                  <span>{item[columns[1]?.key] || item.description || item.status || ''}</span>
+                </div>
+                <button type="button" className="admin-mobile-card__edit" onClick={() => setEditing({ ...item })}>Edit</button>
+              </div>
+              <div className="admin-mobile-card__meta">
+                {columns.slice(0, 3).map(column => (
+                  <div key={column.label}>
+                    <span>{column.label}</span>
+                    <strong>{column.render ? column.render(item) : item[column.key] || '—'}</strong>
+                  </div>
+                ))}
+              </div>
+              <div className="admin-mobile-card__actions">
+                {rowActions && rowActions(item, load, setNotice)}
+                {allowDelete && <button type="button" className="danger" onClick={async () => {
+                  if (!window.confirm(`Delete ${item.name || item.title || item.id}?`)) return;
+                  await apiFetch(`${endpoint}/${item.id}`, { method: 'DELETE' });
+                  await load();
+                }}><Trash2 /> Delete</button>}
+              </div>
+            </article>
+          )) : <div className="admin-empty-state">{allowCreate ? `No ${title.toLowerCase()} yet.` : 'No records found.'}</div>}
+        </div>
+      ) : filtered.length ? (
         <AdminTable headers={[...columns.map(column => column.label), 'Actions']}>
           {filtered.map(item => (
             <tr key={item.id}>
@@ -2178,6 +2609,11 @@ function AdminCrudPage({
             </tr>
           ))}
         </AdminTable>
+      ) : (
+        <div className="admin-empty-state">
+          <b>{allowCreate ? `No ${title.toLowerCase()} yet.` : 'No records found.'}</b>
+          <p>{allowCreate ? 'Create the first record to start using this section.' : 'Try a different search or refresh the page.'}</p>
+        </div>
       )}
     </>
   );
@@ -2190,6 +2626,8 @@ function AdminLeads() {
       description="Manage enquiries, follow-ups, priorities and conversion status."
       endpoint="/admin/leads"
       createLabel="New Lead"
+      mobileIcon={UserPlus}
+      mobileColor="green"
       searchKeys={['lead_number', 'name', 'company', 'email', 'phone', 'interested_service', 'status', 'source']}
       defaultRecord={{ name: '', phone: '', email: '', company: '', country: 'India', interested_service: '', budget: '', message: '', source: 'Manual', assigned_to: '', status: 'New', priority: 'Medium', notes: '', next_follow_up_at: '' }}
       fields={[
@@ -2216,6 +2654,27 @@ function AdminLeads() {
         { key: 'priority', label: 'Priority' },
         { key: 'source', label: 'Source' },
       ]}
+      mobileRender={(lead, load, setNotice, setEditing) => (
+        <article key={lead.id} className="admin-mobile-card">
+          <div className="admin-mobile-card__top">
+            <span className="admin-mobile-avatar">{String(lead.name || lead.company || 'L').slice(0, 1).toUpperCase()}</span>
+            <div>
+              <b>{lead.name || 'Lead'}</b>
+              <span>{lead.email || lead.phone || lead.company || 'No contact details'}</span>
+            </div>
+            <span className={`admin-status-pill is-${getAdminStatusTone(lead.status)}`}>{lead.status || 'New'}</span>
+          </div>
+          <div className="admin-mobile-card__meta">
+            <div><span>Service</span><strong>{lead.interested_service || '—'}</strong></div>
+            <div><span>Phone</span><strong>{lead.phone || '—'}</strong></div>
+            <div><span>Priority</span><strong>{lead.priority || '—'}</strong></div>
+          </div>
+          <div className="admin-mobile-card__actions">
+            <button type="button" className="button button--secondary" onClick={() => setEditing({ ...lead })}>Edit</button>
+            <button type="button" className="button" onClick={async () => { await apiFetch(`/admin/leads/${lead.id}/convert`, { method: 'POST', body: JSON.stringify({}) }); setNotice('Lead converted to customer.'); await load(); }}>Convert</button>
+          </div>
+        </article>
+      )}
       rowActions={(lead, load, setNotice) => (
         <button type="button" onClick={async () => { await apiFetch(`/admin/leads/${lead.id}/convert`, { method: 'POST', body: JSON.stringify({}) }); setNotice('Lead converted to customer.'); await load(); }}>
           Convert
@@ -2232,6 +2691,8 @@ function AdminCustomers() {
       description="Store customer profiles, contacts and relationship history."
       endpoint="/admin/customers"
       createLabel="New Customer"
+      mobileIcon={Users}
+      mobileColor="blue"
       searchKeys={['customer_number', 'name', 'company', 'email', 'phone', 'country']}
       defaultRecord={{ name: '', company: '', phone: '', email: '', country: 'India', total_orders: 0, active_projects: 0, notes: '' }}
       fields={[
@@ -2262,6 +2723,8 @@ function AdminQuotations() {
       description="Create quotes, update status and convert accepted quotations into orders."
       endpoint="/admin/quotations"
       createLabel="New Quote"
+      mobileIcon={FileText}
+      mobileColor="orange"
       searchKeys={['quotation_number', 'title', 'status', 'package_name']}
       defaultRecord={{ title: '', package_name: '', status: 'Draft', validity_date: '', notes: '', terms: '', line_items: '[]' }}
       fields={[
@@ -2279,6 +2742,26 @@ function AdminQuotations() {
         { key: 'status', label: 'Status' },
         { key: 'final_total', label: 'Total', render: item => formatPrice(item.final_total || 0) },
       ]}
+      mobileRender={(quote, load, setNotice, setEditing) => (
+        <article key={quote.id} className="admin-mobile-card">
+          <div className="admin-mobile-card__top">
+            <ColoredIconBox icon={FileText} color="orange" size={17} />
+            <div>
+              <b>{quote.quotation_number || quote.title || 'Quotation'}</b>
+              <span>{quote.title || quote.package_name || 'Quote details'}</span>
+            </div>
+            <span className={`admin-status-pill is-${getAdminStatusTone(quote.status)}`}>{quote.status || 'Draft'}</span>
+          </div>
+          <div className="admin-mobile-card__meta">
+            <div><span>Package</span><strong>{quote.package_name || '—'}</strong></div>
+            <div><span>Total</span><strong>{formatPrice(quote.final_total || 0)}</strong></div>
+          </div>
+          <div className="admin-mobile-card__actions">
+            <button type="button" className="button button--secondary" onClick={() => setEditing({ ...quote })}>Edit</button>
+            <button type="button" className="button" onClick={async () => { await apiFetch(`/admin/quotations/${quote.id}/convert`, { method: 'POST', body: JSON.stringify({}) }); setNotice('Quotation converted to order.'); await load(); }}>Convert</button>
+          </div>
+        </article>
+      )}
       rowActions={(quote, load, setNotice) => (
         <>
           <button type="button" onClick={async () => { await apiFetch(`/admin/quotations/${quote.id}/send`, { method: 'POST', body: JSON.stringify({}) }); await load(); }}>Send</button>
@@ -2296,6 +2779,8 @@ function AdminCarts() {
       description="Track active, started, converted and abandoned carts where available."
       endpoint="/admin/carts"
       createLabel="New Cart"
+      mobileIcon={ShoppingCart}
+      mobileColor="cyan"
       searchKeys={['cart_number', 'visitor_name', 'visitor_email', 'package_name', 'status']}
       defaultRecord={{ visitor_name: '', visitor_email: '', visitor_phone: '', package_name: '', status: 'Active', source_page: '', entry_page: '', notes: '' }}
       fields={[
@@ -2325,6 +2810,8 @@ function AdminAddons() {
       description="Manage optional extras that can be attached to services and packages."
       endpoint="/admin/addons"
       createLabel="New Add-on"
+      mobileIcon={Puzzle}
+      mobileColor="pink"
       searchKeys={['name', 'description', 'pricing_type']}
       defaultRecord={{ name: '', description: '', price: '', pricing_type: 'fixed', pricing_unit: '', is_active: true, category_ids: '[]' }}
       fields={[
@@ -2353,6 +2840,8 @@ function AdminPayments() {
       description="Record received, pending, failed and refunded payments manually."
       endpoint="/admin/payments"
       createLabel="New Payment"
+      mobileIcon={CreditCard}
+      mobileColor="green"
       searchKeys={['payment_number', 'payment_method', 'transaction_reference', 'status']}
       defaultRecord={{ order_id: '', customer_id: '', amount: '', payment_method: 'UPI', transaction_reference: '', status: 'Pending', notes: '', proof: '', paid_at: '' }}
       fields={[
@@ -2384,6 +2873,8 @@ function AdminInvoices() {
       description="Generate invoices from orders and keep manual billing records organized."
       endpoint="/admin/invoices"
       createLabel="New Invoice"
+      mobileIcon={ReceiptText}
+      mobileColor="gold"
       searchKeys={['invoice_number', 'status', 'notes']}
       defaultRecord={{ order_id: '', customer_id: '', subtotal: 0, discount_total: 0, tax_total: 0, total: 0, amount_paid: 0, balance: 0, due_date: '', status: 'Draft', notes: '', items: '[]' }}
       fields={[
@@ -2411,6 +2902,7 @@ function AdminInvoices() {
 }
 
 function AdminFinanceOverview() {
+  const isMobile = useAdminViewport();
   const [range, setRange] = useState('this_week');
   const [start, setStart] = useState('');
   const [end, setEnd] = useState('');
@@ -2420,6 +2912,66 @@ function AdminFinanceOverview() {
   if (error || !data) return <AdminLoadError message={error} onRetry={load} />;
   const alerts = data.alerts || {};
   const transactions = data.transactions?.items?.items || [];
+  if (isMobile) {
+    return <>
+      <AdminHeading
+        title="Finance"
+        description="Overview of income, expenses and payments."
+        action={<Link className="button" to="/admin/finance/reports"><BarChart3 /> Reports</Link>}
+      />
+      <FinanceToolbar range={range} setRange={setRange} start={start} setStart={setStart} end={end} setEnd={setEnd} search={search} setSearch={setSearch}>
+        <Link className="button button--secondary" to="/admin/finance/income">Income</Link>
+        <Link className="button button--secondary" to="/admin/finance/expenses">Expenses</Link>
+        <Link className="button button--secondary" to="/admin/finance/accounts">Accounts</Link>
+      </FinanceToolbar>
+      <div className="admin-mobile-section">
+        <div className="admin-mobile-section__head">
+          <div><h2>Finance Snapshot</h2><p>{formatFinanceRangeLabel(data.date_range)}</p></div>
+        </div>
+        <div className="admin-mobile-metrics">
+          <article className="admin-mobile-metric-card"><span>Total Income</span><strong>{formatMoney(data.total_income, data.currency)}</strong></article>
+          <article className="admin-mobile-metric-card"><span>Total Expenses</span><strong>{formatMoney(data.total_expenses, data.currency)}</strong></article>
+          <article className="admin-mobile-metric-card"><span>Net Profit</span><strong>{formatMoney(data.net_profit, data.currency)}</strong></article>
+          <article className="admin-mobile-metric-card"><span>Entries</span><strong>{data.filtered_transactions || 0}</strong></article>
+        </div>
+      </div>
+      <div className="admin-mobile-section">
+        <div className="admin-mobile-section__head">
+          <div><h2>Income vs Expenses</h2><p>A clean graph of your recent finance movement.</p></div>
+        </div>
+        <FinanceLineGraph
+          title=""
+          subtitle=""
+          series={[
+            { name: 'Income', color: 'green', items: data.daily_income_vs_expense?.income || [] },
+            { name: 'Expenses', color: 'gold', items: data.daily_income_vs_expense?.expense || [] },
+          ]}
+          showPointValues={false}
+          showAxisLabels="ends"
+        />
+      </div>
+      <FinanceSummaryCards data={data} />
+      <div className="admin-mobile-section">
+        <div className="admin-mobile-section__head"><div><h2>Alerts</h2><p>Finance items needing attention</p></div></div>
+        <div className="admin-mobile-list">
+          <article className="admin-mobile-list__item"><div><b>Overdue Invoices</b><span>{alerts.overdue_invoices || 0}</span></div></article>
+          <article className="admin-mobile-list__item"><div><b>Payments Due This Week</b><span>{alerts.dues_this_week || 0}</span></div></article>
+          <article className="admin-mobile-list__item"><div><b>Outstanding Receivable</b><span>{formatMoney(alerts.receivable_outstanding || 0)}</span></div></article>
+          <article className="admin-mobile-list__item"><div><b>Payable This Week</b><span>{formatMoney(alerts.payable_this_week || 0)}</span></div></article>
+          <article className="admin-mobile-list__item"><div><b>Budget Near Limit</b><span>{alerts.budget_alerts || 0}</span></div></article>
+        </div>
+      </div>
+      <div className="admin-mobile-section">
+        <div className="admin-mobile-section__head">
+          <div><h2>Latest financial activity</h2><p>Recent ledger entries</p></div>
+          <Link className="text-link" to="/admin/finance/transactions">Open transactions <ArrowLeftRight size={16} /></Link>
+        </div>
+        <div className="admin-mobile-list">
+          {transactions.length ? transactions.map(item => <article key={item.id} className="admin-mobile-list__item"><div><b>{item.transaction_number} · {item.type}</b><span>{item.description} · {formatMoney(item.credit || item.debit || 0)}</span></div></article>) : <article className="admin-mobile-list__item"><div><b>No financial transactions found</b><span>Try another date range.</span></div></article>}
+        </div>
+      </div>
+    </>;
+  }
   return <>
     <AdminHeading
       title="Finance Overview"
@@ -2472,8 +3024,8 @@ function AdminFinanceOverview() {
       <div className="admin-mini-list">
         {transactions.length ? transactions.map(item => (
           <div key={item.id}>
-            <b>{item.transaction_number} Â· {item.type}</b>
-            <span>{item.description} Â· {formatMoney(item.credit || item.debit || 0)}</span>
+            <b>{item.transaction_number} · {item.type}</b>
+            <span>{item.description} · {formatMoney(item.credit || item.debit || 0)}</span>
           </div>
         )) : <p>No financial transactions found in this range.</p>}
       </div>
@@ -2706,7 +3258,7 @@ function AdminFinanceReceivables() {
       <div className="admin-table-wrap">
         <table>
           <thead><tr><th>Customer</th><th>Invoice</th><th>Order</th><th>Total</th><th>Paid</th><th>Balance</th><th>Due Date</th><th>Status</th></tr></thead>
-          <tbody>{items.map(item => <tr key={`${item.invoice_id}-${item.customer_id}`}><td>{item.customer_name}</td><td>{item.invoice_id}</td><td>{item.order_id}</td><td>{formatMoney(item.total_amount)}</td><td>{formatMoney(item.amount_paid)}</td><td>{formatMoney(item.balance_due)}</td><td>{item.due_date || 'â€”'}</td><td>{item.status}</td></tr>)}</tbody>
+          <tbody>{items.map(item => <tr key={`${item.invoice_id}-${item.customer_id}`}><td>{item.customer_name}</td><td>{item.invoice_id}</td><td>{item.order_id}</td><td>{formatMoney(item.total_amount)}</td><td>{formatMoney(item.amount_paid)}</td><td>{formatMoney(item.balance_due)}</td><td>{item.due_date || '—'}</td><td>{item.status}</td></tr>)}</tbody>
         </table>
       </div>
       <div className="finance-pagination">
@@ -2734,7 +3286,7 @@ function AdminFinancePayables() {
       <div className="admin-table-wrap">
         <table>
           <thead><tr><th>Vendor</th><th>Bill</th><th>Amount</th><th>Paid</th><th>Balance</th><th>Due Date</th><th>Status</th></tr></thead>
-          <tbody>{items.map(item => <tr key={`${item.bill_reference}-${item.vendor_id}`}><td>{item.vendor_name}</td><td>{item.bill_reference}</td><td>{formatMoney(item.amount)}</td><td>{formatMoney(item.paid)}</td><td>{formatMoney(item.balance_due)}</td><td>{item.due_date || 'â€”'}</td><td>{item.status}</td></tr>)}</tbody>
+          <tbody>{items.map(item => <tr key={`${item.bill_reference}-${item.vendor_id}`}><td>{item.vendor_name}</td><td>{item.bill_reference}</td><td>{formatMoney(item.amount)}</td><td>{formatMoney(item.paid)}</td><td>{formatMoney(item.balance_due)}</td><td>{item.due_date || '—'}</td><td>{item.status}</td></tr>)}</tbody>
         </table>
       </div>
       <div className="finance-pagination">
@@ -2795,7 +3347,7 @@ function AdminFinanceTransactions() {
       <div className="admin-table-wrap">
         <table>
           <thead><tr><th>Date</th><th>ID</th><th>Type</th><th>Description</th><th>Counterparty</th><th>Account</th><th>Debit</th><th>Credit</th><th>Reference</th><th>Status</th></tr></thead>
-          <tbody>{items.map(item => <tr key={item.id}><td>{item.date}</td><td>{item.transaction_number}</td><td>{item.type}</td><td>{item.description}</td><td>{item.counterparty_name || 'â€”'}</td><td>{item.account_name || 'â€”'}</td><td>{item.debit ? formatMoney(item.debit) : 'â€”'}</td><td>{item.credit ? formatMoney(item.credit) : 'â€”'}</td><td>{item.reference || 'â€”'}</td><td>{item.status}</td></tr>)}</tbody>
+          <tbody>{items.map(item => <tr key={item.id}><td>{item.date}</td><td>{item.transaction_number}</td><td>{item.type}</td><td>{item.description}</td><td>{item.counterparty_name || '—'}</td><td>{item.account_name || '—'}</td><td>{item.debit ? formatMoney(item.debit) : '—'}</td><td>{item.credit ? formatMoney(item.credit) : '—'}</td><td>{item.reference || '—'}</td><td>{item.status}</td></tr>)}</tbody>
         </table>
       </div>
     </div>
@@ -2888,7 +3440,7 @@ function AdminFinanceReports() {
       <div className="admin-table-wrap">
         <table>
           <thead><tr><th>Customer</th><th>Invoices</th><th>Total Due</th><th>Overdue</th><th>Oldest Due Date</th></tr></thead>
-          <tbody>{(data.customer_outstanding || []).map(item => <tr key={item.customer_name}><td>{item.customer_name}</td><td>{item.invoices}</td><td>{formatMoney(item.total_due)}</td><td>{formatMoney(item.overdue)}</td><td>{item.oldest_due_date || 'â€”'}</td></tr>)}</tbody>
+          <tbody>{(data.customer_outstanding || []).map(item => <tr key={item.customer_name}><td>{item.customer_name}</td><td>{item.invoices}</td><td>{formatMoney(item.total_due)}</td><td>{formatMoney(item.overdue)}</td><td>{item.oldest_due_date || '—'}</td></tr>)}</tbody>
         </table>
       </div>
     </div>
@@ -2897,9 +3449,9 @@ function AdminFinanceReports() {
         <h3>Receivables Aging</h3>
         <div className="admin-summary admin-summary--analytics">
           <article><span>Current</span><strong>{formatMoney(data.aging_receivables?.current || 0)}</strong></article>
-          <article><span>1â€“30 Days</span><strong>{formatMoney(data.aging_receivables?.one_to_30 || 0)}</strong></article>
-          <article><span>31â€“60 Days</span><strong>{formatMoney(data.aging_receivables?.thirty_one_to_60 || 0)}</strong></article>
-          <article><span>61â€“90 Days</span><strong>{formatMoney(data.aging_receivables?.sixty_one_to_90 || 0)}</strong></article>
+          <article><span>1–30 Days</span><strong>{formatMoney(data.aging_receivables?.one_to_30 || 0)}</strong></article>
+          <article><span>31–60 Days</span><strong>{formatMoney(data.aging_receivables?.thirty_one_to_60 || 0)}</strong></article>
+          <article><span>61–90 Days</span><strong>{formatMoney(data.aging_receivables?.sixty_one_to_90 || 0)}</strong></article>
           <article><span>90+ Days</span><strong>{formatMoney(data.aging_receivables?.ninety_plus || 0)}</strong></article>
         </div>
       </section>
@@ -2907,9 +3459,9 @@ function AdminFinanceReports() {
         <h3>Payables Aging</h3>
         <div className="admin-summary admin-summary--analytics">
           <article><span>Current</span><strong>{formatMoney(data.aging_payables?.current || 0)}</strong></article>
-          <article><span>1â€“30 Days</span><strong>{formatMoney(data.aging_payables?.one_to_30 || 0)}</strong></article>
-          <article><span>31â€“60 Days</span><strong>{formatMoney(data.aging_payables?.thirty_one_to_60 || 0)}</strong></article>
-          <article><span>61â€“90 Days</span><strong>{formatMoney(data.aging_payables?.sixty_one_to_90 || 0)}</strong></article>
+          <article><span>1–30 Days</span><strong>{formatMoney(data.aging_payables?.one_to_30 || 0)}</strong></article>
+          <article><span>31–60 Days</span><strong>{formatMoney(data.aging_payables?.thirty_one_to_60 || 0)}</strong></article>
+          <article><span>61–90 Days</span><strong>{formatMoney(data.aging_payables?.sixty_one_to_90 || 0)}</strong></article>
           <article><span>90+ Days</span><strong>{formatMoney(data.aging_payables?.ninety_plus || 0)}</strong></article>
         </div>
       </section>
@@ -2918,37 +3470,99 @@ function AdminFinanceReports() {
 }
 
 function AdminProjects() {
-  return (
-    <AdminCrudPage
-      title="Projects"
-      description="Track website projects, milestones and delivery stages."
-      endpoint="/admin/projects"
-      createLabel="New Project"
-      searchKeys={['project_number', 'project_name', 'status', 'priority']}
-      defaultRecord={{ project_name: '', package_name: '', status: 'Planning', priority: 'Medium', progress: 0, start_date: '', due_date: '', project_manager: '', notes: '', milestones: '[]' }}
-      fields={[
-        { name: 'project_name', label: 'Project Name' },
-        { name: 'package_name', label: 'Package' },
-        { name: 'status', label: 'Status', type: 'select', options: ['Planning', 'Waiting for Content', 'Design', 'Development', 'Testing', 'Client Review', 'Deployment', 'Completed', 'On Hold', 'Cancelled'] },
-        { name: 'priority', label: 'Priority', type: 'select', options: ['Low', 'Medium', 'High', 'Urgent'] },
-        { name: 'progress', label: 'Progress', type: 'number' },
-        { name: 'start_date', label: 'Start Date', type: 'date' },
-        { name: 'due_date', label: 'Due Date', type: 'date' },
-        { name: 'project_manager', label: 'Project Manager' },
-        { name: 'notes', label: 'Notes', type: 'textarea', rows: 3 },
-        { name: 'milestones', label: 'Milestones (JSON)', type: 'json', rows: 8, placeholder: '[{"name":"Requirement Finalized","completed":true}]' },
-      ]}
-      columns={[
-        { key: 'project_number', label: 'Project ID' },
-        { key: 'project_name', label: 'Project Name' },
-        { key: 'status', label: 'Status' },
-        { key: 'progress', label: 'Progress', render: item => `${item.progress || 0}%` },
-      ]}
-      rowActions={(project, load, setNotice) => (
-        <button type="button" onClick={async () => { await apiFetch(`/admin/projects/${project.id}`, { method: 'PUT', body: JSON.stringify({ ...project, status: 'Completed', progress: 100 }) }); setNotice('Project marked complete.'); await load(); }}>Complete</button>
-      )}
-    />
-  );
+  const isMobile = useAdminViewport();
+  const { data, loading, load } = useAdminData('/admin/projects');
+  const projects = Array.isArray(data) ? data : [];
+  const { setNotice } = useContext(AdminContext);
+  const [editing, setEditing] = useState(null);
+  const [query, setQuery] = useState('');
+  const filtered = useMemo(() => projects.filter(project => `${project.project_number} ${project.project_name} ${project.status} ${project.priority}`.toLowerCase().includes(query.toLowerCase())), [projects, query]);
+  const statuses = ['Planning', 'Waiting for Content', 'Design', 'Development', 'Testing', 'Client Review', 'Deployment', 'Completed', 'On Hold', 'Cancelled'];
+  const save = async form => { await apiFetch(editing?.id ? `/admin/projects/${editing.id}` : '/admin/projects', { method: editing?.id ? 'PUT' : 'POST', body: JSON.stringify(form) }); setNotice(`Project ${editing?.id ? 'updated' : 'created'} successfully.`); setEditing(null); await load(); };
+  const complete = async project => { await apiFetch(`/admin/projects/${project.id}`, { method: 'PUT', body: JSON.stringify({ ...project, status: 'Completed', progress: 100 }) }); setNotice('Project marked complete.'); await load(); };
+  const iconForProject = project => {
+    const text = `${project.project_name} ${project.package_name}`.toLowerCase();
+    if (text.includes('mobile')) return Smartphone;
+    if (text.includes('e-commerce') || text.includes('commerce') || text.includes('shop')) return ShoppingCart;
+    if (text.includes('portfolio') || text.includes('landing') || text.includes('website')) return BriefcaseBusiness;
+    return Code2;
+  };
+  if (!isMobile) {
+    return (
+      <AdminCrudPage
+        title="Projects"
+        description="Track website projects, milestones and delivery stages."
+        endpoint="/admin/projects"
+        createLabel="New Project"
+        searchKeys={['project_number', 'project_name', 'status', 'priority']}
+        defaultRecord={{ project_name: '', package_name: '', status: 'Planning', priority: 'Medium', progress: 0, start_date: '', due_date: '', project_manager: '', notes: '', milestones: '[]' }}
+        fields={[
+          { name: 'project_name', label: 'Project Name' },
+          { name: 'package_name', label: 'Package' },
+          { name: 'status', label: 'Status', type: 'select', options: statuses },
+          { name: 'priority', label: 'Priority', type: 'select', options: ['Low', 'Medium', 'High', 'Urgent'] },
+          { name: 'progress', label: 'Progress', type: 'number' },
+          { name: 'start_date', label: 'Start Date', type: 'date' },
+          { name: 'due_date', label: 'Due Date', type: 'date' },
+          { name: 'project_manager', label: 'Project Manager' },
+          { name: 'notes', label: 'Notes', type: 'textarea', rows: 3 },
+          { name: 'milestones', label: 'Milestones (JSON)', type: 'json', rows: 8, placeholder: '[{"name":"Requirement Finalized","completed":true}]' },
+        ]}
+        columns={[
+          { key: 'project_number', label: 'Project ID' },
+          { key: 'project_name', label: 'Project Name' },
+          { key: 'status', label: 'Status' },
+          { key: 'progress', label: 'Progress', render: item => `${item.progress || 0}%` },
+        ]}
+        mobileIcon={FolderPlus}
+        mobileColor="blue"
+        rowActions={(project, loadList, setNoticeMessage) => (
+          <button type="button" onClick={async () => { await apiFetch(`/admin/projects/${project.id}`, { method: 'PUT', body: JSON.stringify({ ...project, status: 'Completed', progress: 100 }) }); setNoticeMessage('Project marked complete.'); await loadList(); }}>Complete</button>
+        )}
+      />
+    );
+  }
+  return <>
+    <AdminHeading title="Projects" description="Manage all client projects." action={<button className="button" onClick={() => setEditing({ project_name: '', package_name: '', status: 'Planning', priority: 'Medium', progress: 0, start_date: '', due_date: '', project_manager: '', notes: '', milestones: '[]' })}><Plus /> New Project</button>} />
+    <div className="admin-panel admin-resource-toolbar">
+      <label className="admin-field admin-field--inline"><span>Search</span><input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search projects..." /></label>
+    </div>
+    {editing && <AdminEditor title={editing.id ? 'Edit Project' : 'Add Project'} onSubmit={() => save(editing)} onCancel={() => setEditing(null)}><div className="admin-form-grid">{[
+      { name: 'project_name', label: 'Project Name' },
+      { name: 'package_name', label: 'Package' },
+      { name: 'status', label: 'Status', type: 'select', options: ['Planning', 'Waiting for Content', 'Design', 'Development', 'Testing', 'Client Review', 'Deployment', 'Completed', 'On Hold', 'Cancelled'] },
+      { name: 'priority', label: 'Priority', type: 'select', options: ['Low', 'Medium', 'High', 'Urgent'] },
+      { name: 'progress', label: 'Progress', type: 'number' },
+      { name: 'start_date', label: 'Start Date', type: 'date' },
+      { name: 'due_date', label: 'Due Date', type: 'date' },
+      { name: 'project_manager', label: 'Project Manager' },
+      { name: 'notes', label: 'Notes', type: 'textarea', rows: 3 },
+    ].map(field => <CrudField key={field.name} field={field} value={editing[field.name] === undefined ? normalizeCrudInitial(field, field.type === 'select' && field.name === 'status' ? 'Planning' : field.name === 'priority' ? 'Medium' : field.name === 'progress' ? 0 : '') : normalizeCrudInitial(field, editing[field.name])} onChange={value => setEditing(current => ({ ...current, [field.name]: value }))} />)}</div></AdminEditor>}
+    {loading ? <AdminLoading /> : <div className="admin-mobile-list admin-mobile-list--projects">{filtered.map(project => {
+      const Icon = iconForProject(project);
+      const tone = getAdminStatusTone(project.status);
+      return <article key={project.id} className="admin-mobile-card">
+        <div className="admin-mobile-card__top">
+          <ColoredIconBox icon={Icon} color={tone === 'green' ? 'green' : tone === 'red' ? 'red' : tone === 'purple' ? 'purple' : tone === 'orange' ? 'orange' : 'blue'} size={17} />
+          <div>
+            <b>{project.project_name}</b>
+            <span>{project.package_name || 'Project package'} · {project.project_number || 'No ID'}</span>
+          </div>
+          <span className={`admin-status-pill is-${tone}`}>{project.status}</span>
+        </div>
+        <div className="admin-mobile-card__meta">
+          <div><span>Customer</span><strong>{project.customer_name || project.client_name || project.project_manager || '—'}</strong></div>
+          <div><span>Progress</span><strong>{project.progress || 0}%</strong></div>
+          <div><span>Due Date</span><strong>{project.due_date || '—'}</strong></div>
+        </div>
+        <div className="admin-mobile-progress"><span style={{ width: `${Number(project.progress || 0)}%` }} /></div>
+        <div className="admin-mobile-card__actions">
+          <button type="button" className="button button--secondary" onClick={() => setEditing({ ...project })}>Edit</button>
+          <button type="button" className="button" onClick={() => complete(project)}>Complete</button>
+        </div>
+      </article>;
+    })}</div>}
+  </>;
 }
 
 function AdminPortfolio() {
@@ -3005,7 +3619,7 @@ function AdminFaqs() { return <AdminCrudPage title="FAQs" description="Manage fr
 
 function AdminTestimonials() { return <AdminCrudPage title="Testimonials" description="Manage real testimonials entered by the admin team." endpoint="/admin/testimonials" createLabel="New Testimonial" searchKeys={['name', 'company', 'role']} defaultRecord={{ name: '', company: '', role: '', testimonial: '', image: '', featured: false, active: true, display_order: 0 }} fields={[{ name: 'name', label: 'Name' }, { name: 'company', label: 'Company' }, { name: 'role', label: 'Role' }, { name: 'testimonial', label: 'Testimonial', type: 'textarea', rows: 5 }, { name: 'image', label: 'Image URL' }, { name: 'featured', label: 'Featured', type: 'checkbox' }, { name: 'active', label: 'Active', type: 'checkbox' }, { name: 'display_order', label: 'Display Order', type: 'number' }]} columns={[{ key: 'name', label: 'Name' }, { key: 'company', label: 'Company' }, { key: 'featured', label: 'Featured', render: item => (item.featured ? 'Yes' : 'No') }, { key: 'active', label: 'Active', render: item => (item.active ? 'Yes' : 'No') }]} />; }
 
-function AdminMedia() { return <AdminCrudPage title="Media" description="Store uploaded images and copy shareable URLs." endpoint="/admin/media" createLabel="New Media Item" searchKeys={['media_number', 'title', 'folder']} defaultRecord={{ title: '', url: '', file_name: '', mime_type: '', alt_text: '', folder: 'library', size: 0 }} fields={[{ name: 'title', label: 'Title' }, { name: 'url', label: 'URL' }, { name: 'file_name', label: 'File Name' }, { name: 'mime_type', label: 'MIME Type' }, { name: 'alt_text', label: 'Alt Text' }, { name: 'folder', label: 'Folder' }, { name: 'size', label: 'File Size', type: 'number' }]} columns={[{ key: 'media_number', label: 'Media ID' }, { key: 'title', label: 'Title' }, { key: 'folder', label: 'Folder' }, { key: 'url', label: 'URL', render: item => item.url || 'â€”' }]} />; }
+function AdminMedia() { return <AdminCrudPage title="Media" description="Store uploaded images and copy shareable URLs." endpoint="/admin/media" createLabel="New Media Item" searchKeys={['media_number', 'title', 'folder']} defaultRecord={{ title: '', url: '', file_name: '', mime_type: '', alt_text: '', folder: 'library', size: 0 }} fields={[{ name: 'title', label: 'Title' }, { name: 'url', label: 'URL' }, { name: 'file_name', label: 'File Name' }, { name: 'mime_type', label: 'MIME Type' }, { name: 'alt_text', label: 'Alt Text' }, { name: 'folder', label: 'Folder' }, { name: 'size', label: 'File Size', type: 'number' }]} columns={[{ key: 'media_number', label: 'Media ID' }, { key: 'title', label: 'Title' }, { key: 'folder', label: 'Folder' }, { key: 'url', label: 'URL', render: item => item.url || '—' }]} />; }
 
 function AdminCoupons() { return <AdminCrudPage title="Coupons" description="Configure coupon codes and discount rules." endpoint="/admin/coupons" createLabel="New Coupon" searchKeys={['code', 'discount_type']} defaultRecord={{ code: '', discount_type: 'Percentage', discount_value: 0, minimum_order: 0, maximum_discount: '', applicable_categories: '[]', applicable_packages: '[]', start_date: '', expiry_date: '', usage_limit: '', per_customer_limit: '', active: true }} fields={[{ name: 'code', label: 'Code' }, { name: 'discount_type', label: 'Discount Type', type: 'select', options: ['Percentage', 'Fixed Amount'] }, { name: 'discount_value', label: 'Discount Value', type: 'number' }, { name: 'minimum_order', label: 'Minimum Order', type: 'number' }, { name: 'maximum_discount', label: 'Maximum Discount', type: 'number' }, { name: 'applicable_categories', label: 'Applicable Categories (JSON)', type: 'json', rows: 4 }, { name: 'applicable_packages', label: 'Applicable Packages (JSON)', type: 'json', rows: 4 }, { name: 'start_date', label: 'Start Date', type: 'date' }, { name: 'expiry_date', label: 'Expiry Date', type: 'date' }, { name: 'usage_limit', label: 'Usage Limit', type: 'number' }, { name: 'per_customer_limit', label: 'Per Customer Limit', type: 'number' }, { name: 'active', label: 'Active', type: 'checkbox' }]} columns={[{ key: 'code', label: 'Code' }, { key: 'discount_type', label: 'Type' }, { key: 'discount_value', label: 'Value' }, { key: 'active', label: 'Active', render: item => (item.active ? 'Yes' : 'No') }]} />; }
 
@@ -3031,5 +3645,7 @@ function AdminBackup() {
     </div>
   </>;
 }
+
+
 
 
