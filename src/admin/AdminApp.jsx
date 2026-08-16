@@ -1,6 +1,7 @@
-import { ArrowDown, ArrowLeftRight, ArrowRight, ArrowUp, Banknote, BarChart3, BadgePercent, Boxes, CalendarRange, ChevronDown, CircleDollarSign, Copy, Download, Eye, EyeOff, FileText, FolderTree, Gauge, Landmark, LayoutDashboard, LogOut, Menu, MessageSquareText, MoreVertical, PackagePlus, PiggyBank, Plus, ReceiptText, Save, Search, Send, Settings, SlidersHorizontal, Trash2, TrendingDown, TrendingUp, Wallet, X } from 'lucide-react';
+import { ArrowDown, ArrowLeftRight, ArrowRight, ArrowUp, Banknote, BarChart3, BadgePercent, Boxes, CalendarRange, ChevronDown, CircleDollarSign, Copy, Download, Eye, EyeOff, FileText, FolderTree, Gauge, Image, Landmark, LayoutDashboard, LogOut, Menu, MessageSquareText, MoreVertical, PackagePlus, PiggyBank, Plus, ReceiptText, Save, ScrollText, Search, Send, Settings, SlidersHorizontal, Trash2, TrendingDown, TrendingUp, Wallet, X } from 'lucide-react';
 import { Bell, Blocks, BriefcaseBusiness, CalendarCheck2, CircleCheck, Clock3, Code2, CreditCard, Database, FilePlus2, FolderPlus, Gamepad2, Globe, LayoutGrid, Mail, MessageCircle, MessagesSquare, Monitor, MoreHorizontal, Package, PenTool, Puzzle, ReceiptIndianRupee, Server, ServerCog, Shield, ShoppingBag, ShoppingCart, Smartphone, UserPlus, Users } from 'lucide-react';
 import { TicketPercent } from 'lucide-react';
+import { ChevronRight, ChartNoAxesCombined, CircleHelp, DatabaseBackup, FilePenLine, FolderKanban, HandCoins, MessageSquareQuote, Undo2, UsersRound, WalletCards, Building2, ChartPie } from 'lucide-react';
 import ColoredIconBox from './ColoredIconBox';
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, NavLink, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
@@ -21,29 +22,221 @@ const blankCategory = { name: '', slug: '', icon: 'code', short_description: '',
 const blankService = { category_id: '', name: '', slug: '', service_type: 'custom_quote', icon: 'code', short_description: '', description: '', price_type: 'custom_quote', billing_type: 'one-time', base_price: '', sale_price: '', pages_included: '', delivery_time: '', revisions: '', display_order: 0, is_featured: false, is_active: true, add_to_cart_enabled: false, cta_text: 'View Service', seo_title: '', seo_description: '', features: [], addon_ids: [], image: '' };
 const blankAddon = { name: '', description: '', price: '', pricing_type: 'fixed', pricing_unit: '', is_active: true, category_ids: [] };
 const starterCatalogSlugSet = new Set(starterCatalogProducts.map(product => String(product.slug || '').toLowerCase()));
+const sitearvoSidebarGroups = [
+  {
+    id: 'overview',
+    label: 'Overview',
+    icon: LayoutDashboard,
+    tone: 'gold',
+    children: [
+      { id: 'dashboard', label: 'Dashboard', to: '/admin', icon: LayoutDashboard, tone: 'gold' },
+      { id: 'analytics', label: 'Analytics', to: '/admin/analytics', icon: ChartNoAxesCombined, tone: 'purple' },
+    ],
+  },
+  {
+    id: 'crm',
+    label: 'CRM',
+    icon: Users,
+    tone: 'green',
+    children: [
+      { id: 'leads', label: 'Leads', to: '/admin/leads', icon: UserPlus, tone: 'green' },
+      { id: 'customers', label: 'Customers', to: '/admin/customers', icon: Users, tone: 'blue' },
+      { id: 'chats', label: 'Live Chats', to: '/admin/chats', icon: MessagesSquare, tone: 'purple' },
+    ],
+  },
+  {
+    id: 'sales',
+    label: 'Sales',
+    icon: ShoppingBag,
+    tone: 'orange',
+    children: [
+      { id: 'quotations', label: 'Quotations', to: '/admin/quotations', icon: FileText, tone: 'orange' },
+      { id: 'carts', label: 'Carts', to: '/admin/carts', icon: ShoppingCart, tone: 'cyan' },
+      { id: 'orders', label: 'Orders', to: '/admin/orders', icon: ShoppingBag, tone: 'blue' },
+      { id: 'payments', label: 'Payments', to: '/admin/payments', icon: CreditCard, tone: 'gold' },
+      { id: 'invoices', label: 'Invoices', to: '/admin/invoices', icon: ReceiptText, tone: 'pink' },
+    ],
+  },
+  {
+    id: 'catalog',
+    label: 'Catalog',
+    icon: Boxes,
+    tone: 'cyan',
+    children: [
+      { id: 'categories', label: 'Categories', to: '/admin/categories', icon: LayoutGrid, tone: 'purple' },
+      { id: 'services', label: 'Services & Packages', to: '/admin/services', icon: Package, tone: 'green' },
+      { id: 'configurator', label: 'Configurator', to: '/admin/configurator', icon: SlidersHorizontal, tone: 'cyan' },
+      { id: 'addons', label: 'Add-ons', to: '/admin/add-ons', icon: Puzzle, tone: 'pink' },
+      { id: 'coupons', label: 'Coupons', to: '/admin/coupons', icon: TicketPercent, tone: 'orange' },
+    ],
+  },
+  {
+    id: 'finance',
+    label: 'Finance',
+    icon: WalletCards,
+    tone: 'gold',
+    children: [
+      { id: 'finance-overview', label: 'Finance Overview', to: '/admin/finance', icon: WalletCards, tone: 'gold' },
+      { id: 'income', label: 'Income', to: '/admin/finance/income', icon: TrendingUp, tone: 'green' },
+      { id: 'expenses', label: 'Expenses', to: '/admin/finance/expenses', icon: TrendingDown, tone: 'red' },
+      { id: 'accounts', label: 'Accounts', to: '/admin/finance/accounts', icon: Landmark, tone: 'blue' },
+      { id: 'transactions', label: 'Transactions', to: '/admin/finance/transactions', icon: ArrowLeftRight, tone: 'purple' },
+      { id: 'receivables', label: 'Receivables', to: '/admin/finance/receivables', icon: HandCoins, tone: 'cyan' },
+      { id: 'payables', label: 'Payables', to: '/admin/finance/payables', icon: ReceiptIndianRupee, tone: 'orange' },
+      { id: 'vendors', label: 'Vendors', to: '/admin/finance/vendors', icon: Building2, tone: 'green' },
+      { id: 'refunds', label: 'Refunds', to: '/admin/finance/refunds', icon: Undo2, tone: 'red' },
+      { id: 'budgets', label: 'Budgets', to: '/admin/finance/budgets', icon: ChartPie, tone: 'blue' },
+      { id: 'tax', label: 'Tax', to: '/admin/finance/tax', icon: BadgePercent, tone: 'gold' },
+      { id: 'reports', label: 'Reports', to: '/admin/finance/reports', icon: ChartNoAxesCombined, tone: 'purple' },
+    ],
+  },
+  {
+    id: 'projects',
+    label: 'Projects',
+    icon: FolderKanban,
+    tone: 'blue',
+    children: [
+      { id: 'projects-list', label: 'Projects', to: '/admin/projects', icon: FolderKanban, tone: 'blue' },
+      { id: 'portfolio', label: 'Portfolio', to: '/admin/portfolio', icon: BriefcaseBusiness, tone: 'cyan' },
+    ],
+  },
+  {
+    id: 'content',
+    label: 'Content',
+    icon: FileText,
+    tone: 'purple',
+    children: [
+      { id: 'content-page', label: 'Website Content', to: '/admin/content', icon: FilePenLine, tone: 'gold' },
+      { id: 'faqs', label: 'FAQs', to: '/admin/faqs', icon: CircleHelp, tone: 'blue' },
+      { id: 'testimonials', label: 'Testimonials', to: '/admin/testimonials', icon: MessageSquareQuote, tone: 'green' },
+      { id: 'media', label: 'Media Library', to: '/admin/media', icon: Image, tone: 'purple' },
+    ],
+  },
+  {
+    id: 'system',
+    label: 'System',
+    icon: Settings,
+    tone: 'gray',
+    children: [
+      { id: 'notifications', label: 'Notifications', to: '/admin/notifications', icon: Bell, tone: 'pink' },
+      { id: 'activity-logs', label: 'Activity Logs', to: '/admin/activity-logs', icon: ScrollText, tone: 'orange' },
+      { id: 'backup', label: 'Backup & Restore', to: '/admin/backup', icon: DatabaseBackup, tone: 'blue' },
+      { id: 'users', label: 'Users', to: '/admin/users', icon: UsersRound, tone: 'green' },
+      { id: 'settings', label: 'Settings', to: '/admin/settings', icon: Settings, tone: 'gold' },
+    ],
+  },
+];
 const adminMobileNavItems = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, color: 'gold' },
   { to: '/admin/leads', label: 'Leads', icon: Users, color: 'green' },
   { to: '/admin/orders', label: 'Orders', icon: ShoppingBag, color: 'blue' },
   { to: '/admin/chats', label: 'Chats', icon: MessageSquareText, color: 'purple' },
 ];
-const adminMobileMenuItems = [
-  { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, color: 'gold' },
-  { to: '/admin/leads', label: 'Leads', icon: Users, color: 'green' },
-  { to: '/admin/customers', label: 'Customers', icon: UserPlus, color: 'blue' },
-  { to: '/admin/chats', label: 'Live Chats', icon: MessagesSquare, color: 'purple' },
-  { to: '/admin/quotations', label: 'Quotations', icon: FileText, color: 'orange' },
-  { to: '/admin/carts', label: 'Carts', icon: ShoppingCart, color: 'cyan' },
-  { to: '/admin/orders', label: 'Orders', icon: ShoppingBag, color: 'blue' },
-  { to: '/admin/finance', label: 'Finance', icon: Wallet, color: 'gold' },
-  { to: '/admin/categories', label: 'Categories', icon: LayoutGrid, color: 'purple' },
-  { to: '/admin/services', label: 'Services & Packages', icon: Package, color: 'green' },
-  { to: '/admin/add-ons', label: 'Add-ons', icon: Puzzle, color: 'pink' },
-  { to: '/admin/coupons', label: 'Coupons', icon: TicketPercent, color: 'orange' },
-  { to: '/admin/projects', label: 'Projects', icon: FolderPlus, color: 'blue' },
-  { to: '/admin/portfolio', label: 'Portfolio', icon: BriefcaseBusiness, color: 'cyan' },
-  { to: '/admin/settings', label: 'Settings', icon: Settings, color: 'gray' },
-];
+const adminSidebarStorageKey = 'sitearvo-admin-sidebar-groups-v1';
+
+function normalizeAdminPathname(pathname) {
+  if (!pathname) return '/admin';
+  return pathname === '/admin/dashboard' ? '/admin' : pathname.replace(/\/+$/, '') || '/admin';
+}
+
+function isSidebarRouteActive(pathname, route) {
+  const current = normalizeAdminPathname(pathname);
+  const target = normalizeAdminPathname(route);
+  if (target === '/admin') return current === '/admin';
+  return current === target || current.startsWith(`${target}/`);
+}
+
+function getSidebarActiveGroupIds(pathname) {
+  return sitearvoSidebarGroups.filter(group => group.children.some(item => isSidebarRouteActive(pathname, item.to))).map(group => group.id);
+}
+
+function useSidebarAccordionState(pathname) {
+  const activeGroupIds = useMemo(() => getSidebarActiveGroupIds(pathname), [pathname]);
+  const [openGroupIds, setOpenGroupIds] = useState(() => {
+    if (typeof window === 'undefined') return activeGroupIds;
+    try {
+      const stored = JSON.parse(window.localStorage.getItem(adminSidebarStorageKey) || '[]');
+      return Array.isArray(stored) ? Array.from(new Set([...stored.filter(Boolean), ...activeGroupIds])) : activeGroupIds;
+    } catch {
+      return activeGroupIds;
+    }
+  });
+  useEffect(() => {
+    setOpenGroupIds(current => Array.from(new Set([...current, ...activeGroupIds])));
+  }, [activeGroupIds.join('|')]);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem(adminSidebarStorageKey, JSON.stringify(openGroupIds));
+  }, [openGroupIds]);
+  const toggleGroup = groupId => {
+    if (activeGroupIds.includes(groupId)) return;
+    setOpenGroupIds(current => (current.includes(groupId) ? current.filter(id => id !== groupId) : [...current, groupId]));
+  };
+  const isOpen = groupId => openGroupIds.includes(groupId) || activeGroupIds.includes(groupId);
+  const isActiveGroup = groupId => activeGroupIds.includes(groupId);
+  return { activeGroupIds, isOpen, isActiveGroup, toggleGroup };
+}
+
+function SidebarGroup({ group, open, active, onToggle, onNavigate }) {
+  const location = useLocation();
+  return (
+    <section className={`admin-sidebar-group ${open ? 'is-open' : ''} ${active ? 'is-active' : ''}`} data-tone={group.tone}>
+      <button
+        type="button"
+        className="admin-sidebar-group__toggle"
+        aria-expanded={open}
+        aria-controls={`admin-sidebar-group-${group.id}`}
+        onClick={() => onToggle(group.id)}
+      >
+        <span className="admin-sidebar-group__label">
+          <ColoredIconBox icon={group.icon} color={group.tone} size={16} />
+          <span>{group.label}</span>
+        </span>
+        <ChevronRight className="admin-sidebar-group__chevron" />
+      </button>
+      <div id={`admin-sidebar-group-${group.id}`} className="admin-sidebar-group__panel" aria-hidden={!open}>
+        <div className="admin-sidebar-group__panel-inner">
+          {group.children.map(item => {
+            const isActive = isSidebarRouteActive(location.pathname, item.to);
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={normalizeAdminPathname(item.to) === '/admin'}
+                aria-current={isActive ? 'page' : undefined}
+                className={`admin-sidebar-link ${isActive ? 'active' : ''}`}
+                data-tone={item.tone}
+                onClick={onNavigate}
+              >
+                <ColoredIconBox icon={item.icon} color={item.tone} size={16} />
+                <span>{item.label}</span>
+              </NavLink>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function SidebarAccordion({ groups, onNavigate, mobile = false }) {
+  const location = useLocation();
+  const accordion = useSidebarAccordionState(location.pathname);
+  return (
+    <nav className={mobile ? 'admin-sidebar-groups admin-sidebar-groups--mobile' : 'admin-sidebar-groups'} aria-label="Admin navigation">
+      {groups.map(group => (
+        <SidebarGroup
+          key={group.id}
+          group={group}
+          open={accordion.isOpen(group.id)}
+          active={accordion.isActiveGroup(group.id)}
+          onToggle={accordion.toggleGroup}
+          onNavigate={onNavigate}
+        />
+      ))}
+    </nav>
+  );
+}
 
 function useAdminViewport() {
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 900px)').matches);
@@ -192,17 +385,7 @@ function AdminShell() {
   const isMobile = useAdminViewport();
   useEffect(() => { document.title = 'Catalog Admin | SiteArvo'; }, []);
   const logout = async () => { await apiFetch('/auth/logout', { method: 'POST' }).catch(() => {}); setAdmin(null); navigate('/admin/login'); };
-  const groups = [
-    { title: 'Overview', tone: 'gold', items: [['dashboard', '/admin', 'Dashboard', 'gold'], ['analytics', '/admin/analytics', 'Analytics', 'purple']] },
-    { title: 'CRM', tone: 'green', items: [['leads', '/admin/leads', 'Leads', 'green'], ['customers', '/admin/customers', 'Customers', 'blue'], ['chats', '/admin/chats', 'Live Chats', 'purple']] },
-    { title: 'Sales', tone: 'orange', items: [['quotations', '/admin/quotations', 'Quotations', 'orange'], ['carts', '/admin/carts', 'Carts', 'cyan'], ['orders', '/admin/orders', 'Orders', 'blue'], ['payments', '/admin/payments', 'Payments', 'gold'], ['invoices', '/admin/invoices', 'Invoices', 'pink']] },
-    { title: 'Finance', tone: 'gold', items: [['finance', '/admin/finance', 'Overview', 'gold'], ['income', '/admin/finance/income', 'Income', 'green'], ['expenses', '/admin/finance/expenses', 'Expenses', 'red'], ['accounts', '/admin/finance/accounts', 'Accounts', 'blue'], ['transactions', '/admin/finance/transactions', 'Transactions', 'purple'], ['receivables', '/admin/finance/receivables', 'Receivables', 'cyan'], ['payables', '/admin/finance/payables', 'Payables', 'orange'], ['vendors', '/admin/finance/vendors', 'Vendors', 'green'], ['refunds', '/admin/finance/refunds', 'Refunds', 'red'], ['budgets', '/admin/finance/budgets', 'Budgets', 'blue'], ['tax', '/admin/finance/tax', 'Tax', 'gold'], ['reports', '/admin/finance/reports', 'Reports', 'purple']] },
-    { title: 'Catalog', tone: 'cyan', items: [['categories', '/admin/categories', 'Categories', 'purple'], ['services', '/admin/services', 'Services & Packages', 'green'], ['configurator', '/admin/configurator', 'Configurator', 'cyan'], ['add-ons', '/admin/add-ons', 'Add-ons', 'pink'], ['coupons', '/admin/coupons', 'Coupons', 'orange']] },
-    { title: 'Projects', tone: 'blue', items: [['projects', '/admin/projects', 'Projects', 'blue'], ['portfolio', '/admin/portfolio', 'Portfolio', 'cyan']] },
-    { title: 'Content', tone: 'purple', items: [['content', '/admin/content', 'Website Content', 'gold'], ['faqs', '/admin/faqs', 'FAQs', 'blue'], ['testimonials', '/admin/testimonials', 'Testimonials', 'green'], ['media', '/admin/media', 'Media Library', 'purple']] },
-    { title: 'System', tone: 'gray', items: [['notifications', '/admin/notifications', 'Notifications', 'cyan'], ['activity-logs', '/admin/activity-logs', 'Activity Logs', 'orange'], ['backup', '/admin/backup', 'Backup / Export', 'blue'], ['settings', '/admin/settings', 'Settings', 'gray'], ['users', '/admin/users', 'Admin Users', 'green']] },
-  ];
-  if (isMobile) return <AdminMobileShell admin={admin} notice={notice} logout={logout} groups={groups} />;
+  if (isMobile) return <AdminMobileShell admin={admin} notice={notice} logout={logout} />;
   return (
     <div className="admin-app">
       <aside className={open ? 'is-open' : ''}>
@@ -210,19 +393,9 @@ function AdminShell() {
           <Logo />
           <button onClick={() => setOpen(false)} aria-label="Close admin menu"><X /></button>
         </div>
-        <nav className="admin-nav-groups">
-          {groups.map(group => (
-            <section key={group.title} className="admin-nav-group" data-tone={group.tone}>
-              <span>{group.title}</span>
-              {group.items.map(([Icon, path, label, color]) => (
-                <NavLink key={path} to={path} end={path === '/admin'} onClick={() => setOpen(false)}>
-                  <ColoredIconBox icon={Icon} color={color} size={17} />
-                  <span>{label}</span>
-                </NavLink>
-              ))}
-            </section>
-          ))}
-        </nav>
+        <div className="admin-sidebar-scroll">
+          <SidebarAccordion groups={sitearvoSidebarGroups} onNavigate={() => setOpen(false)} />
+        </div>
         <div className="admin-user">
           <span>{admin.name}</span>
           <small>{admin.email}</small>
@@ -319,7 +492,6 @@ function AdminMobileBottomNav({ onMore }) {
 }
 
 function AdminMobileDrawer({ admin, open, onClose, onLogout }) {
-  const location = useLocation();
   return (
     <div className={`admin-mobile-drawer ${open ? 'is-open' : ''}`} aria-hidden={!open}>
       <button type="button" className="admin-mobile-drawer__backdrop" onClick={onClose} aria-label="Close menu" />
@@ -339,20 +511,9 @@ function AdminMobileDrawer({ admin, open, onClose, onLogout }) {
             <small>Administrator</small>
           </div>
         </div>
-        <nav className="admin-mobile-menu">
-          {adminMobileMenuItems.map(item => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) => isActive || location.pathname.startsWith(item.to) ? 'active' : ''}
-              onClick={onClose}
-            >
-              <ColoredIconBox icon={item.icon} color={item.color} size={16} />
-              <span>{item.label}</span>
-              <ArrowRight />
-            </NavLink>
-          ))}
-        </nav>
+        <div className="admin-mobile-drawer__scroll">
+          <SidebarAccordion groups={sitearvoSidebarGroups} onNavigate={onClose} mobile />
+        </div>
         <div className="admin-mobile-drawer__footer">
           <button type="button" onClick={onLogout}><LogOut /> Logout</button>
           <a href="/" target="_blank" rel="noreferrer" onClick={onClose}>View Website</a>
