@@ -22,12 +22,14 @@ import ServiceCategory from './pages/ServiceCategory';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import AdminApp from './admin/AdminApp';
+import MobileBusinessApp from './app/MobileBusinessApp';
 import SeoLandingPage from './pages/SeoLandingPage';
 import Analytics from './components/Analytics';
 import WebsiteBuilder from './pages/WebsiteBuilder';
 
 export default function App() {
   const location = useLocation();
+  if (location.pathname.startsWith('/app')) return <Routes><Route path="/app/*" element={<MobileBusinessApp />} /></Routes>;
   if (location.pathname.startsWith('/admin')) return <Routes><Route path="/admin/*" element={<AdminApp />} /></Routes>;
   return (
     <>
