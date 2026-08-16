@@ -8,7 +8,7 @@ import { useCatalog } from '../catalog/CatalogContext';
 import { getCatalogIcon } from '../catalog/icons';
 import { useCart } from '../cart/CartContext';
 
-const links = [['/', 'Home'], ['/about', 'About Us'], ['/industries', 'Industries'], ['/portfolio', 'Portfolio'], ['/pricing', 'Pricing'], ['/contact', 'Contact'], ['/admin/login', 'Login']];
+const links = [['/', 'Home'], ['/about', 'About Us'], ['/industries', 'Industries'], ['/portfolio', 'Portfolio'], ['/pricing', 'Pricing'], ['/contact', 'Contact']];
 const defaultServiceCategory = 'web-development';
 const isDesktopMenu = () => window.matchMedia('(min-width: 821px)').matches;
 const categoryMenuTitle = category => category.id === 'mobile-app-development' ? category.title : category.shortTitle;
@@ -149,8 +149,11 @@ export default function Navbar() {
             <div className="mega-menu-footer"><Link className="mega-view-all" to="/services" onClick={closeNavigation}>View All Services <ChevronRight aria-hidden="true" /></Link></div>
           </div>
         </div>
-        {links.slice(2).map(([to, label]) => <NavLink key={to} to={to} className={({ isActive }) => isActive ? 'active' : ''}>{label === 'Login' ? <><LogIn aria-hidden="true" />{label}</> : label}</NavLink>)}
         <div className="nav-utility-cluster">
+          <NavLink to="/admin/login" className={({ isActive }) => `nav-auth-link ${isActive ? 'active' : ''}`} aria-label="Admin login">
+            <LogIn aria-hidden="true" />
+            <span>Login</span>
+          </NavLink>
           <NavLink to="/cart" className={({ isActive }) => `nav-cart ${isActive ? 'active' : ''}`} aria-label={`Shopping cart with ${cartCount} ${cartCount === 1 ? 'item' : 'items'}`} onClick={() => trackAnalyticsEvent('cart_viewed', { source: 'navbar', onceKey: 'cart_viewed' })}>
             <ShoppingCart aria-hidden="true" />
             <span className="nav-cart-label">Cart</span>
