@@ -169,7 +169,6 @@ function useSidebarAccordionState(pathname) {
     window.localStorage.setItem(adminSidebarStorageKey, JSON.stringify(openGroupIds));
   }, [openGroupIds]);
   const toggleGroup = groupId => {
-    if (activeGroupIds.includes(groupId)) return;
     setOpenGroupIds(current => (current.includes(groupId) ? current.filter(id => id !== groupId) : [...current, groupId]));
   };
   const isOpen = groupId => openGroupIds.includes(groupId) || activeGroupIds.includes(groupId);
