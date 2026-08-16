@@ -1,5 +1,5 @@
-import { ArrowDown, ArrowLeftRight, ArrowRight, ArrowUp, Banknote, BarChart3, BadgePercent, Boxes, CalendarRange, ChevronDown, CircleDollarSign, Copy, Download, Eye, FileText, FolderTree, Gauge, Landmark, LayoutDashboard, LogOut, Menu, MessageSquareText, MoreVertical, PackagePlus, PiggyBank, Plus, ReceiptText, Save, Search, Send, Settings, SlidersHorizontal, Trash2, TrendingDown, TrendingUp, Wallet, X } from 'lucide-react';
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+﻿import { ArrowDown, ArrowLeftRight, ArrowRight, ArrowUp, Banknote, BarChart3, BadgePercent, Boxes, CalendarRange, ChevronDown, CircleDollarSign, Copy, Download, Eye, FileText, FolderTree, Gauge, Landmark, LayoutDashboard, LogOut, Menu, MessageSquareText, MoreVertical, PackagePlus, PiggyBank, Plus, ReceiptText, Save, Search, Send, Settings, SlidersHorizontal, Trash2, TrendingDown, TrendingUp, Wallet, X } from 'lucide-react';
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, NavLink, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import Logo from '../components/Logo';
 import { AnalyticsDateRange, AnalyticsExportButton, AnalyticsLineChart, AnalyticsSummaryCard, formatAnalyticsRangeLabel, formatAnalyticsValue } from '../components/analytics/AnalyticsUI';
@@ -539,7 +539,7 @@ function FinanceCrudPage({
       {data?.items && (
         <div className="finance-pagination">
           <button type="button" className="button button--secondary" disabled={(data.items.page || 1) <= 1} onClick={() => setPage(current => Math.max(1, current - 1))}>Previous</button>
-          <span>Page {data.items.page || 1} of {data.items.total_pages || 1} · {data.items.total || items.length} records</span>
+          <span>Page {data.items.page || 1} of {data.items.total_pages || 1} Â· {data.items.total || items.length} records</span>
           <button type="button" className="button button--secondary" disabled={(data.items.page || 1) >= (data.items.total_pages || 1)} onClick={() => setPage(current => current + 1)}>Next</button>
         </div>
       )}
@@ -640,11 +640,11 @@ function AdminDashboard() {
       <div className="admin-analytics-grid">
         <section>
           <h3>Top Pages</h3>
-          <div className="admin-mini-list">{(analytics.top_pages || []).length ? analytics.top_pages.map(item => <div key={item.path}><b>{item.path}</b><span>{item.pageviews} views · {item.visitors} visitors</span></div>) : <p>No page views tracked yet.</p>}</div>
+          <div className="admin-mini-list">{(analytics.top_pages || []).length ? analytics.top_pages.map(item => <div key={item.path}><b>{item.path}</b><span>{item.pageviews} views Â· {item.visitors} visitors</span></div>) : <p>No page views tracked yet.</p>}</div>
         </section>
         <section>
           <h3>7-Day Trend</h3>
-          <div className="admin-mini-list">{(analytics.daily_views || []).length ? analytics.daily_views.map(item => <div key={item.date}><b>{new Date(item.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</b><span>{item.pageviews} views · {item.visitors} visitors</span></div>) : <p>No trend data yet.</p>}</div>
+          <div className="admin-mini-list">{(analytics.daily_views || []).length ? analytics.daily_views.map(item => <div key={item.date}><b>{new Date(item.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</b><span>{item.pageviews} views Â· {item.visitors} visitors</span></div>) : <p>No trend data yet.</p>}</div>
         </section>
       </div>
     </div>
@@ -678,7 +678,7 @@ function AdminDashboard() {
     <div className="admin-panel">
       <h2>Recent Activity</h2>
       <div className="admin-mini-list">
-        {(data.recent_activity || []).length ? data.recent_activity.map(item => <div key={item.id}><b>{item.action}</b><span>{item.entity} · {new Date(item.created_at).toLocaleString('en-IN')}</span></div>) : <p>No recent activity yet.</p>}
+        {(data.recent_activity || []).length ? data.recent_activity.map(item => <div key={item.id}><b>{item.action}</b><span>{item.entity} Â· {new Date(item.created_at).toLocaleString('en-IN')}</span></div>) : <p>No recent activity yet.</p>}
       </div>
     </div>
   </>;
@@ -698,20 +698,20 @@ function AdminAnalytics() {
     <div className="admin-panel">
       <h2>Top Pages</h2>
       <div className="admin-mini-list">
-        {(data.top_pages || []).length ? data.top_pages.map(item => <div key={item.path}><b>{item.path}</b><span>{item.pageviews} views · {item.visitors} visitors</span></div>) : <p>No page views tracked yet.</p>}
+        {(data.top_pages || []).length ? data.top_pages.map(item => <div key={item.path}><b>{item.path}</b><span>{item.pageviews} views Â· {item.visitors} visitors</span></div>) : <p>No page views tracked yet.</p>}
       </div>
     </div>
     <div className="admin-analytics-grid">
       <div className="admin-panel">
         <h2>Daily Trend</h2>
         <div className="admin-mini-list">
-          {(data.daily_views || []).length ? data.daily_views.map(item => <div key={item.date}><b>{new Date(item.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</b><span>{item.pageviews} views · {item.visitors} visitors</span></div>) : <p>No trend data yet.</p>}
+          {(data.daily_views || []).length ? data.daily_views.map(item => <div key={item.date}><b>{new Date(item.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</b><span>{item.pageviews} views Â· {item.visitors} visitors</span></div>) : <p>No trend data yet.</p>}
         </div>
       </div>
       <div className="admin-panel">
         <h2>Top Referrers</h2>
         <div className="admin-mini-list">
-          {(data.top_referrers || []).length ? data.top_referrers.map(item => <div key={item.referrer}><b>{item.referrer}</b><span>{item.pageviews} views · {item.visitors} visitors</span></div>) : <p>No referrer data yet.</p>}
+          {(data.top_referrers || []).length ? data.top_referrers.map(item => <div key={item.referrer}><b>{item.referrer}</b><span>{item.pageviews} views Â· {item.visitors} visitors</span></div>) : <p>No referrer data yet.</p>}
         </div>
       </div>
     </div>
@@ -814,7 +814,7 @@ function AdminDashboardNew() {
         <section className="admin-panel">
           <h3>Top Pages</h3>
           <div className="admin-mini-list">
-            {(analytics.top_pages || []).length ? analytics.top_pages.map(item => <div key={item.path}><b>{item.label || item.path}</b><span>{item.pageviews} views · {item.visitors} visitors</span></div>) : <p>No page views tracked yet.</p>}
+            {(analytics.top_pages || []).length ? analytics.top_pages.map(item => <div key={item.path}><b>{item.label || item.path}</b><span>{item.pageviews} views Â· {item.visitors} visitors</span></div>) : <p>No page views tracked yet.</p>}
           </div>
         </section>
       </div>
@@ -849,7 +849,7 @@ function AdminDashboardNew() {
     <div className="admin-panel">
       <h2>Recent Activity</h2>
       <div className="admin-mini-list">
-        {(data.recent_activity || []).length ? data.recent_activity.map(item => <div key={item.id}><b>{item.action}</b><span>{item.entity} · {new Date(item.created_at).toLocaleString('en-IN')}</span></div>) : <p>No recent activity yet.</p>}
+        {(data.recent_activity || []).length ? data.recent_activity.map(item => <div key={item.id}><b>{item.action}</b><span>{item.entity} Â· {new Date(item.created_at).toLocaleString('en-IN')}</span></div>) : <p>No recent activity yet.</p>}
       </div>
     </div>
   </>;
@@ -975,7 +975,7 @@ function AdminAnalyticsNew() {
           onStartChange={setStart}
           onEndChange={setEnd}
         />
-        <p className="admin-analytics-hero__meta admin-analytics-hero__meta--status">{rangeLabel} · {updatedLabel}</p>
+        <p className="admin-analytics-hero__meta admin-analytics-hero__meta--status">{rangeLabel} Â· {updatedLabel}</p>
       </div>
     </section>
     <div className="admin-summary admin-summary--analytics admin-summary--featured analytics-summary-grid">
@@ -1004,31 +1004,31 @@ function AdminAnalyticsNew() {
       <section className="admin-panel">
         <h2>Traffic Breakdown</h2>
         <div className="admin-mini-list analytics-breakdown-list">
-          {(report.traffic_sources || []).length ? report.traffic_sources.map(item => <div key={item.source}><b>{item.source}</b><span>{item.pageviews} visits · {item.share}%</span></div>) : <p>No traffic source data yet.</p>}
+          {(report.traffic_sources || []).length ? report.traffic_sources.map(item => <div key={item.source}><b>{item.source}</b><span>{item.pageviews} visits Â· {item.share}%</span></div>) : <p>No traffic source data yet.</p>}
         </div>
       </section>
       <section className="admin-panel">
         <h2>Campaign Sources</h2>
         <div className="admin-mini-list analytics-breakdown-list">
-          {(report.campaign_sources || []).length ? report.campaign_sources.map(item => <div key={item.source}><b>{item.source}</b><span>{item.pageviews} visits · {item.share}%</span></div>) : <p>No campaign source data yet.</p>}
+          {(report.campaign_sources || []).length ? report.campaign_sources.map(item => <div key={item.source}><b>{item.source}</b><span>{item.pageviews} visits Â· {item.share}%</span></div>) : <p>No campaign source data yet.</p>}
         </div>
       </section>
       <section className="admin-panel">
         <h2>Devices</h2>
         <div className="admin-mini-list analytics-breakdown-list">
-          {(report.devices || []).length ? report.devices.map(item => <div key={item.device}><b>{item.device}</b><span>{item.pageviews} visits · {item.share}%</span></div>) : <p>No device data yet.</p>}
+          {(report.devices || []).length ? report.devices.map(item => <div key={item.device}><b>{item.device}</b><span>{item.pageviews} visits Â· {item.share}%</span></div>) : <p>No device data yet.</p>}
         </div>
       </section>
       <section className="admin-panel">
         <h2>Top Pages</h2>
         <div className="admin-mini-list analytics-breakdown-list">
-          {(report.top_pages || []).length ? report.top_pages.map(item => <div key={item.path}><b>{item.label || item.path}</b><span>{item.pageviews} views · {item.visitors} visitors</span></div>) : <p>No page views tracked yet.</p>}
+          {(report.top_pages || []).length ? report.top_pages.map(item => <div key={item.path}><b>{item.label || item.path}</b><span>{item.pageviews} views Â· {item.visitors} visitors</span></div>) : <p>No page views tracked yet.</p>}
         </div>
       </section>
       <section className="admin-panel">
         <h2>Top Services</h2>
         <div className="admin-mini-list analytics-breakdown-list">
-          {(report.top_services || []).length ? report.top_services.map(item => <div key={item.slug || item.id}><b>{item.label}</b><span>{item.views} views · {item.visitors} visitors</span></div>) : <p>No service data yet.</p>}
+          {(report.top_services || []).length ? report.top_services.map(item => <div key={item.slug || item.id}><b>{item.label}</b><span>{item.views} views Â· {item.visitors} visitors</span></div>) : <p>No service data yet.</p>}
         </div>
       </section>
       <section className="admin-panel">
@@ -1210,7 +1210,7 @@ function AdminCategories() {
           </div>
         </td>
         <td>
-          <Link className="category-services-link" to={`/admin/services?category=${encodeURIComponent(category.slug)}`}>{serviceCount} {serviceCount === 1 ? 'Service' : 'Services'} • {packageCount} {packageCount === 1 ? 'Product' : 'Products'} <ArrowRight size={14} /></Link>
+          <Link className="category-services-link" to={`/admin/services?category=${encodeURIComponent(category.slug)}`}>{serviceCount} {serviceCount === 1 ? 'Service' : 'Services'} â€¢ {packageCount} {packageCount === 1 ? 'Product' : 'Products'} <ArrowRight size={14} /></Link>
         </td>
         <td>
           <div className="category-order-control">
@@ -1336,7 +1336,7 @@ function AdminCategories() {
                   </header>
                   <p>{category.short_description || category.description || 'No description provided.'}</p>
                   <div className="category-card__meta">
-                    <Link to={`/admin/services?category=${encodeURIComponent(category.slug)}`}>{serviceCount} {serviceCount === 1 ? 'Service' : 'Services'} • {packageCount} {packageCount === 1 ? 'Product' : 'Products'} <ArrowRight size={14} /></Link>
+                    <Link to={`/admin/services?category=${encodeURIComponent(category.slug)}`}>{serviceCount} {serviceCount === 1 ? 'Service' : 'Services'} â€¢ {packageCount} {packageCount === 1 ? 'Product' : 'Products'} <ArrowRight size={14} /></Link>
                     {serviceCount === 0 && <span className="category-empty-pill">Empty Category</span>}
                   </div>
                   <div className="category-card__toggles">
@@ -1577,7 +1577,7 @@ function CategoryToggle({ active, label = 'Toggle', busy = false, onToggle }) {
       onClick={onToggle}
     >
       <span>{label}</span>
-      <strong>{busy ? '…' : active ? 'ON' : 'OFF'}</strong>
+      <strong>{busy ? 'â€¦' : active ? 'ON' : 'OFF'}</strong>
     </button>
   );
 }
@@ -1708,12 +1708,54 @@ function AdminChats() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const previousConversationIdsRef = useRef([]);
+  const previousUnreadRef = useRef(0);
+  const audioContextRef = useRef(null);
+
+  const playAlertTone = () => {
+    try {
+      const AudioContextCtor = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextCtor) return;
+      const context = audioContextRef.current || new AudioContextCtor();
+      audioContextRef.current = context;
+      if (context.state === 'suspended') context.resume().catch(() => {});
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      oscillator.type = 'sine';
+      oscillator.frequency.value = 880;
+      gain.gain.value = 0.0001;
+      oscillator.connect(gain);
+      gain.connect(context.destination);
+      oscillator.start();
+      gain.gain.exponentialRampToValueAtTime(0.15, context.currentTime + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.3);
+      oscillator.stop(context.currentTime + 0.32);
+    } catch {
+      // best-effort alert sound only
+    }
+  };
+
   const loadList = async (quiet = false) => {
     if (!quiet) setLoading(true);
     try {
       const data = await apiFetch('/admin/chats');
+      const nextIds = data.map(item => String(item.id));
+      const nextUnread = data.reduce((sum, item) => sum + Number(item.unread_admin || 0), 0);
+      const latestId = data[0]?.id || null;
+      const previousIds = previousConversationIdsRef.current;
+      const hasNewConversation = Boolean(latestId) && String(latestId) !== String(previousIds[0] || '');
+      const unreadIncreased = nextUnread > previousUnreadRef.current;
+      if (quiet && soundEnabled && (hasNewConversation || unreadIncreased)) playAlertTone();
+      previousConversationIdsRef.current = nextIds;
+      previousUnreadRef.current = nextUnread;
       setConversations(data);
-      setSelectedId(current => current || data[0]?.id || null);
+      setSelectedId(current => {
+        const currentExists = current && data.some(item => String(item.id) === String(current));
+        if (!currentExists) return latestId;
+        if (quiet && hasNewConversation && document.visibilityState === 'visible') return latestId;
+        return current;
+      });
     } catch (requestError) { setError(requestError.message); }
     finally { if (!quiet) setLoading(false); }
   };
@@ -1760,7 +1802,8 @@ function AdminChats() {
     await apiFetch(`/admin/chats/${selectedId}/status`, { method: 'PUT', body: JSON.stringify({ status }) });
     await loadChat(selectedId); await loadList(true);
   };
-  return <><AdminHeading title="Live Chat Inbox" description="Reply to website visitors in real time. New messages refresh automatically." />{error && <div className="admin-error" role="alert">{error}</div>}{loading ? <AdminLoading /> : <div className="admin-chat-layout"><aside className="admin-chat-list">{conversations.length ? conversations.map(item => <button type="button" className={selectedId === item.id ? 'is-active' : ''} key={item.id} onClick={() => setSelectedId(item.id)}><div><b>{item.visitor_name}</b>{item.unread_admin > 0 && <span>{item.unread_admin}</span>}</div><p>{item.last_message}</p><small>#{item.public_id} · {new Date(item.last_message_at.replace(' ', 'T')).toLocaleString('en-IN')}</small></button>) : <div className="admin-chat-empty"><MessageSquareText /><b>No conversations yet</b><p>New website chats will appear here.</p></div>}</aside><section className="admin-chat-thread">{chat ? <><header><div><h2>{chat.visitor_name}</h2><p>{chat.visitor_email || 'Email not provided'} · #{chat.public_id}</p></div><button type="button" className={`admin-chat-status is-${chat.status}`} onClick={() => changeStatus(chat.status === 'open' ? 'closed' : 'open')}>{chat.status === 'open' ? 'Close conversation' : 'Reopen conversation'}</button></header><div className="admin-chat-messages">{chat.messages.map(item => <article className={`is-${item.sender}`} key={item.id}><b>{item.sender === 'visitor' ? chat.visitor_name : 'SiteArvo'}</b><p>{item.message}</p><time>{new Date(item.created_at.replace(' ', 'T')).toLocaleString('en-IN')}</time></article>)}</div><form onSubmit={send}><textarea rows="2" maxLength="1500" value={message} onChange={event => setMessage(event.target.value)} placeholder="Type your reply..." disabled={chat.status === 'closed'} /><button className="button" disabled={busy || chat.status === 'closed' || !message.trim()}><Send /> {busy ? 'Sending...' : 'Send Reply'}</button></form></> : <div className="admin-chat-empty"><MessageSquareText /><b>Select a conversation</b></div>}</section></div>}</>;
+  const unreadTotal = conversations.reduce((sum, item) => sum + Number(item.unread_admin || 0), 0);
+  return <><AdminHeading title="Live Chat Inbox" description="Reply to website visitors in real time. New messages refresh automatically." action={<div className="admin-chat-tools"><button type="button" className={`button button--secondary admin-sound-toggle ${soundEnabled ? 'is-on' : ''}`} onClick={() => setSoundEnabled(value => !value)}>{soundEnabled ? 'Sound On' : 'Sound Off'}</button><div className="admin-chat-unread">{unreadTotal > 0 ? <><MessageSquareText /> <span>{unreadTotal} unread</span></> : <><MessageSquareText /> <span>All caught up</span></>}</div></div>} />{error && <div className="admin-error" role="alert">{error}</div>}{loading ? <AdminLoading /> : <div className="admin-chat-layout"><aside className="admin-chat-list">{conversations.length ? conversations.map(item => <button type="button" className={selectedId === item.id ? 'is-active' : ''} key={item.id} onClick={() => setSelectedId(item.id)}><div><b>{item.visitor_name}</b>{item.unread_admin > 0 && <span>{item.unread_admin}</span>}</div><p>{item.last_message}</p><small>#{item.public_id} · {new Date(item.last_message_at.replace(' ', 'T')).toLocaleString('en-IN')}</small></button>) : <div className="admin-chat-empty"><MessageSquareText /><b>No conversations yet</b><p>New website chats will appear here.</p></div>}</aside><section className="admin-chat-thread">{chat ? <><header><div><h2>{chat.visitor_name}</h2><p>{chat.visitor_email || 'Email not provided'} · #{chat.public_id}</p></div><button type="button" className={`admin-chat-status is-${chat.status}`} onClick={() => changeStatus(chat.status === 'open' ? 'closed' : 'open')}>{chat.status === 'open' ? 'Close conversation' : 'Reopen conversation'}</button></header><div className="admin-chat-messages">{chat.messages.map(item => <article className={`is-${item.sender}`} key={item.id}><b>{item.sender === 'visitor' ? chat.visitor_name : 'SiteArvo'}</b><p>{item.message}</p><time>{new Date(item.created_at.replace(' ', 'T')).toLocaleString('en-IN')}</time></article>)}</div><form onSubmit={send}><textarea rows="2" maxLength="1500" value={message} onChange={event => setMessage(event.target.value)} placeholder="Type your reply..." disabled={chat.status === 'closed'} /><button className="button" disabled={busy || chat.status === 'closed' || !message.trim()}><Send /> {busy ? 'Sending...' : 'Send Reply'}</button></form></> : <div className="admin-chat-empty"><MessageSquareText /><b>Select a conversation</b></div>}</section></div>}</>;
 }
 
 function AdminSettings() {
@@ -1915,9 +1958,9 @@ function AdminConfigurator() {
           <span>Estimated one-time total</span>
           <strong>{formatConfiguratorMoney(preview.oneTimeTotal)}</strong>
           <span>Recurring</span>
-          <strong>{preview.recurringTotal ? `${formatConfiguratorMoney(preview.recurringTotal)}${preview.recurringMonthly ? '/month' : '/year'}` : '—'}</strong>
+          <strong>{preview.recurringTotal ? `${formatConfiguratorMoney(preview.recurringTotal)}${preview.recurringMonthly ? '/month' : '/year'}` : 'â€”'}</strong>
           <span>Total pages</span>
-          <strong>{preview.totalPages || '—'}</strong>
+          <strong>{preview.totalPages || 'â€”'}</strong>
           <p>Preview uses the live configurator pricing data you save here.</p>
         </AdminPanel>
       </aside>
@@ -2356,8 +2399,8 @@ function AdminFinanceOverview() {
       <div className="admin-mini-list">
         {transactions.length ? transactions.map(item => (
           <div key={item.id}>
-            <b>{item.transaction_number} · {item.type}</b>
-            <span>{item.description} · {formatMoney(item.credit || item.debit || 0)}</span>
+            <b>{item.transaction_number} Â· {item.type}</b>
+            <span>{item.description} Â· {formatMoney(item.credit || item.debit || 0)}</span>
           </div>
         )) : <p>No financial transactions found in this range.</p>}
       </div>
@@ -2590,7 +2633,7 @@ function AdminFinanceReceivables() {
       <div className="admin-table-wrap">
         <table>
           <thead><tr><th>Customer</th><th>Invoice</th><th>Order</th><th>Total</th><th>Paid</th><th>Balance</th><th>Due Date</th><th>Status</th></tr></thead>
-          <tbody>{items.map(item => <tr key={`${item.invoice_id}-${item.customer_id}`}><td>{item.customer_name}</td><td>{item.invoice_id}</td><td>{item.order_id}</td><td>{formatMoney(item.total_amount)}</td><td>{formatMoney(item.amount_paid)}</td><td>{formatMoney(item.balance_due)}</td><td>{item.due_date || '—'}</td><td>{item.status}</td></tr>)}</tbody>
+          <tbody>{items.map(item => <tr key={`${item.invoice_id}-${item.customer_id}`}><td>{item.customer_name}</td><td>{item.invoice_id}</td><td>{item.order_id}</td><td>{formatMoney(item.total_amount)}</td><td>{formatMoney(item.amount_paid)}</td><td>{formatMoney(item.balance_due)}</td><td>{item.due_date || 'â€”'}</td><td>{item.status}</td></tr>)}</tbody>
         </table>
       </div>
       <div className="finance-pagination">
@@ -2618,7 +2661,7 @@ function AdminFinancePayables() {
       <div className="admin-table-wrap">
         <table>
           <thead><tr><th>Vendor</th><th>Bill</th><th>Amount</th><th>Paid</th><th>Balance</th><th>Due Date</th><th>Status</th></tr></thead>
-          <tbody>{items.map(item => <tr key={`${item.bill_reference}-${item.vendor_id}`}><td>{item.vendor_name}</td><td>{item.bill_reference}</td><td>{formatMoney(item.amount)}</td><td>{formatMoney(item.paid)}</td><td>{formatMoney(item.balance_due)}</td><td>{item.due_date || '—'}</td><td>{item.status}</td></tr>)}</tbody>
+          <tbody>{items.map(item => <tr key={`${item.bill_reference}-${item.vendor_id}`}><td>{item.vendor_name}</td><td>{item.bill_reference}</td><td>{formatMoney(item.amount)}</td><td>{formatMoney(item.paid)}</td><td>{formatMoney(item.balance_due)}</td><td>{item.due_date || 'â€”'}</td><td>{item.status}</td></tr>)}</tbody>
         </table>
       </div>
       <div className="finance-pagination">
@@ -2679,7 +2722,7 @@ function AdminFinanceTransactions() {
       <div className="admin-table-wrap">
         <table>
           <thead><tr><th>Date</th><th>ID</th><th>Type</th><th>Description</th><th>Counterparty</th><th>Account</th><th>Debit</th><th>Credit</th><th>Reference</th><th>Status</th></tr></thead>
-          <tbody>{items.map(item => <tr key={item.id}><td>{item.date}</td><td>{item.transaction_number}</td><td>{item.type}</td><td>{item.description}</td><td>{item.counterparty_name || '—'}</td><td>{item.account_name || '—'}</td><td>{item.debit ? formatMoney(item.debit) : '—'}</td><td>{item.credit ? formatMoney(item.credit) : '—'}</td><td>{item.reference || '—'}</td><td>{item.status}</td></tr>)}</tbody>
+          <tbody>{items.map(item => <tr key={item.id}><td>{item.date}</td><td>{item.transaction_number}</td><td>{item.type}</td><td>{item.description}</td><td>{item.counterparty_name || 'â€”'}</td><td>{item.account_name || 'â€”'}</td><td>{item.debit ? formatMoney(item.debit) : 'â€”'}</td><td>{item.credit ? formatMoney(item.credit) : 'â€”'}</td><td>{item.reference || 'â€”'}</td><td>{item.status}</td></tr>)}</tbody>
         </table>
       </div>
     </div>
@@ -2772,7 +2815,7 @@ function AdminFinanceReports() {
       <div className="admin-table-wrap">
         <table>
           <thead><tr><th>Customer</th><th>Invoices</th><th>Total Due</th><th>Overdue</th><th>Oldest Due Date</th></tr></thead>
-          <tbody>{(data.customer_outstanding || []).map(item => <tr key={item.customer_name}><td>{item.customer_name}</td><td>{item.invoices}</td><td>{formatMoney(item.total_due)}</td><td>{formatMoney(item.overdue)}</td><td>{item.oldest_due_date || '—'}</td></tr>)}</tbody>
+          <tbody>{(data.customer_outstanding || []).map(item => <tr key={item.customer_name}><td>{item.customer_name}</td><td>{item.invoices}</td><td>{formatMoney(item.total_due)}</td><td>{formatMoney(item.overdue)}</td><td>{item.oldest_due_date || 'â€”'}</td></tr>)}</tbody>
         </table>
       </div>
     </div>
@@ -2781,9 +2824,9 @@ function AdminFinanceReports() {
         <h3>Receivables Aging</h3>
         <div className="admin-summary admin-summary--analytics">
           <article><span>Current</span><strong>{formatMoney(data.aging_receivables?.current || 0)}</strong></article>
-          <article><span>1–30 Days</span><strong>{formatMoney(data.aging_receivables?.one_to_30 || 0)}</strong></article>
-          <article><span>31–60 Days</span><strong>{formatMoney(data.aging_receivables?.thirty_one_to_60 || 0)}</strong></article>
-          <article><span>61–90 Days</span><strong>{formatMoney(data.aging_receivables?.sixty_one_to_90 || 0)}</strong></article>
+          <article><span>1â€“30 Days</span><strong>{formatMoney(data.aging_receivables?.one_to_30 || 0)}</strong></article>
+          <article><span>31â€“60 Days</span><strong>{formatMoney(data.aging_receivables?.thirty_one_to_60 || 0)}</strong></article>
+          <article><span>61â€“90 Days</span><strong>{formatMoney(data.aging_receivables?.sixty_one_to_90 || 0)}</strong></article>
           <article><span>90+ Days</span><strong>{formatMoney(data.aging_receivables?.ninety_plus || 0)}</strong></article>
         </div>
       </section>
@@ -2791,9 +2834,9 @@ function AdminFinanceReports() {
         <h3>Payables Aging</h3>
         <div className="admin-summary admin-summary--analytics">
           <article><span>Current</span><strong>{formatMoney(data.aging_payables?.current || 0)}</strong></article>
-          <article><span>1–30 Days</span><strong>{formatMoney(data.aging_payables?.one_to_30 || 0)}</strong></article>
-          <article><span>31–60 Days</span><strong>{formatMoney(data.aging_payables?.thirty_one_to_60 || 0)}</strong></article>
-          <article><span>61–90 Days</span><strong>{formatMoney(data.aging_payables?.sixty_one_to_90 || 0)}</strong></article>
+          <article><span>1â€“30 Days</span><strong>{formatMoney(data.aging_payables?.one_to_30 || 0)}</strong></article>
+          <article><span>31â€“60 Days</span><strong>{formatMoney(data.aging_payables?.thirty_one_to_60 || 0)}</strong></article>
+          <article><span>61â€“90 Days</span><strong>{formatMoney(data.aging_payables?.sixty_one_to_90 || 0)}</strong></article>
           <article><span>90+ Days</span><strong>{formatMoney(data.aging_payables?.ninety_plus || 0)}</strong></article>
         </div>
       </section>
@@ -2889,7 +2932,7 @@ function AdminFaqs() { return <AdminCrudPage title="FAQs" description="Manage fr
 
 function AdminTestimonials() { return <AdminCrudPage title="Testimonials" description="Manage real testimonials entered by the admin team." endpoint="/admin/testimonials" createLabel="New Testimonial" searchKeys={['name', 'company', 'role']} defaultRecord={{ name: '', company: '', role: '', testimonial: '', image: '', featured: false, active: true, display_order: 0 }} fields={[{ name: 'name', label: 'Name' }, { name: 'company', label: 'Company' }, { name: 'role', label: 'Role' }, { name: 'testimonial', label: 'Testimonial', type: 'textarea', rows: 5 }, { name: 'image', label: 'Image URL' }, { name: 'featured', label: 'Featured', type: 'checkbox' }, { name: 'active', label: 'Active', type: 'checkbox' }, { name: 'display_order', label: 'Display Order', type: 'number' }]} columns={[{ key: 'name', label: 'Name' }, { key: 'company', label: 'Company' }, { key: 'featured', label: 'Featured', render: item => (item.featured ? 'Yes' : 'No') }, { key: 'active', label: 'Active', render: item => (item.active ? 'Yes' : 'No') }]} />; }
 
-function AdminMedia() { return <AdminCrudPage title="Media" description="Store uploaded images and copy shareable URLs." endpoint="/admin/media" createLabel="New Media Item" searchKeys={['media_number', 'title', 'folder']} defaultRecord={{ title: '', url: '', file_name: '', mime_type: '', alt_text: '', folder: 'library', size: 0 }} fields={[{ name: 'title', label: 'Title' }, { name: 'url', label: 'URL' }, { name: 'file_name', label: 'File Name' }, { name: 'mime_type', label: 'MIME Type' }, { name: 'alt_text', label: 'Alt Text' }, { name: 'folder', label: 'Folder' }, { name: 'size', label: 'File Size', type: 'number' }]} columns={[{ key: 'media_number', label: 'Media ID' }, { key: 'title', label: 'Title' }, { key: 'folder', label: 'Folder' }, { key: 'url', label: 'URL', render: item => item.url || '—' }]} />; }
+function AdminMedia() { return <AdminCrudPage title="Media" description="Store uploaded images and copy shareable URLs." endpoint="/admin/media" createLabel="New Media Item" searchKeys={['media_number', 'title', 'folder']} defaultRecord={{ title: '', url: '', file_name: '', mime_type: '', alt_text: '', folder: 'library', size: 0 }} fields={[{ name: 'title', label: 'Title' }, { name: 'url', label: 'URL' }, { name: 'file_name', label: 'File Name' }, { name: 'mime_type', label: 'MIME Type' }, { name: 'alt_text', label: 'Alt Text' }, { name: 'folder', label: 'Folder' }, { name: 'size', label: 'File Size', type: 'number' }]} columns={[{ key: 'media_number', label: 'Media ID' }, { key: 'title', label: 'Title' }, { key: 'folder', label: 'Folder' }, { key: 'url', label: 'URL', render: item => item.url || 'â€”' }]} />; }
 
 function AdminCoupons() { return <AdminCrudPage title="Coupons" description="Configure coupon codes and discount rules." endpoint="/admin/coupons" createLabel="New Coupon" searchKeys={['code', 'discount_type']} defaultRecord={{ code: '', discount_type: 'Percentage', discount_value: 0, minimum_order: 0, maximum_discount: '', applicable_categories: '[]', applicable_packages: '[]', start_date: '', expiry_date: '', usage_limit: '', per_customer_limit: '', active: true }} fields={[{ name: 'code', label: 'Code' }, { name: 'discount_type', label: 'Discount Type', type: 'select', options: ['Percentage', 'Fixed Amount'] }, { name: 'discount_value', label: 'Discount Value', type: 'number' }, { name: 'minimum_order', label: 'Minimum Order', type: 'number' }, { name: 'maximum_discount', label: 'Maximum Discount', type: 'number' }, { name: 'applicable_categories', label: 'Applicable Categories (JSON)', type: 'json', rows: 4 }, { name: 'applicable_packages', label: 'Applicable Packages (JSON)', type: 'json', rows: 4 }, { name: 'start_date', label: 'Start Date', type: 'date' }, { name: 'expiry_date', label: 'Expiry Date', type: 'date' }, { name: 'usage_limit', label: 'Usage Limit', type: 'number' }, { name: 'per_customer_limit', label: 'Per Customer Limit', type: 'number' }, { name: 'active', label: 'Active', type: 'checkbox' }]} columns={[{ key: 'code', label: 'Code' }, { key: 'discount_type', label: 'Type' }, { key: 'discount_value', label: 'Value' }, { key: 'active', label: 'Active', render: item => (item.active ? 'Yes' : 'No') }]} />; }
 
@@ -2915,3 +2958,5 @@ function AdminBackup() {
     </div>
   </>;
 }
+
+
