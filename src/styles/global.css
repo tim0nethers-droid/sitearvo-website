@@ -2204,6 +2204,11 @@ body:has(.admin-app--mobile) { background:#06080c; }
 .admin-notice--mobile { margin:0 1rem .9rem; }
 .admin-mobile-main { display:grid; gap:.85rem; padding:.85rem .9rem 1rem; }
 .admin-mobile-page-meta { display:none; }
+.admin-app--mobile .admin-heading { display:none; }
+.admin-app--mobile .admin-content .admin-panel:first-child { margin-top:0; }
+.admin-app--mobile .admin-panel { border-radius:16px; }
+.admin-app--mobile .admin-panel__topline { gap:.5rem; }
+.admin-app--mobile .admin-panel__topline h2 { font-size:1rem; }
 .admin-mobile-search-row { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:.55rem; align-items:center; }
 .admin-mobile-search { display:flex; align-items:center; gap:.55rem; min-width:0; min-height:44px; padding:0 .9rem; border:1px solid rgba(255,255,255,.08); border-radius:14px; background:#11151c; color:var(--muted); box-shadow:inset 0 1px 0 rgba(255,255,255,.02); }
 .admin-mobile-search svg { flex:0 0 auto; color:var(--gold-light); }
@@ -2296,6 +2301,7 @@ body:has(.admin-app--mobile) { background:#06080c; }
   .admin-mobile-header__link { display:none; }
   .admin-mobile-header__brand b { font-size:.72rem; }
   .admin-mobile-header__brand span { font-size:.62rem; }
+  .admin-app--mobile .admin-panel { border-radius:15px; }
   .admin-mobile-metrics,
   .admin-mobile-actions,
   .admin-mobile-card__meta { grid-template-columns:1fr; }
