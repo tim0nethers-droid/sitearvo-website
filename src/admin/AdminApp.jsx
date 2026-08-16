@@ -2679,6 +2679,9 @@ function AdminCrudPage({
     const tokens = searchKeys.length ? searchKeys : columns.map(column => column.key).filter(Boolean);
     return tokens.some(key => search(item[key]).includes(search(query)));
   });
+  const totalCount = Array.isArray(data) ? data.length : 0;
+  const visibleCount = filtered.length;
+  const inactiveCount = Array.isArray(data) ? data.filter(item => item.is_active === false || item.status === 'Inactive').length : 0;
   const save = async form => {
     const payload = { ...form };
     for (const field of fields) {
@@ -2696,12 +2699,24 @@ function AdminCrudPage({
   };
   return (
     <>
-      <AdminHeading
-        title={title}
-        description={description}
-        action={allowCreate ? <button className="button" onClick={() => setEditing({ ...defaultRecord })}><Plus /> {createLabel}</button> : <button className="button button--secondary" onClick={() => load()}>Refresh</button>}
-      />
-      <div className="admin-panel admin-resource-toolbar">
+      <section className="admin-crud-hero admin-panel">
+        <div className="admin-panel__topline">
+          <div>
+            <span className="eyebrow">{title}</span>
+            <h2>{description}</h2>
+          </div>
+          <div className="admin-crud-hero__actions">
+            <button type="button" className="button button--secondary" onClick={() => load()}>Refresh</button>
+            {allowCreate ? <button className="button" onClick={() => setEditing({ ...defaultRecord })}><Plus /> {createLabel}</button> : null}
+          </div>
+        </div>
+        <div className="admin-crud-hero__summary">
+          <article><span>Total Records</span><strong>{totalCount}</strong></article>
+          <article><span>Visible Now</span><strong>{visibleCount}</strong></article>
+          <article><span>Inactive</span><strong>{inactiveCount}</strong></article>
+        </div>
+      </section>
+      <div className="admin-panel admin-resource-toolbar admin-resource-toolbar--premium">
         <label className="admin-field admin-field--inline">
           <span>Search</span>
           <input value={query} onChange={e => setQuery(e.target.value)} placeholder={`Search ${title.toLowerCase()}`} />
@@ -2754,26 +2769,28 @@ function AdminCrudPage({
           )) : <div className="admin-empty-state">{allowCreate ? `No ${title.toLowerCase()} yet.` : 'No records found.'}</div>}
         </div>
       ) : filtered.length ? (
-        <AdminTable headers={[...columns.map(column => column.label), 'Actions']}>
-          {filtered.map(item => (
-            <tr key={item.id}>
-              {columns.map(column => (
-                <td key={column.label}>{column.render ? column.render(item) : item[column.key]}</td>
-              ))}
-              <td>
-                <button type="button" onClick={() => setEditing({ ...item })}>Edit</button>
-                {rowActions && rowActions(item, load, setNotice)}
-                {allowDelete && <button type="button" className="danger" onClick={async () => {
-                  if (!window.confirm(`Delete ${item.name || item.title || item.id}?`)) return;
-                  await apiFetch(`${endpoint}/${item.id}`, { method: 'DELETE' });
-                  await load();
-                }}><Trash2 /> Delete</button>}
-              </td>
-            </tr>
-          ))}
-        </AdminTable>
+        <section className="admin-panel admin-crud-table-panel">
+          <AdminTable headers={[...columns.map(column => column.label), 'Actions']}>
+            {filtered.map(item => (
+              <tr key={item.id}>
+                {columns.map(column => (
+                  <td key={column.label}>{column.render ? column.render(item) : item[column.key]}</td>
+                ))}
+                <td>
+                  <button type="button" onClick={() => setEditing({ ...item })}>Edit</button>
+                  {rowActions && rowActions(item, load, setNotice)}
+                  {allowDelete && <button type="button" className="danger" onClick={async () => {
+                    if (!window.confirm(`Delete ${item.name || item.title || item.id}?`)) return;
+                    await apiFetch(`${endpoint}/${item.id}`, { method: 'DELETE' });
+                    await load();
+                  }}><Trash2 /> Delete</button>}
+                </td>
+              </tr>
+            ))}
+          </AdminTable>
+        </section>
       ) : (
-        <div className="admin-empty-state">
+        <div className="admin-panel admin-empty-state admin-empty-state--premium">
           <b>{allowCreate ? `No ${title.toLowerCase()} yet.` : 'No records found.'}</b>
           <p>{allowCreate ? 'Create the first record to start using this section.' : 'Try a different search or refresh the page.'}</p>
         </div>
