@@ -14,7 +14,18 @@ export async function apiFetch(path, options = {}) {
     ...options,
   });
   const body = await response.json().catch(() => ({}));
-  if (!response.ok) throw new ApiError(body.message || 'The request could not be completed.', response.status, body.errors);
+  if (!response.ok) {
+    if (response.status === 401) {
+      sessionStorage.removeItem('sitearvo-admin-csrf');
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('sitearvo-admin-session-expired', { detail: { path } }));
+      }
+    }
+    const message = response.status === 401
+      ? (body.message || 'Your admin session expired. Please sign in again.')
+      : (body.message || 'The request could not be completed.');
+    throw new ApiError(message, response.status, body.errors);
+  }
   const data = body.data ?? body;
   if (data?.csrf) sessionStorage.setItem('sitearvo-admin-csrf', data.csrf);
   if (path === '/auth/logout') sessionStorage.removeItem('sitearvo-admin-csrf');

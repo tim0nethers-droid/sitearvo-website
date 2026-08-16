@@ -102,6 +102,11 @@ function getAdminStatusTone(value = '') {
 export default function AdminApp() {
   const [admin, setAdmin] = useState(undefined);
   const [notice, setNotice] = useState('');
+  useEffect(() => {
+    const handleSessionExpired = () => setAdmin(null);
+    window.addEventListener('sitearvo-admin-session-expired', handleSessionExpired);
+    return () => window.removeEventListener('sitearvo-admin-session-expired', handleSessionExpired);
+  }, []);
   useEffect(() => { apiFetch('/auth/me').then(data => setAdmin(data?.id && data?.csrf ? data : null)).catch(() => setAdmin(null)); }, []);
   return (
     <AdminContext.Provider value={{ admin, setAdmin, notice, setNotice }}>
