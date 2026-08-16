@@ -239,6 +239,8 @@ function AdminMobileShell({ admin, notice, logout }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const location = useLocation();
   const meta = getAdminMobileMeta(location.pathname);
+  const adminLabel = String(admin?.name || 'Admin').trim();
+  const adminInitial = adminLabel ? adminLabel.charAt(0).toUpperCase() : 'S';
   useEffect(() => { setDrawerOpen(false); }, []);
   useEffect(() => { setDrawerOpen(false); }, [location.pathname]);
   useEffect(() => {
@@ -255,22 +257,22 @@ function AdminMobileShell({ admin, notice, logout }) {
           <button type="button" className="admin-mobile-header__button" onClick={openDrawer} aria-label="Open admin menu"><Menu /></button>
           <div className="admin-mobile-header__brand">
             <Logo />
-            <div>
+            <div className="admin-mobile-header__brand-copy">
               <b>SiteArvo Catalog Manager</b>
               <span>{meta.title}</span>
             </div>
           </div>
+          <Link to="/admin/notifications" className="admin-mobile-header__action admin-mobile-header__action--bell" aria-label="Open notifications">
+            <Bell size={16} />
+            <span className="admin-mobile-header__dot" />
+          </Link>
+          <button type="button" className="admin-mobile-header__action admin-mobile-header__action--avatar" onClick={openDrawer} aria-label="Open admin profile and menu">
+            {adminInitial}
+          </button>
           <a href="/" target="_blank" rel="noreferrer" className="admin-mobile-header__link">View Website</a>
         </header>
         {notice && <div className="admin-notice admin-notice--mobile" role="status">{notice}</div>}
         <main className="admin-mobile-main">
-          <div className="admin-mobile-page-meta">
-            <ColoredIconBox icon={meta.icon} color={meta.color} size={19} />
-            <div>
-              <h1>{meta.title}</h1>
-              <p>{meta.subtitle}</p>
-            </div>
-          </div>
           <div className="admin-content admin-content--mobile"><AdminOutlet /></div>
         </main>
         <AdminMobileBottomNav onMore={openDrawer} />
