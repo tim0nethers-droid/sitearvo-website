@@ -103,11 +103,13 @@ pages.get('/pricing').schema = collectionSchema({ name: 'SiteArvo Service Packag
 pages.get('/portfolio').schema = collectionSchema({ name: 'SiteArvo Website Design Portfolio', description: pages.get('/portfolio').description, path: '/portfolio', items: projects.map(project => ({ title: project.title, path: `/portfolio/${project.slug}` })) });
 
 for (const [route, metadata] of pages) await writeRoute(route, metadata);
-for (const route of ['/cart', '/checkout', '/admin', '/admin/login']) {
+for (const route of ['/cart', '/checkout', '/admin', '/admin/dashboard', '/admin/login']) {
   await writeRoute(route, {
     title: route.startsWith('/admin') ? 'SiteArvo Admin' : 'Private Service Enquiry',
     description: 'This page is not intended for search engine results.',
     noIndex: true,
+    canonical: route === '/admin/dashboard' ? '/admin' : undefined,
+    redirectTo: route === '/admin/dashboard' ? '/admin' : undefined,
   });
 }
 await writeFile(path.join(dist, '404.html'), renderHtml({
@@ -143,7 +145,7 @@ async function writeRoute(route, metadata) {
   await writeFile(path.join(outputDirectory, 'index.html'), renderHtml({ route, ...metadata }), 'utf8');
 }
 
-function renderHtml({ route, title, description, type = 'website', noIndex = false, schema, bodyHtml = '', canonical: canonicalOverride }) {
+function renderHtml({ route, title, description, type = 'website', noIndex = false, schema, bodyHtml = '', canonical: canonicalOverride, redirectTo }) {
   const fullTitle = title.includes(company.name) ? title : `${title} | ${company.name}`;
   const canonicalPath = canonicalOverride || route;
   const canonical = `${company.domain}${canonicalPath === '/' ? '/' : canonicalPath.replace(/\/$/, '')}`;
@@ -164,6 +166,9 @@ function renderHtml({ route, title, description, type = 'website', noIndex = fal
     .replace(/<meta property="og:url"[^>]*>/i, `<meta property="og:url" content="${values.canonical}" />`)
     .replace(/<meta name="twitter:title"[^>]*>/i, `<meta name="twitter:title" content="${values.title}" />`)
     .replace(/<meta name="twitter:description"[^>]*>/i, `<meta name="twitter:description" content="${values.description}" />`);
+  if (redirectTo) {
+    html = html.replace('</head>', `    <meta http-equiv="refresh" content="0;url=${company.domain}${redirectTo}" />\n  </head>`);
+  }
   const automaticSchema = combineSchemas(
     schema,
     webPageSchema({ name: fullTitle, description, path: route }),
