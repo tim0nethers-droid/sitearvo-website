@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ChevronDown, ChevronRight, Mail, Menu, MessageCircle, Phone, ShieldCheck, ShoppingCart, X } from 'lucide-react';
+import { ChevronDown, ChevronRight, LogIn, Mail, Menu, MessageCircle, Phone, ShoppingCart, X } from 'lucide-react';
 import { NavLink, Link, useLocation } from 'react-router-dom';
 import Logo from './Logo';
 import { trackAnalyticsEvent } from './Analytics';
@@ -8,7 +8,7 @@ import { useCatalog } from '../catalog/CatalogContext';
 import { getCatalogIcon } from '../catalog/icons';
 import { useCart } from '../cart/CartContext';
 
-const links = [['/', 'Home'], ['/about', 'About Us'], ['/industries', 'Industries'], ['/portfolio', 'Portfolio'], ['/pricing', 'Pricing'], ['/contact', 'Contact']];
+const links = [['/', 'Home'], ['/about', 'About Us'], ['/industries', 'Industries'], ['/portfolio', 'Portfolio'], ['/pricing', 'Pricing'], ['/contact', 'Contact'], ['/admin/login', 'Login']];
 const defaultServiceCategory = 'web-development';
 const isDesktopMenu = () => window.matchMedia('(min-width: 821px)').matches;
 const categoryMenuTitle = category => category.id === 'mobile-app-development' ? category.title : category.shortTitle;
@@ -149,14 +149,13 @@ export default function Navbar() {
             <div className="mega-menu-footer"><Link className="mega-view-all" to="/services" onClick={closeNavigation}>View All Services <ChevronRight aria-hidden="true" /></Link></div>
           </div>
         </div>
-        {links.slice(2).map(([to, label]) => <NavLink key={to} to={to} className={({ isActive }) => isActive ? 'active' : ''}>{label}</NavLink>)}
+        {links.slice(2).map(([to, label]) => <NavLink key={to} to={to} className={({ isActive }) => isActive ? 'active' : ''}>{label === 'Login' ? <><LogIn aria-hidden="true" />{label}</> : label}</NavLink>)}
         <div className="nav-utility-cluster">
           <NavLink to="/cart" className={({ isActive }) => `nav-cart ${isActive ? 'active' : ''}`} aria-label={`Shopping cart with ${cartCount} ${cartCount === 1 ? 'item' : 'items'}`} onClick={() => trackAnalyticsEvent('cart_viewed', { source: 'navbar', onceKey: 'cart_viewed' })}>
             <ShoppingCart aria-hidden="true" />
             <span className="nav-cart-label">Cart</span>
             {cartCount > 0 && <span className="nav-cart-badge" aria-hidden="true">{cartCount > 99 ? '99+' : cartCount}</span>}
           </NavLink>
-          <Link to="/admin/login" className="nav-admin-link" aria-label="Admin login"><ShieldCheck aria-hidden="true" /><span className="sr-only">Admin login</span></Link>
         </div>
         <Link to="/contact" className="button button--small nav-cta">Get a Quote</Link>
       </nav>
