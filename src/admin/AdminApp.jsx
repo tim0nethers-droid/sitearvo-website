@@ -625,62 +625,22 @@ function AdminDashboard() {
   ];
   const financeSnapshot = data.finance_snapshot || {};
   return <>
-    <AdminHeading title="Dashboard" description="A real-time overview of stored catalog content, enquiries and visitor traffic." />
-    <div className="admin-panel admin-panel--hero">
-      <div className="admin-panel__topline">
-        <div>
-          <span className="eyebrow">Analytics Snapshot</span>
-          <h2>Visitor Metrics</h2>
-        </div>
-        <Link className="text-link" to="/admin/analytics">Open full analytics <BarChart3 size={16} /></Link>
-      </div>
-      <div className="admin-summary admin-summary--analytics admin-summary--featured">
-        {analyticsCards.map(([label, value]) => <article key={label}><span>{label}</span><strong>{value ?? 0}</strong></article>)}
-      </div>
-      <div className="admin-analytics-grid">
-        <section>
-          <h3>Top Pages</h3>
-          <div className="admin-mini-list">{(analytics.top_pages || []).length ? analytics.top_pages.map(item => <div key={item.path}><b>{item.path}</b><span>{item.pageviews} views Â· {item.visitors} visitors</span></div>) : <p>No page views tracked yet.</p>}</div>
-        </section>
-        <section>
-          <h3>7-Day Trend</h3>
-          <div className="admin-mini-list">{(analytics.daily_views || []).length ? analytics.daily_views.map(item => <div key={item.date}><b>{new Date(item.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</b><span>{item.pageviews} views Â· {item.visitors} visitors</span></div>) : <p>No trend data yet.</p>}</div>
-        </section>
-      </div>
-    </div>
-    <div className="admin-summary">{managementCards.map(([label, value]) => <article key={label}><span>{label}</span><strong>{value ?? 0}</strong></article>)}</div>
-    <div className="admin-panel">
-      <div className="admin-panel__topline">
-        <div>
-          <span className="eyebrow">Finance Snapshot</span>
-          <h2>Collected, spent and outstanding balances</h2>
-        </div>
-        <Link className="text-link" to="/admin/finance">Open Finance <ArrowLeftRight size={16} /></Link>
-      </div>
-      <div className="admin-summary admin-summary--analytics admin-summary--featured">
-        <article><span>Collected This Month</span><strong>{formatMoney(financeSnapshot.collected_this_month || 0)}</strong></article>
-        <article><span>Expenses This Month</span><strong>{formatMoney(financeSnapshot.expenses_this_month || 0)}</strong></article>
-        <article><span>Net This Month</span><strong>{formatMoney(financeSnapshot.net_this_month || 0)}</strong></article>
-        <article><span>Outstanding Receivables</span><strong>{formatMoney(financeSnapshot.outstanding_receivables || 0)}</strong></article>
-      </div>
-    </div>
-    <div className="admin-actions admin-actions--spaced">
-      <Link className="button" to="/admin/analytics"><BarChart3 /> Open Analytics</Link>
-      <Link className="button button--secondary" to="/admin/leads"><Plus /> New Lead</Link>
-      <Link className="button button--secondary" to="/admin/quotations"><Plus /> New Quote</Link>
-      <Link className="button button--secondary" to="/admin/services"><Plus /> New Package</Link>
-      <Link className="button button--secondary" to="/admin/projects"><Plus /> New Project</Link>
-      <Link className="button button--secondary" to="/admin/portfolio"><Plus /> Add Portfolio Project</Link>
-      <Link className="button button--secondary" to="/admin/chats"><MessageSquareText /> Open Live Chats</Link>
-      <Link className="button button--secondary" to="/admin/orders">Review Enquiries</Link>
-      <Link className="button button--secondary" to="/admin/finance"><ArrowLeftRight /> Open Finance</Link>
-    </div>
-    <div className="admin-panel">
-      <h2>Recent Activity</h2>
-      <div className="admin-mini-list">
-        {(data.recent_activity || []).length ? data.recent_activity.map(item => <div key={item.id}><b>{item.action}</b><span>{item.entity} Â· {new Date(item.created_at).toLocaleString('en-IN')}</span></div>) : <p>No recent activity yet.</p>}
-      </div>
-    </div>
+    <AdminHeading
+      title="Live Chat Inbox"
+      description="Reply to website visitors in real time. Open several conversations side by side. New messages refresh automatically."
+      action={<div className="admin-chat-tools"><button type="button" className={`button button--secondary admin-sound-toggle ${soundEnabled ? 'is-on' : ''}`} onClick={() => setSoundEnabled(value => !value)}>{soundEnabled ? 'Sound On' : 'Sound Off'}</button><div className="admin-chat-unread">{unreadTotal > 0 ? <><MessageSquareText /> <span>{unreadTotal} unread</span></> : <><MessageSquareText /> <span>All caught up</span></>}</div></div>}
+    />
+    {toast && <div className="admin-chat-toast" role="status" aria-live="polite"><MessageSquareText /><div><strong>{toast.title}</strong><p>{toast.message}</p></div><button type="button" aria-label="Dismiss notification" onClick={() => setToast(null)}><X /></button></div>}
+    {error && <div className="admin-error" role="alert">{error}</div>}
+    {loading ? <AdminLoading /> : <div className="admin-chat-layout"><aside className="admin-chat-list">{conversations.length ? conversations.map(item => {
+      const chatId = String(item.id);
+      const isActive = String(activeId) === chatId;
+      const isOpen = openIds.includes(chatId);
+      return <button type="button" className={`${isActive ? 'is-active' : ''} ${isOpen ? 'is-open' : ''}`.trim()} key={item.id} onClick={() => openConversation(chatId)}><div><b>{item.visitor_name}</b><span>{item.unread_admin > 0 ? item.unread_admin : isOpen ? 'Open' : 'Preview'}</span></div><p>{item.last_message}</p><small>#{item.public_id} ? {new Date(item.last_message_at.replace(' ', 'T')).toLocaleString('en-IN')}</small></button>;
+    }) : <div className="admin-chat-empty"><MessageSquareText /><b>No conversations yet</b><p>New website chats will appear here.</p></div>}</aside><section className="admin-chat-workspace"><div className="admin-chat-tabs">{openIds.length ? openIds.map(id => {
+      const chat = chatsById[id] || conversations.find(item => String(item.id) === String(id));
+      return <div key={id} className={`admin-chat-tab ${String(activeId) === String(id) ? 'is-active' : ''}`} role="button" tabIndex={0} onClick={() => setActiveId(String(id))} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setActiveId(String(id)); } }}><span>{chat?.visitor_name || `Chat #${id}`}</span>{chat?.unread_admin > 0 && <b>{chat.unread_admin}</b>}<small>#{chat?.public_id || id}</small><button type="button" className="admin-chat-tab__close" aria-label={`Close ${chat?.visitor_name || `chat ${id}`}`} onClick={event => { event.stopPropagation(); closeConversation(id); }}><X /></button></div>;
+    }) : <div className="admin-chat-tabs__empty">Open conversations from the list to compare chats side by side.</div>}</div>{openIds.length ? <div className={`admin-chat-workspace__grid ${openIds.length > 1 ? 'is-multi' : ''}`}>{openIds.map(id => { const chat = chatsById[id] || conversations.find(item => String(item.id) === String(id)); if (!chat) return <article className="admin-chat-thread-card" key={id}><div className="admin-chat-empty"><MessageSquareText /><b>Loading conversation...</b></div></article>; return <article className={`admin-chat-thread-card ${String(activeId) === String(id) ? 'is-active' : ''}`} key={id}><header><div><h2>{chat.visitor_name}</h2><p>{chat.visitor_email || 'Email not provided'} ? #{chat.public_id}</p></div><div className="admin-chat-thread-card__actions"><button type="button" className={`admin-chat-status is-${chat.status}`} onClick={() => changeStatus(id, chat.status === 'open' ? 'closed' : 'open')}>{chat.status === 'open' ? 'Close conversation' : 'Reopen conversation'}</button><button type="button" className="admin-chat-close" aria-label={`Close ${chat.visitor_name}`} onClick={() => closeConversation(id)}><X /></button></div></header><div className="admin-chat-messages">{chat.messages.map(item => <article className={`is-${item.sender}`} key={item.id}><b>{item.sender === 'visitor' ? chat.visitor_name : 'SiteArvo'}</b><p>{item.message}</p><time>{new Date(item.created_at.replace(' ', 'T')).toLocaleString('en-IN')}</time></article>)}</div><form onSubmit={event => send(id, event)}><textarea rows="2" maxLength="1500" value={drafts[id] || ''} onChange={event => setDrafts(current => ({ ...current, [id]: event.target.value }))} placeholder="Type your reply..." disabled={chat.status === 'closed'} /><button className="button" disabled={busyById[id] || chat.status === 'closed' || !(drafts[id] || '').trim()}><Send /> {busyById[id] ? 'Sending...' : 'Send Reply'}</button></form></article>; })}</div> : <div className="admin-chat-empty admin-chat-empty--workspace"><MessageSquareText /><b>Select a conversation</b><p>Pick one or more chats from the left list to keep multiple conversations open at once.</p></div>}</section></div>}
   </>;
 }
 
@@ -1702,16 +1662,28 @@ function AdminOrders() {
 
 function AdminChats() {
   const [conversations, setConversations] = useState([]);
-  const [selectedId, setSelectedId] = useState(null);
-  const [chat, setChat] = useState(null);
-  const [message, setMessage] = useState('');
+  const [openIds, setOpenIds] = useState([]);
+  const [activeId, setActiveId] = useState(null);
+  const [chatsById, setChatsById] = useState({});
+  const [drafts, setDrafts] = useState({});
   const [loading, setLoading] = useState(true);
-  const [busy, setBusy] = useState(false);
+  const [busyById, setBusyById] = useState({});
   const [error, setError] = useState('');
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [toast, setToast] = useState(null);
   const previousConversationIdsRef = useRef([]);
-  const previousUnreadRef = useRef(0);
+  const previousUnreadByIdRef = useRef({});
   const audioContextRef = useRef(null);
+  const openIdsRef = useRef([]);
+  const activeIdRef = useRef(null);
+
+  useEffect(() => { openIdsRef.current = openIds; }, [openIds]);
+  useEffect(() => { activeIdRef.current = activeId; }, [activeId]);
+  useEffect(() => {
+    if (!toast) return undefined;
+    const timer = window.setTimeout(() => setToast(null), 3200);
+    return () => window.clearTimeout(timer);
+  }, [toast]);
 
   const playAlertTone = () => {
     try {
@@ -1736,34 +1708,91 @@ function AdminChats() {
     }
   };
 
+  const openToast = (title, message) => setToast({ id: `${Date.now()}-${Math.random()}`, title, message });
+
+  const openConversation = id => {
+    const chatId = String(id);
+    setOpenIds(current => (current.includes(chatId) ? current : [...current, chatId]));
+    setActiveId(chatId);
+    loadChat(chatId);
+  };
+
+  const closeConversation = id => {
+    const chatId = String(id);
+    setOpenIds(current => current.filter(item => String(item) !== chatId));
+    setChatsById(current => {
+      const next = { ...current };
+      delete next[chatId];
+      return next;
+    });
+    setDrafts(current => {
+      const next = { ...current };
+      delete next[chatId];
+      return next;
+    });
+    setActiveId(current => {
+      if (String(current) !== chatId) return current;
+      const remaining = openIdsRef.current.filter(item => String(item) !== chatId);
+      return remaining.at(-1) || null;
+    });
+  };
+
   const loadList = async (quiet = false) => {
     if (!quiet) setLoading(true);
     try {
       const data = await apiFetch('/admin/chats');
       const nextIds = data.map(item => String(item.id));
-      const nextUnread = data.reduce((sum, item) => sum + Number(item.unread_admin || 0), 0);
-      const latestId = data[0]?.id || null;
+      const nextUnreadById = data.reduce((accumulator, item) => {
+        accumulator[String(item.id)] = Number(item.unread_admin || 0);
+        return accumulator;
+      }, {});
+      const latestId = data[0]?.id ? String(data[0].id) : null;
       const previousIds = previousConversationIdsRef.current;
-      const hasNewConversation = Boolean(latestId) && String(latestId) !== String(previousIds[0] || '');
-      const unreadIncreased = nextUnread > previousUnreadRef.current;
-      if (quiet && soundEnabled && (hasNewConversation || unreadIncreased)) playAlertTone();
+      const previousUnread = previousUnreadByIdRef.current;
+      const latestConversation = data[0] || null;
+      const newConversation = Boolean(latestId) && !previousIds.includes(latestId);
+      const unreadIncrease = data.find(item => Number(item.unread_admin || 0) > Number(previousUnread[String(item.id)] || 0));
+      if (quiet && (newConversation || unreadIncrease)) {
+        const mentionName = newConversation ? latestConversation?.visitor_name || 'a visitor' : unreadIncrease?.visitor_name || 'a visitor';
+        const title = newConversation ? 'New live chat' : 'New visitor message';
+        const message = newConversation ? `${mentionName} just started a new conversation.` : `${mentionName} sent a new message.`;
+        openToast(title, message);
+        if (soundEnabled) playAlertTone();
+      }
       previousConversationIdsRef.current = nextIds;
-      previousUnreadRef.current = nextUnread;
+      previousUnreadByIdRef.current = nextUnreadById;
       setConversations(data);
-      setSelectedId(current => {
-        const currentExists = current && data.some(item => String(item.id) === String(current));
-        if (!currentExists) return latestId;
-        if (quiet && hasNewConversation && document.visibilityState === 'visible') return latestId;
-        return current;
+      setOpenIds(current => {
+        const normalized = current.map(item => String(item)).filter(item => nextIds.includes(item));
+        if (normalized.length) {
+          if (!normalized.includes(activeIdRef.current)) setActiveId(normalized.at(-1));
+          return normalized;
+        }
+        if (latestId) {
+          setActiveId(latestId);
+          return [latestId];
+        }
+        setActiveId(null);
+        return [];
       });
     } catch (requestError) { setError(requestError.message); }
     finally { if (!quiet) setLoading(false); }
   };
+
   const loadChat = async id => {
-    if (!id) return;
-    try { setChat(await apiFetch(`/admin/chats/${id}`)); setError(''); }
-    catch (requestError) { setError(requestError.message); }
+    const chatId = String(id || '');
+    if (!chatId) return null;
+    try {
+      const chat = await apiFetch(`/admin/chats/${chatId}`);
+      setChatsById(current => ({ ...current, [chatId]: chat }));
+      setError('');
+      return chat;
+    } catch (requestError) {
+      setError(requestError.message);
+      return null;
+    }
   };
+
   useEffect(() => {
     loadList();
     const timer = window.setInterval(() => loadList(true), 1000);
@@ -1777,33 +1806,63 @@ function AdminChats() {
       document.removeEventListener('visibilitychange', onVisibilityChange);
     };
   }, []);
+
   useEffect(() => {
-    if (!selectedId) return undefined;
-    loadChat(selectedId);
-    const timer = window.setInterval(() => loadChat(selectedId), 1000);
-    const refresh = () => loadChat(selectedId);
+    if (!openIds.length) return undefined;
+    let cancelled = false;
+    const refresh = async () => {
+      const results = await Promise.all(openIds.map(id => loadChat(id)));
+      if (cancelled) return;
+      if (results.some(Boolean)) setError('');
+    };
+    refresh();
+    const timer = window.setInterval(refresh, 1000);
     const onVisibilityChange = () => { if (document.visibilityState === 'visible') refresh(); };
     window.addEventListener('focus', refresh);
     document.addEventListener('visibilitychange', onVisibilityChange);
     return () => {
+      cancelled = true;
       window.clearInterval(timer);
       window.removeEventListener('focus', refresh);
       document.removeEventListener('visibilitychange', onVisibilityChange);
     };
-  }, [selectedId]);
-  const send = async event => {
-    event.preventDefault(); if (!message.trim() || !selectedId) return;
-    setBusy(true);
-    try { await apiFetch(`/admin/chats/${selectedId}/messages`, { method: 'POST', body: JSON.stringify({ message }) }); setMessage(''); await loadChat(selectedId); await loadList(true); }
-    catch (requestError) { setError(requestError.message); }
-    finally { setBusy(false); }
+  }, [openIds]);
+
+  const send = async (chatId, event) => {
+    event.preventDefault();
+    const draft = drafts[chatId] || '';
+    if (!draft.trim()) return;
+    setBusyById(current => ({ ...current, [chatId]: true }));
+    try {
+      await apiFetch(`/admin/chats/${chatId}/messages`, { method: 'POST', body: JSON.stringify({ message: draft }) });
+      setDrafts(current => ({ ...current, [chatId]: '' }));
+      await loadChat(chatId);
+      await loadList(true);
+    } catch (requestError) {
+      setError(requestError.message);
+    } finally {
+      setBusyById(current => ({ ...current, [chatId]: false }));
+    }
   };
-  const changeStatus = async status => {
-    await apiFetch(`/admin/chats/${selectedId}/status`, { method: 'PUT', body: JSON.stringify({ status }) });
-    await loadChat(selectedId); await loadList(true);
+
+  const changeStatus = async (chatId, status) => {
+    await apiFetch(`/admin/chats/${chatId}/status`, { method: 'PUT', body: JSON.stringify({ status }) });
+    await loadChat(chatId);
+    await loadList(true);
   };
+
   const unreadTotal = conversations.reduce((sum, item) => sum + Number(item.unread_admin || 0), 0);
-  return <><AdminHeading title="Live Chat Inbox" description="Reply to website visitors in real time. New messages refresh automatically." action={<div className="admin-chat-tools"><button type="button" className={`button button--secondary admin-sound-toggle ${soundEnabled ? 'is-on' : ''}`} onClick={() => setSoundEnabled(value => !value)}>{soundEnabled ? 'Sound On' : 'Sound Off'}</button><div className="admin-chat-unread">{unreadTotal > 0 ? <><MessageSquareText /> <span>{unreadTotal} unread</span></> : <><MessageSquareText /> <span>All caught up</span></>}</div></div>} />{error && <div className="admin-error" role="alert">{error}</div>}{loading ? <AdminLoading /> : <div className="admin-chat-layout"><aside className="admin-chat-list">{conversations.length ? conversations.map(item => <button type="button" className={selectedId === item.id ? 'is-active' : ''} key={item.id} onClick={() => setSelectedId(item.id)}><div><b>{item.visitor_name}</b>{item.unread_admin > 0 && <span>{item.unread_admin}</span>}</div><p>{item.last_message}</p><small>#{item.public_id} · {new Date(item.last_message_at.replace(' ', 'T')).toLocaleString('en-IN')}</small></button>) : <div className="admin-chat-empty"><MessageSquareText /><b>No conversations yet</b><p>New website chats will appear here.</p></div>}</aside><section className="admin-chat-thread">{chat ? <><header><div><h2>{chat.visitor_name}</h2><p>{chat.visitor_email || 'Email not provided'} · #{chat.public_id}</p></div><button type="button" className={`admin-chat-status is-${chat.status}`} onClick={() => changeStatus(chat.status === 'open' ? 'closed' : 'open')}>{chat.status === 'open' ? 'Close conversation' : 'Reopen conversation'}</button></header><div className="admin-chat-messages">{chat.messages.map(item => <article className={`is-${item.sender}`} key={item.id}><b>{item.sender === 'visitor' ? chat.visitor_name : 'SiteArvo'}</b><p>{item.message}</p><time>{new Date(item.created_at.replace(' ', 'T')).toLocaleString('en-IN')}</time></article>)}</div><form onSubmit={send}><textarea rows="2" maxLength="1500" value={message} onChange={event => setMessage(event.target.value)} placeholder="Type your reply..." disabled={chat.status === 'closed'} /><button className="button" disabled={busy || chat.status === 'closed' || !message.trim()}><Send /> {busy ? 'Sending...' : 'Send Reply'}</button></form></> : <div className="admin-chat-empty"><MessageSquareText /><b>Select a conversation</b></div>}</section></div>}</>;
+
+  return <>
+    <AdminHeading
+      title="Live Chat Inbox"
+      description="Reply to website visitors in real time. Open several conversations side by side. New messages refresh automatically."
+      action={<div className="admin-chat-tools"><button type="button" className={`button button--secondary admin-sound-toggle ${soundEnabled ? 'is-on' : ''}`} onClick={() => setSoundEnabled(value => !value)}>{soundEnabled ? 'Sound On' : 'Sound Off'}</button><div className="admin-chat-unread">{unreadTotal > 0 ? <><MessageSquareText /> <span>{unreadTotal} unread</span></> : <><MessageSquareText /> <span>All caught up</span></>}</div></div>}
+    />
+    {toast && <div className="admin-chat-toast" role="status" aria-live="polite"><MessageSquareText /><div><strong>{toast.title}</strong><p>{toast.message}</p></div><button type="button" aria-label="Dismiss notification" onClick={() => setToast(null)}><X /></button></div>}
+    {error && <div className="admin-error" role="alert">{error}</div>}
+    {loading ? <AdminLoading /> : <div className="admin-chat-layout"><aside className="admin-chat-list">{conversations.length ? conversations.map(item => { const chatId = String(item.id); const isActive = String(activeId) === chatId; const isOpen = openIds.includes(chatId); return <button type="button" className={`${isActive ? 'is-active' : ''} ${isOpen ? 'is-open' : ''}`.trim()} key={item.id} onClick={() => openConversation(chatId)}><div><b>{item.visitor_name}</b><span>{item.unread_admin > 0 ? item.unread_admin : isOpen ? 'Open' : 'Preview'}</span></div><p>{item.last_message}</p><small>#{item.public_id} ? {new Date(item.last_message_at.replace(' ', 'T')).toLocaleString('en-IN')}</small></button>; }) : <div className="admin-chat-empty"><MessageSquareText /><b>No conversations yet</b><p>New website chats will appear here.</p></div>}</aside><section className="admin-chat-workspace"><div className="admin-chat-tabs">{openIds.length ? openIds.map(id => { const chat = chatsById[id] || conversations.find(item => String(item.id) === String(id)); return <button type="button" key={id} className={`admin-chat-tab ${String(activeId) === String(id) ? 'is-active' : ''}`} onClick={() => setActiveId(String(id))}><span>{chat?.visitor_name || `Chat #${id}`}</span>{chat?.unread_admin > 0 && <b>{chat.unread_admin}</b>}<small>#{chat?.public_id || id}</small><i type="button" aria-label={`Close ${chat?.visitor_name || `chat ${id}`}`} onClick={event => { event.stopPropagation(); closeConversation(id); }}><X /></i></button>; }) : <div className="admin-chat-tabs__empty">Open conversations from the list to compare chats side by side.</div>}</div>{openIds.length ? <div className={`admin-chat-workspace__grid ${openIds.length > 1 ? 'is-multi' : ''}`}>{openIds.map(id => { const chat = chatsById[id] || conversations.find(item => String(item.id) === String(id)); if (!chat) return <article className="admin-chat-thread-card" key={id}><div className="admin-chat-empty"><MessageSquareText /><b>Loading conversation...</b></div></article>; return <article className={`admin-chat-thread-card ${String(activeId) === String(id) ? 'is-active' : ''}`} key={id}><header><div><h2>{chat.visitor_name}</h2><p>{chat.visitor_email || 'Email not provided'} ? #{chat.public_id}</p></div><div className="admin-chat-thread-card__actions"><button type="button" className={`admin-chat-status is-${chat.status}`} onClick={() => changeStatus(id, chat.status === 'open' ? 'closed' : 'open')}>{chat.status === 'open' ? 'Close conversation' : 'Reopen conversation'}</button><button type="button" className="admin-chat-close" aria-label={`Close ${chat.visitor_name}`} onClick={() => closeConversation(id)}><X /></button></div></header><div className="admin-chat-messages">{chat.messages.map(item => <article className={`is-${item.sender}`} key={item.id}><b>{item.sender === 'visitor' ? chat.visitor_name : 'SiteArvo'}</b><p>{item.message}</p><time>{new Date(item.created_at.replace(' ', 'T')).toLocaleString('en-IN')}</time></article>)}</div><form onSubmit={event => send(id, event)}><textarea rows="2" maxLength="1500" value={drafts[id] || ''} onChange={event => setDrafts(current => ({ ...current, [id]: event.target.value }))} placeholder="Type your reply..." disabled={chat.status === 'closed'} /><button className="button" disabled={busyById[id] || chat.status === 'closed' || !(drafts[id] || '').trim()}><Send /> {busyById[id] ? 'Sending...' : 'Send Reply'}</button></form></article>; })}</div> : <div className="admin-chat-empty admin-chat-empty--workspace"><MessageSquareText /><b>Select a conversation</b><p>Pick one or more chats from the left list to keep multiple conversations open at once.</p></div>}</section></div>}
+  </>;
 }
 
 function AdminSettings() {
