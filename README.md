@@ -61,7 +61,7 @@ The backend stores data in JSON files so the project stays lightweight and easy 
 The local admin account is:
 
 - Email: `info@sitearvo.site`
-- Password: `Sunil@#199000`
+- Password: `SiteArvo@2026!`
 
 For a real deployment, set `SITEARVO_ADMIN_EMAIL` and `SITEARVO_ADMIN_PASSWORD` in the environment before starting the server if you want different credentials.
 

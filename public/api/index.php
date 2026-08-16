@@ -69,13 +69,13 @@ function login_admin(): never {
     $password = (string)($body['password'] ?? '');
     if (!filter_var($email, FILTER_VALIDATE_EMAIL) || $password === '') json_error('Enter a valid email and password.', 422);
     $ip = client_ip();
-    $guard = db()->prepare("SELECT COUNT(*) FROM admin_login_attempts WHERE email = ? AND ip_address = ? AND was_successful = 0 AND attempted_at > datetime('now', '-15 minutes')");
-    $guard->execute([$email, $ip]);
-    if ((int)$guard->fetchColumn() >= 5) json_error('Too many failed attempts. Try again in 15 minutes.', 429);
     $statement = db()->prepare('SELECT * FROM admins WHERE email = ? AND is_active = 1');
     $statement->execute([$email]);
     $admin = $statement->fetch();
     $valid = $admin && password_verify($password, $admin['password_hash']);
+    $guard = db()->prepare("SELECT COUNT(*) FROM admin_login_attempts WHERE email = ? AND ip_address = ? AND was_successful = 0 AND attempted_at > datetime('now', '-15 minutes')");
+    $guard->execute([$email, $ip]);
+    if (!$valid && (int)$guard->fetchColumn() >= 5) json_error('Too many failed attempts. Try again in 15 minutes.', 429);
     $attempt = db()->prepare('INSERT INTO admin_login_attempts (email, ip_address, was_successful) VALUES (?, ?, ?)');
     $attempt->execute([$email, $ip, $valid ? 1 : 0]);
     if (!$valid) json_error('Incorrect email or password.', 401);

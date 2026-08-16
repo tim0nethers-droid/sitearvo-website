@@ -10,7 +10,7 @@ require dirname(__DIR__) . '/lib/bootstrap.php';
 
 $options = getopt('', ['email:', 'password:', 'name::']);
 $email = strtolower(trim((string)($options['email'] ?? getenv('SITEARVO_ADMIN_EMAIL') ?: 'info@sitearvo.site')));
-$password = (string)($options['password'] ?? getenv('SITEARVO_ADMIN_PASSWORD') ?: 'Sunil@#199000');
+$password = (string)($options['password'] ?? getenv('SITEARVO_ADMIN_PASSWORD') ?: 'SiteArvo@2026!');
 $name = trim((string)($options['name'] ?? getenv('SITEARVO_ADMIN_NAME') ?: 'SiteArvo Admin'));
 
 if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL) || $password === '') {

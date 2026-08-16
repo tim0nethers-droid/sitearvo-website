@@ -1,4 +1,4 @@
-﻿import { ArrowDown, ArrowLeftRight, ArrowRight, ArrowUp, Banknote, BarChart3, BadgePercent, Boxes, CalendarRange, ChevronDown, CircleDollarSign, Copy, Download, Eye, FileText, FolderTree, Gauge, Landmark, LayoutDashboard, LogOut, Menu, MessageSquareText, MoreVertical, PackagePlus, PiggyBank, Plus, ReceiptText, Save, Search, Send, Settings, SlidersHorizontal, Trash2, TrendingDown, TrendingUp, Wallet, X } from 'lucide-react';
+﻿import { ArrowDown, ArrowLeftRight, ArrowRight, ArrowUp, Banknote, BarChart3, BadgePercent, Boxes, CalendarRange, ChevronDown, CircleDollarSign, Copy, Download, Eye, EyeOff, FileText, FolderTree, Gauge, Landmark, LayoutDashboard, LogOut, Menu, MessageSquareText, MoreVertical, PackagePlus, PiggyBank, Plus, ReceiptText, Save, Search, Send, Settings, SlidersHorizontal, Trash2, TrendingDown, TrendingUp, Wallet, X } from 'lucide-react';
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, NavLink, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import Logo from '../components/Logo';
@@ -77,9 +77,10 @@ function AdminLogin() {
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   useEffect(() => { document.title = 'Admin Login | SiteArvo'; }, []);
   const submit = async event => { event.preventDefault(); setBusy(true); setError(''); try { setAdmin(await apiFetch('/auth/login', { method: 'POST', body: JSON.stringify(form) })); } catch (requestError) { setError(requestError.message); } finally { setBusy(false); } };
-  return <main className="admin-login"><form onSubmit={submit}><Logo /><span>Secure administration</span><h1>SiteArvo Admin</h1><p>Manage the live catalog, packages and enquiries.</p><label>Email<input type="email" autoComplete="username" required value={form.email} onChange={event => setForm(current => ({ ...current, email: event.target.value }))} /></label><label>Password<input type="password" autoComplete="current-password" required value={form.password} onChange={event => setForm(current => ({ ...current, password: event.target.value }))} /></label>{error && <div className="admin-error" role="alert">{error}</div>}<button className="button" disabled={busy}>{busy ? 'Signing in...' : 'Sign In'}</button><Link to="/">Back to website</Link></form></main>;
+  return <main className="admin-login"><form onSubmit={submit}><Logo /><span>Secure administration</span><h1>SiteArvo Admin</h1><p>Manage the live catalog, packages and enquiries.</p><label>Email<input type="email" autoComplete="username" required value={form.email} onChange={event => setForm(current => ({ ...current, email: event.target.value }))} /></label><label>Password<div className="admin-password-field"><input type={showPassword ? 'text' : 'password'} autoComplete="current-password" required value={form.password} onChange={event => setForm(current => ({ ...current, password: event.target.value }))} /><button type="button" className="admin-password-toggle" onClick={() => setShowPassword(value => !value)} aria-label={showPassword ? 'Hide password' : 'Show password'}>{showPassword ? <EyeOff /> : <Eye />}</button></div></label>{error && <div className="admin-error" role="alert">{error}</div>}<button className="button" disabled={busy}>{busy ? 'Signing in...' : 'Sign In'}</button><Link to="/">Back to website</Link></form></main>;
 }
 
 function AdminShell() {

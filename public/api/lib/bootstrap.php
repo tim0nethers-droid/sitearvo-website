@@ -15,6 +15,14 @@ function sqlite_database_path(): string {
     return __DIR__ . '/../data/sitearvo.sqlite';
 }
 
+function default_admin_credentials(): array {
+    return [
+        'email' => strtolower(trim((string)(getenv('SITEARVO_ADMIN_EMAIL') ?: 'info@sitearvo.site'))),
+        'password' => (string)(getenv('SITEARVO_ADMIN_PASSWORD') ?: 'SiteArvo@2026!'),
+        'name' => trim((string)(getenv('SITEARVO_ADMIN_NAME') ?: 'SiteArvo Admin')),
+    ];
+}
+
 function is_sqlite_dsn(string $dsn): bool {
     return str_starts_with($dsn, 'sqlite:');
 }
@@ -35,6 +43,7 @@ function db(): PDO {
     if (is_sqlite_dsn($dsn)) {
         $pdo->exec('PRAGMA foreign_keys = ON');
         initialize_sqlite_database($pdo);
+        ensure_default_admin_account($pdo);
     }
     return $pdo;
 }
@@ -117,12 +126,17 @@ function initialize_sqlite_database(PDO $pdo): void {
     $initialized = true;
 }
 
+function ensure_default_admin_account(PDO $pdo): void {
+    $credentials = default_admin_credentials();
+    $adminHash = password_hash($credentials['password'], PASSWORD_DEFAULT);
+    $statement = $pdo->prepare('INSERT INTO admins (name, email, password_hash, is_active) VALUES (?, ?, ?, 1) ON CONFLICT(email) DO UPDATE SET name = excluded.name, password_hash = excluded.password_hash, is_active = 1, updated_at = CURRENT_TIMESTAMP');
+    $statement->execute([$credentials['name'], $credentials['email'], $adminHash]);
+}
+
 function seed_sqlite_database(PDO $pdo): void {
     $seedPath = __DIR__ . '/../data/seed.json';
     $seed = json_decode((string)file_get_contents($seedPath), true, flags: JSON_THROW_ON_ERROR);
-    $adminEmail = strtolower(trim((string)(getenv('SITEARVO_ADMIN_EMAIL') ?: 'info@sitearvo.site')));
-    $adminPassword = (string)(getenv('SITEARVO_ADMIN_PASSWORD') ?: 'Sunil@#199000');
-    $adminName = trim((string)(getenv('SITEARVO_ADMIN_NAME') ?: 'SiteArvo Admin'));
+    $credentials = default_admin_credentials();
 
     $setting = $pdo->prepare('INSERT INTO settings (setting_key, setting_value) VALUES (?, ?) ON CONFLICT(setting_key) DO UPDATE SET setting_value = excluded.setting_value, updated_at = CURRENT_TIMESTAMP');
     foreach (($seed['settings'] ?? []) as $key => $value) {
@@ -266,7 +280,5 @@ function seed_sqlite_database(PDO $pdo): void {
         }
     }
 
-    $adminHash = password_hash($adminPassword, PASSWORD_DEFAULT);
-    $adminUpsert = $pdo->prepare('INSERT INTO admins (name, email, password_hash, is_active) VALUES (?, ?, ?, 1) ON CONFLICT(email) DO UPDATE SET name = excluded.name, password_hash = excluded.password_hash, is_active = 1, updated_at = CURRENT_TIMESTAMP');
-    $adminUpsert->execute([$adminName, $adminEmail, $adminHash]);
+    ensure_default_admin_account($pdo);
 }

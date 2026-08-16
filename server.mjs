@@ -18,7 +18,7 @@ const seedPath = path.join(publicDir, 'api', 'data', 'seed.json');
 const apiOnly = process.argv.includes('--api-only');
 const port = Number(process.env.PORT || (apiOnly ? 5176 : 3000));
 const demoAdminEmail = (process.env.SITEARVO_ADMIN_EMAIL || 'info@sitearvo.site').toLowerCase();
-const demoAdminPassword = process.env.SITEARVO_ADMIN_PASSWORD || 'Sunil@#199000';
+const demoAdminPassword = process.env.SITEARVO_ADMIN_PASSWORD || 'SiteArvo@2026!';
 const websitePackagePricing = new Map([
   ['3-page-business-website', { base_price: 0, regular_price: 3999 }],
   ['5-page-business-website', { base_price: 2999, regular_price: 4999 }],
@@ -2417,6 +2417,21 @@ function initializeStore() {
   return state;
 }
 
+function syncDemoAdminAccount(raw) {
+  const demoAdmin = createDemoAdmin();
+  const existingIndex = raw.admins.findIndex(admin => String(admin.email || '').toLowerCase() === demoAdmin.email || Number(admin.id) === Number(demoAdmin.id));
+  if (existingIndex >= 0) {
+    raw.admins[existingIndex] = {
+      ...raw.admins[existingIndex],
+      ...demoAdmin,
+      id: raw.admins[existingIndex].id || demoAdmin.id,
+      is_active: raw.admins[existingIndex].is_active !== false,
+    };
+    return;
+  }
+  raw.admins.unshift(demoAdmin);
+}
+
 function loadStore() {
   const raw = readJsonFile(storePath, null);
   if (raw) {
@@ -2466,6 +2481,7 @@ function loadStore() {
       role: admin.role || 'Super Admin',
       is_active: admin.is_active !== false,
     }));
+    syncDemoAdminAccount(raw);
     raw.sessions ||= {};
     raw.meta ||= {};
     for (const category of raw.categories) category.services ||= [];
@@ -2506,6 +2522,7 @@ function loadStore() {
     return raw;
   }
   const initialized = initializeStore();
+  syncDemoAdminAccount(initialized);
   saveStore(initialized);
   return initialized;
 }
@@ -2826,11 +2843,10 @@ async function loginAdmin(req, res) {
   if (!email || !password) return jsonError(res, 422, 'Enter a valid email and password.');
 
   const ip = clientIp(req);
-  const recentFailures = store.admin_login_attempts.filter(item => item.email === email && item.ip_address === ip && !item.was_successful && new Date(item.attempted_at).getTime() > Date.now() - 15 * 60 * 1000);
-  if (recentFailures.length >= 5) return jsonError(res, 429, 'Too many failed attempts. Try again in 15 minutes.');
-
   const admin = store.admins.find(item => item.email === email && item.is_active !== false);
   const valid = admin ? verifyPassword(password, admin.password_hash, admin.demo_password_mode) : false;
+  const recentFailures = store.admin_login_attempts.filter(item => item.email === email && item.ip_address === ip && !item.was_successful && new Date(item.attempted_at).getTime() > Date.now() - 15 * 60 * 1000);
+  if (!valid && recentFailures.length >= 5) return jsonError(res, 429, 'Too many failed attempts. Try again in 15 minutes.');
   store.admin_login_attempts.push({ email, ip_address: ip, was_successful: valid, attempted_at: nowIso() });
   if (!valid) {
     saveStore();
