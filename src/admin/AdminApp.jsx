@@ -27,6 +27,7 @@ export default function AdminApp() {
         <Route path="login" element={admin === true ? <Navigate to="/admin" replace /> : <AdminLogin />} />
         <Route element={admin === undefined ? <div className="admin-loading" aria-live="polite" /> : admin ? <AdminShell /> : <Navigate to="/admin/login" replace />}>
           <Route index element={<AdminDashboardNew />} />
+          <Route path="dashboard" element={<Navigate to="/admin" replace />} />
           <Route path="analytics" element={<AdminAnalyticsNew />} />
           <Route path="leads" element={<AdminLeads />} />
           <Route path="customers" element={<AdminCustomers />} />
