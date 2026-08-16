@@ -12,6 +12,7 @@ import { effectivePrice, formatPrice, priceLabel } from '../catalog/format';
 import { useCatalog } from '../catalog/CatalogContext';
 import { calculateConfiguratorSummary, cloneConfiguratorGroups, defaultConfiguratorGroups, formatConfiguratorMoney, normalizeConfiguratorGroups } from '../data/configurator';
 import { hasValidPrice } from '../catalog/format';
+import { countryOptions } from '../data/countries';
 import { starterCatalogProducts } from '../data/starterCatalog';
 
 const AdminContext = createContext(null);
@@ -2641,7 +2642,8 @@ function CrudField({ field, value, onChange }) {
     return <label className="admin-checkbox"><input type="checkbox" checked={Boolean(value)} onChange={e => onChange(e.target.checked)} /><span>{field.label}</span></label>;
   }
   if (field.type === 'select') {
-    return <Field label={field.label}><select value={value ?? ''} onChange={e => onChange(e.target.value)}>{(field.options || []).map(option => <option key={typeof option === 'string' ? option : option.value} value={typeof option === 'string' ? option : option.value}>{typeof option === 'string' ? option : option.label}</option>)}</select></Field>;
+    const options = field.options || (field.name === 'country' ? countryOptions : []);
+    return <Field label={field.label}><select value={value ?? ''} onChange={e => onChange(e.target.value)}><option value="">{field.placeholder || `Select ${field.label.toLowerCase()}`}</option>{options.map(option => <option key={typeof option === 'string' ? option : option.value} value={typeof option === 'string' ? option : option.value}>{typeof option === 'string' ? option : option.label}</option>)}</select></Field>;
   }
   if (field.type === 'textarea' || field.type === 'json') {
     return <Field label={field.label}><textarea rows={field.rows || 3} value={value ?? ''} onChange={e => onChange(e.target.value)} placeholder={field.placeholder || ''} /></Field>;
@@ -2815,7 +2817,7 @@ function AdminLeads() {
         { name: 'phone', label: 'Phone' },
         { name: 'email', label: 'Email', type: 'email' },
         { name: 'company', label: 'Company' },
-        { name: 'country', label: 'Country' },
+        { name: 'country', label: 'Country', type: 'select', options: countryOptions },
         { name: 'interested_service', label: 'Interested Service' },
         { name: 'budget', label: 'Budget' },
         { name: 'source', label: 'Source', type: 'select', options: ['Website Contact Form', 'WhatsApp', 'Live Chat', 'Phone', 'Email', 'Portfolio', 'Service Page', 'Pricing Page', 'Manual'] },
@@ -2880,7 +2882,7 @@ function AdminCustomers() {
         { name: 'company', label: 'Company' },
         { name: 'phone', label: 'Phone' },
         { name: 'email', label: 'Email', type: 'email' },
-        { name: 'country', label: 'Country' },
+        { name: 'country', label: 'Country', type: 'select', options: countryOptions },
         { name: 'total_orders', label: 'Total Orders', type: 'number' },
         { name: 'active_projects', label: 'Active Projects', type: 'number' },
         { name: 'notes', label: 'Notes', type: 'textarea', rows: 4 },
