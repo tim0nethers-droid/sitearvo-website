@@ -44,7 +44,7 @@ export const serviceCategories = [
     id: 'web-development',
     shortTitle: 'Web Development',
     title: 'Web Development',
-    description: 'Modern websites and web applications built for clarity, speed, extensibility and real business use.',
+    description: 'Modern websites, web applications and dashboards built for clarity, speed, extensibility and real business use.',
     icon: Code2,
     services: [
       createService('website-designing', 'Website Designing', 'Design professional, responsive websites that communicate value clearly and guide visitors toward action.', ['Business websites', 'Responsive page systems', 'Landing pages', 'Website redesigns'], undefined, Palette),
@@ -52,6 +52,7 @@ export const serviceCategories = [
       createService('python-development', 'Python Development', 'Build requirement-led Python solutions and integrations for practical business workflows.', ['Web application features', 'Data-processing workflows', 'API integrations', 'Automation utilities'], undefined, Braces),
       createService('angular-development', 'Angular Development', 'Develop structured Angular frontends for feature-rich business applications.', ['Dashboards', 'Admin interfaces', 'Component systems', 'API-integrated applications'], undefined, PanelsTopLeft),
       createService('reactjs-development', 'ReactJS Development', 'Build fast, scalable and modern React applications with reusable components.', ['Business websites', 'Dashboards', 'Admin panels', 'SaaS interfaces', 'Interactive web applications', 'API-integrated applications'], ['Reusable component architecture', 'Fast interactive experiences', 'Scalable frontend foundations', 'Maintainable code'], Atom),
+      createService('web-app-development', 'Web App Development', 'Create modern web applications, dashboards and portals with reusable components and API-ready workflows.', ['Custom dashboards', 'Admin panels', 'Client portals', 'Interactive workflows'], ['Reusable UI systems', 'Scalable information architecture', 'API-ready interfaces', 'Responsive application layouts'], MonitorSmartphone),
       createService('nodejs-development', 'Node.js Development', 'Develop event-driven backend services and APIs for connected digital products.', ['REST APIs', 'Application backends', 'Third-party integrations', 'Realtime-ready services'], undefined, Network),
       createService('mean-stack-development', 'MEAN Stack Development', 'Create coordinated MongoDB, Express, Angular and Node.js application solutions.', ['Full-stack web applications', 'Admin platforms', 'API services', 'Data-driven workflows'], undefined, Layers3),
       createService('php-mysql-development', 'PHP / MySQL Development', 'Build database-driven PHP applications and reliable website functionality.', ['Business applications', 'Custom forms and workflows', 'Database integrations', 'Existing PHP improvements'], undefined, Database),
@@ -139,7 +140,7 @@ export const serviceBySlug = slug => services.find(service => service.slug === s
 export const categoryById = id => serviceCategories.find(category => category.id === id);
 
 export const homepageServiceCategories = [
-  { title: 'Web Development', short: 'Modern websites and web applications built for speed, clarity and growth.', icon: Code2 },
+  { title: 'Web Development', short: 'Modern websites, web apps and dashboards built for speed, clarity and growth.', icon: Code2 },
   { title: 'Mobile App Development', short: 'Platform-aware mobile experiences for iOS, Android and cross-platform delivery.', icon: Smartphone },
   { title: 'E-commerce Solutions', short: 'Storefronts and custom commerce journeys designed around confident purchasing.', icon: ShoppingBag },
   { title: 'UI/UX Design', short: 'Professional, responsive interfaces that make every interaction feel clear.', icon: MonitorSmartphone },
