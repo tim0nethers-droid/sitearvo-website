@@ -1,5 +1,5 @@
 import { ArrowDown, ArrowLeftRight, ArrowRight, ArrowUp, Banknote, BarChart3, BadgePercent, Boxes, CalendarRange, ChevronDown, CircleDollarSign, Copy, Download, Eye, EyeOff, FileText, FolderTree, Gauge, Landmark, LayoutDashboard, LogOut, Menu, MessageSquareText, MoreVertical, PackagePlus, PiggyBank, Plus, ReceiptText, Save, Search, Send, Settings, SlidersHorizontal, Trash2, TrendingDown, TrendingUp, Wallet, X } from 'lucide-react';
-import { Bell, Blocks, BriefcaseBusiness, CalendarCheck2, CircleCheck, Clock3, Code2, CreditCard, Database, FilePlus2, FolderPlus, Gamepad2, Globe, LayoutGrid, Mail, MessageCircle, MessagesSquare, Monitor, MoreHorizontal, Package, PenTool, Puzzle, ReceiptIndianRupee, Server, ServerCog, ShoppingBag, ShoppingCart, Smartphone, UserPlus, Users } from 'lucide-react';
+import { Bell, Blocks, BriefcaseBusiness, CalendarCheck2, CircleCheck, Clock3, Code2, CreditCard, Database, FilePlus2, FolderPlus, Gamepad2, Globe, LayoutGrid, Mail, MessageCircle, MessagesSquare, Monitor, MoreHorizontal, Package, PenTool, Puzzle, ReceiptIndianRupee, Server, ServerCog, Shield, ShoppingBag, ShoppingCart, Smartphone, UserPlus, Users } from 'lucide-react';
 import { TicketPercent } from 'lucide-react';
 import ColoredIconBox from './ColoredIconBox';
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
@@ -228,10 +228,16 @@ function AdminShell() {
         </div>
       </aside>
       <div className="admin-main">
-        <header>
-          <button className="admin-menu-toggle" onClick={() => setOpen(true)} aria-label="Open admin menu"><Menu /></button>
-          <div><b>SiteArvo Catalog Manager</b><span>Changes publish to the database-backed catalog.</span></div>
-          <Link to="/" target="_blank">View Website</Link>
+        <header className="admin-topbar">
+          <div className="admin-topbar__brand">
+            <button className="admin-menu-toggle" onClick={() => setOpen(true)} aria-label="Open admin menu"><Menu /></button>
+            <Logo />
+            <div className="admin-topbar__copy">
+              <b>Catalog Manager</b>
+              <span>Manage. Track. Grow.</span>
+            </div>
+          </div>
+          <Link to="/" target="_blank" rel="noreferrer" className="admin-topbar__link">View Website</Link>
         </header>
         {notice && <div className="admin-notice" role="status">{notice}</div>}
         <div className="admin-content"><AdminOutlet /></div>
@@ -431,6 +437,14 @@ function AdminLoadError({ message, onRetry }) {
 function formatMoney(value, currency = 'INR') {
   const amount = Number(value || 0);
   return new Intl.NumberFormat('en-IN', { style: 'currency', currency, maximumFractionDigits: 2 }).format(amount);
+}
+
+function formatCompactCount(value) {
+  const amount = Number(value || 0);
+  if (!Number.isFinite(amount)) return '0';
+  if (amount >= 1000000) return `${(amount / 1000000).toFixed(amount >= 10000000 ? 0 : 1)}M`;
+  if (amount >= 1000) return `${(amount / 1000).toFixed(amount >= 10000 ? 0 : 1)}K`;
+  return String(amount);
 }
 
 const financeRangeOptions = [
@@ -931,8 +945,9 @@ function relativeAnalyticsTimeLabel(value) {
 function AdminDashboardNew() {
   const { data, loading } = useAdminData('/admin/dashboard');
   const { data: analytics, loading: analyticsLoading } = useAdminData('/admin/analytics');
+  const { data: customers, loading: customersLoading } = useAdminData('/admin/customers');
   const isMobile = useAdminViewport();
-  if (loading || analyticsLoading) return <AdminLoading />;
+  if (loading || analyticsLoading || customersLoading) return <AdminLoading />;
   const analyticsReport = analytics.report || {};
   const analyticsCards = [
     { label: 'Total Pageviews', value: analytics.total_pageviews, icon: Eye, color: 'purple' },
@@ -941,6 +956,7 @@ function AdminDashboardNew() {
     { label: '7-Day Visits', value: analytics.last_7_days_total, icon: TrendingUp, color: 'orange' },
   ];
   const financeSnapshot = data.finance_snapshot || {};
+  const customerCount = Array.isArray(customers) ? customers.length : 0;
   const managementCards = [
     { label: 'Active Categories', value: data.active_categories, icon: LayoutGrid, color: 'cyan' },
     { label: 'Active Services', value: data.active_services, icon: Package, color: 'blue' },
@@ -1039,20 +1055,71 @@ function AdminDashboardNew() {
       </section>
     </>;
   }
+  const launchCards = [
+    { to: '/admin', label: 'Dashboard', subtitle: 'Overview of the whole workspace.', icon: LayoutDashboard, tone: 'gold', stats: [`${formatCompactCount(analytics.total_pageviews)} views`, `${formatCompactCount(analytics.unique_visitors)} visitors`] },
+    { to: '/admin/analytics', label: 'Analytics', subtitle: 'Traffic, referrers and trend lines.', icon: BarChart3, tone: 'purple', stats: [`${formatCompactCount(analytics.total_pageviews)} total`, `${formatCompactCount(analytics.last_7_days_total)} last 7 days`] },
+    { to: '/admin/leads', label: 'Leads', subtitle: 'New enquiries and follow-ups.', icon: Users, tone: 'green', stats: [`${formatCompactCount(data.new_leads)} new leads`, `${formatCompactCount(data.today_followups)} due today`] },
+    { to: '/admin/customers', label: 'Customers', subtitle: 'Relationship history and order owners.', icon: UserPlus, tone: 'blue', stats: [`${formatCompactCount(customerCount)} accounts`, `${formatCompactCount(data.new_orders)} orders`] },
+    { to: '/admin/chats', label: 'Live Chats', subtitle: 'Real-time visitor conversations.', icon: MessageSquareText, tone: 'purple', stats: [`${formatCompactCount(data.unread_chats)} unread`, `${formatCompactCount(data.active_projects)} active work`] },
+    { to: '/admin/quotations', label: 'Quotations', subtitle: 'Draft, send and convert proposals.', icon: FileText, tone: 'orange', stats: [`${formatCompactCount(data.pending_quotations)} pending`, `${formatCompactCount(data.new_orders)} conversions`] },
+    { to: '/admin/orders', label: 'Orders', subtitle: 'Placed, pending and completed orders.', icon: ShoppingBag, tone: 'blue', stats: [`${formatCompactCount(data.new_orders)} new`, `${formatCompactCount(data.pending_payments)} waiting`] },
+    { to: '/admin/services', label: 'Services & Packages', subtitle: 'Catalog pricing and package control.', icon: Package, tone: 'green', stats: [`${formatCompactCount(data.active_services)} services`, `${formatCompactCount(data.packages)} fixed packages`] },
+    { to: '/admin/projects', label: 'Projects', subtitle: 'Client work and delivery progress.', icon: FolderPlus, tone: 'cyan', stats: [`${formatCompactCount(data.active_projects)} active`, `${formatCompactCount(data.overdue_followups)} overdue`] },
+    { to: '/admin/finance', label: 'Finance', subtitle: 'Income, expenses and receivables.', icon: Wallet, tone: 'gold', stats: [formatMoney(financeSnapshot.net_this_month || 0), formatMoney(financeSnapshot.outstanding_receivables || 0)] },
+    { to: '/admin/categories', label: 'Categories', subtitle: 'Group services and packages.', icon: LayoutGrid, tone: 'purple', stats: [`${formatCompactCount(data.active_categories)} active`, 'Catalog structure'] },
+    { to: '/admin/settings', label: 'Settings & More', subtitle: 'Users, logs, backup and system tools.', icon: Settings, tone: 'gray', stats: [`${formatCompactCount(data.unread_notifications)} alerts`, 'System controls'] },
+  ];
+  const featurePills = [
+    { icon: Database, label: 'All-in-One Catalog Management', tone: 'purple' },
+    { icon: BarChart3, label: 'Real-time Analytics', tone: 'green' },
+    { icon: Users, label: 'Powerful CRM & Sales', tone: 'blue' },
+    { icon: Shield, label: 'Secure & Scalable', tone: 'gold' },
+  ];
   return <>
     <AdminHeading title="Dashboard" description="A real-time overview of stored catalog content, enquiries and visitor traffic." />
-    <div className="admin-panel admin-panel--hero">
-      <div className="admin-panel__topline">
-        <div>
-          <span className="eyebrow">Analytics Snapshot</span>
-          <h2>Visitor Metrics</h2>
+    <section className="admin-dashboard-launchpad">
+      <div className="admin-dashboard-hero admin-panel">
+        <div className="admin-dashboard-hero__copy">
+          <span className="eyebrow">SiteArvo / Catalog Manager</span>
+          <h2>Manage. Track. Grow.</h2>
+          <p>Everything the team needs lives here: analytics, CRM, live chat, orders, pricing, projects and finance in one premium workspace.</p>
         </div>
-        <Link className="text-link" to="/admin/analytics">Open full analytics <BarChart3 size={16} /></Link>
+        <div className="admin-dashboard-hero__metrics">
+          {analyticsCards.map(card => (
+            <article key={card.label} className={`admin-summary-card admin-summary-card--${card.color}`}>
+              <ColoredIconBox icon={card.icon} color={card.color} size={18} />
+              <div>
+                <span>{card.label}</span>
+                <strong>{card.value ?? 0}</strong>
+              </div>
+            </article>
+          ))}
+        </div>
       </div>
-    <div className="admin-summary admin-summary--analytics admin-summary--featured">
-        {analyticsCards.map(card => <article key={card.label} className={`admin-summary-card admin-summary-card--${card.color}`}><ColoredIconBox icon={card.icon} color={card.color} size={18} /><div><span>{card.label}</span><strong>{card.value ?? 0}</strong></div></article>)}
+      <div className="admin-dashboard-modules">
+        {launchCards.map(card => (
+          <Link key={card.to} to={card.to} className={`admin-dashboard-module admin-dashboard-module--${card.tone}`}>
+            <div className="admin-dashboard-module__top">
+              <ColoredIconBox icon={card.icon} color={card.tone === 'gray' ? 'gray' : card.tone} size={18} />
+              <span>Open</span>
+            </div>
+            <h3>{card.label}</h3>
+            <p>{card.subtitle}</p>
+            <div className="admin-dashboard-module__stats">
+              {card.stats.map(stat => <span key={stat}>{stat}</span>)}
+            </div>
+          </Link>
+        ))}
       </div>
-      <div className="admin-analytics-grid">
+      <div className="admin-dashboard-features">
+        {featurePills.map(item => (
+          <div key={item.label} className={`admin-dashboard-pill tone-${item.tone}`}>
+            <ColoredIconBox icon={item.icon} color={item.tone} size={16} />
+            <span>{item.label}</span>
+          </div>
+        ))}
+      </div>
+      <div className="admin-dashboard-lower">
         <section className="admin-panel admin-panel--mini-chart">
           <div className="admin-panel__topline">
             <div>
@@ -1079,41 +1146,40 @@ function AdminDashboardNew() {
             {(analytics.top_pages || []).length ? analytics.top_pages.map(item => <div key={item.path}><b>{item.label || item.path}</b><span>{item.pageviews} views · {item.visitors} visitors</span></div>) : <p>No page views tracked yet.</p>}
           </div>
         </section>
+        <section className="admin-panel">
+          <h3>Recent Activity</h3>
+          <div className="admin-mini-list">
+            {(data.recent_activity || []).length ? data.recent_activity.map(item => <div key={item.id}><b>{item.action}</b><span>{item.entity} · {new Date(item.created_at).toLocaleString('en-IN')}</span></div>) : <p>No recent activity yet.</p>}
+          </div>
+        </section>
+        <section className="admin-panel">
+          <div className="admin-panel__topline">
+            <div>
+              <span className="eyebrow">Finance Snapshot</span>
+              <h2>Collected, spent and outstanding balances</h2>
+            </div>
+            <Link className="text-link" to="/admin/finance">Open Finance <ArrowLeftRight size={16} /></Link>
+          </div>
+          <div className="admin-summary admin-summary--analytics admin-summary--featured">
+            <article><span>Collected This Month</span><strong>{formatMoney(financeSnapshot.collected_this_month || 0)}</strong></article>
+            <article><span>Expenses This Month</span><strong>{formatMoney(financeSnapshot.expenses_this_month || 0)}</strong></article>
+            <article><span>Net This Month</span><strong>{formatMoney(financeSnapshot.net_this_month || 0)}</strong></article>
+            <article><span>Outstanding Receivables</span><strong>{formatMoney(financeSnapshot.outstanding_receivables || 0)}</strong></article>
+          </div>
+        </section>
       </div>
-    </div>
-    <div className="admin-summary">{managementCards.map(card => <article key={card.label} className={`admin-summary-card admin-summary-card--${card.color}`}><ColoredIconBox icon={card.icon} color={card.color} size={18} /><div><span>{card.label}</span><strong>{card.value ?? 0}</strong></div></article>)}</div>
-    <div className="admin-panel">
-      <div className="admin-panel__topline">
-        <div>
-          <span className="eyebrow">Finance Snapshot</span>
-          <h2>Collected, spent and outstanding balances</h2>
-        </div>
-        <Link className="text-link" to="/admin/finance">Open Finance <ArrowLeftRight size={16} /></Link>
+      <div className="admin-actions admin-actions--spaced">
+        <Link className="button" to="/admin/analytics"><BarChart3 /> Open Analytics</Link>
+        <Link className="button button--secondary" to="/admin/leads"><Plus /> New Lead</Link>
+        <Link className="button button--secondary" to="/admin/quotations"><Plus /> New Quote</Link>
+        <Link className="button button--secondary" to="/admin/services"><Plus /> New Package</Link>
+        <Link className="button button--secondary" to="/admin/projects"><Plus /> New Project</Link>
+        <Link className="button button--secondary" to="/admin/portfolio"><Plus /> Add Portfolio Project</Link>
+        <Link className="button button--secondary" to="/admin/chats"><MessageSquareText /> Open Live Chats</Link>
+        <Link className="button button--secondary" to="/admin/orders">Review Enquiries</Link>
+        <Link className="button button--secondary" to="/admin/finance"><ArrowLeftRight /> Open Finance</Link>
       </div>
-      <div className="admin-summary admin-summary--analytics admin-summary--featured">
-        <article><span>Collected This Month</span><strong>{formatMoney(financeSnapshot.collected_this_month || 0)}</strong></article>
-        <article><span>Expenses This Month</span><strong>{formatMoney(financeSnapshot.expenses_this_month || 0)}</strong></article>
-        <article><span>Net This Month</span><strong>{formatMoney(financeSnapshot.net_this_month || 0)}</strong></article>
-        <article><span>Outstanding Receivables</span><strong>{formatMoney(financeSnapshot.outstanding_receivables || 0)}</strong></article>
-      </div>
-    </div>
-    <div className="admin-actions admin-actions--spaced">
-      <Link className="button" to="/admin/analytics"><BarChart3 /> Open Analytics</Link>
-      <Link className="button button--secondary" to="/admin/leads"><Plus /> New Lead</Link>
-      <Link className="button button--secondary" to="/admin/quotations"><Plus /> New Quote</Link>
-      <Link className="button button--secondary" to="/admin/services"><Plus /> New Package</Link>
-      <Link className="button button--secondary" to="/admin/projects"><Plus /> New Project</Link>
-      <Link className="button button--secondary" to="/admin/portfolio"><Plus /> Add Portfolio Project</Link>
-      <Link className="button button--secondary" to="/admin/chats"><MessageSquareText /> Open Live Chats</Link>
-      <Link className="button button--secondary" to="/admin/orders">Review Enquiries</Link>
-      <Link className="button button--secondary" to="/admin/finance"><ArrowLeftRight /> Open Finance</Link>
-    </div>
-    <div className="admin-panel">
-      <h2>Recent Activity</h2>
-      <div className="admin-mini-list">
-        {(data.recent_activity || []).length ? data.recent_activity.map(item => <div key={item.id}><b>{item.action}</b><span>{item.entity} · {new Date(item.created_at).toLocaleString('en-IN')}</span></div>) : <p>No recent activity yet.</p>}
-      </div>
-    </div>
+    </section>
   </>;
 }
 
