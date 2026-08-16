@@ -5,6 +5,7 @@ import ColoredIconBox from './ColoredIconBox';
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, NavLink, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import Logo from '../components/Logo';
+import CountryField from '../components/CountryField';
 import { AnalyticsDateRange, AnalyticsExportButton, AnalyticsLineChart, AnalyticsSummaryCard, formatAnalyticsRangeLabel, formatAnalyticsValue } from '../components/analytics/AnalyticsUI';
 import { apiFetch } from '../catalog/api';
 import { getCatalogIcon, iconChoices } from '../catalog/icons';
@@ -2641,8 +2642,11 @@ function CrudField({ field, value, onChange }) {
   if (field.type === 'checkbox') {
     return <label className="admin-checkbox"><input type="checkbox" checked={Boolean(value)} onChange={e => onChange(e.target.checked)} /><span>{field.label}</span></label>;
   }
+  if (field.name === 'country') {
+    return <CountryField label={field.label} name={field.name} value={value ?? ''} onChange={e => onChange(e.target.value)} placeholder={field.placeholder || 'Search countries'} />;
+  }
   if (field.type === 'select') {
-    const options = field.options || (field.name === 'country' ? countryOptions : []);
+    const options = field.options || [];
     return <Field label={field.label}><select value={value ?? ''} onChange={e => onChange(e.target.value)}><option value="">{field.placeholder || `Select ${field.label.toLowerCase()}`}</option>{options.map(option => <option key={typeof option === 'string' ? option : option.value} value={typeof option === 'string' ? option : option.value}>{typeof option === 'string' ? option : option.label}</option>)}</select></Field>;
   }
   if (field.type === 'textarea' || field.type === 'json') {

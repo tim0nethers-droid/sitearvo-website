@@ -31,11 +31,11 @@ import {
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, Navigate, NavLink, Outlet, Route, Routes, useLocation, useNavigate, useOutletContext, useParams, useSearchParams } from 'react-router-dom';
 import Logo from '../components/Logo';
+import CountryField from '../components/CountryField';
 import { AnalyticsDateRange, AnalyticsLineChart, formatAnalyticsRangeLabel, formatAnalyticsValue } from '../components/analytics/AnalyticsUI';
 import { apiFetch } from '../catalog/api';
 import { AppIcon } from '../catalog/icons';
 import { company, phoneUrl, whatsappUrl } from '../config/company';
-import { countryOptions } from '../data/countries';
 import { effectivePrice, formatPrice } from '../catalog/format';
 import { useCatalog } from '../catalog/CatalogContext';
 
@@ -1034,7 +1034,7 @@ function AppClientNewPage() {
       <label>Company<input value={form.company} onChange={event => setForm(current => ({ ...current, company: event.target.value }))} /></label>
       <label>Email<input type="email" value={form.email} onChange={event => setForm(current => ({ ...current, email: event.target.value }))} /></label>
       <label>Phone<input type="tel" value={form.phone} onChange={event => setForm(current => ({ ...current, phone: event.target.value }))} /></label>
-      <label>Country<select value={form.country} onChange={event => setForm(current => ({ ...current, country: event.target.value }))}><option value="">Select a country</option>{countryOptions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
+      <CountryField value={form.country} onChange={event => setForm(current => ({ ...current, country: event.target.value }))} />
       <label>Notes<textarea rows="5" value={form.notes} onChange={event => setForm(current => ({ ...current, notes: event.target.value }))} /></label>
       {status && <div className="app-form-status" role="status">{status}</div>}
       <button className="button" disabled={busy}>{busy ? 'Saving...' : 'Save Client'}</button>
