@@ -2219,6 +2219,25 @@ body:has(.admin-app--mobile) { background:#06080c; }
 .admin-mobile-tabs::-webkit-scrollbar { display:none; }
 .admin-mobile-tabs button { flex:0 0 auto; min-height:38px; padding:.5rem .85rem; border:1px solid rgba(255,255,255,.08); border-radius:999px; color:#d9dde3; background:#11151c; font-size:.72rem; font-weight:800; white-space:nowrap; box-shadow:inset 0 1px 0 rgba(255,255,255,.02); }
 .admin-mobile-tabs button.is-active { border-color:rgba(245,168,0,.35); color:var(--gold-light); background:rgba(245,168,0,.08); box-shadow:0 0 0 1px rgba(245,168,0,.04) inset; }
+.admin-chat-mobile-shell { gap:.75rem; }
+.admin-chat-mobile-list { display:grid; gap:.6rem; }
+.admin-chat-mobile-card { display:grid; gap:.55rem; width:100%; padding:.85rem .9rem; border:1px solid rgba(255,255,255,.06); border-radius:16px; color:var(--white); background:#10141a; text-align:left; box-shadow:0 14px 28px rgba(0,0,0,.18); }
+.admin-chat-mobile-card.is-active { border-color:rgba(245,168,0,.3); box-shadow:0 0 0 1px rgba(245,168,0,.08), 0 14px 28px rgba(0,0,0,.18); }
+.admin-chat-mobile-card.is-open { background:#11161e; }
+.admin-chat-mobile-card__top { display:grid; grid-template-columns:42px minmax(0,1fr) auto; gap:.75rem; align-items:center; }
+.admin-chat-mobile-card__copy { display:grid; gap:.22rem; min-width:0; }
+.admin-chat-mobile-card__copy div { display:grid; gap:.12rem; }
+.admin-chat-mobile-card__copy b { font-size:.88rem; line-height:1.1; }
+.admin-chat-mobile-card__copy span { color:var(--muted); font-size:.69rem; line-height:1.3; }
+.admin-chat-mobile-card__copy small { color:#d8dde4; font-size:.75rem; line-height:1.35; }
+.admin-chat-mobile-card__meta { display:grid; justify-items:end; gap:.3rem; }
+.admin-chat-mobile-card__meta small { color:var(--muted); font-size:.68rem; }
+.admin-chat-mobile-badge { min-width:18px; height:18px; display:grid; place-items:center; padding:0 .35rem; border-radius:999px; color:#111; background:var(--gold); font-size:.62rem; font-weight:900; }
+.admin-chat-mobile-thread-stack { display:grid; gap:.8rem; }
+.admin-chat-tabs--mobile { display:flex; flex-wrap:nowrap; overflow-x:auto; padding-bottom:.1rem; }
+.admin-chat-thread-card--mobile { border-radius:18px; }
+.admin-chat-mobile-open-button { width:100%; min-height:46px; display:flex; align-items:center; justify-content:center; gap:.45rem; }
+.admin-chat-empty--mobile { min-height:140px; padding:1.1rem; border:1px solid rgba(255,255,255,.06); border-radius:16px; background:#10141a; }
 .admin-mobile-metrics { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.65rem; }
 .admin-mobile-metric-card { display:grid; gap:.7rem; padding:.9rem; border:1px solid rgba(255,255,255,.06); border-radius:16px; background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.015)); box-shadow:0 12px 24px rgba(0,0,0,.18); }
 .admin-mobile-metric-card>div { display:grid; gap:.25rem; }

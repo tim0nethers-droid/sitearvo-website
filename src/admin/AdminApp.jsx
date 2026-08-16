@@ -2073,6 +2073,9 @@ function AdminOrders() {
 }
 
 function AdminChats() {
+  const isMobile = useAdminViewport();
+  const [query, setQuery] = useState('');
+  const [tab, setTab] = useState('All');
   const [conversations, setConversations] = useState([]);
   const [openIds, setOpenIds] = useState([]);
   const [activeId, setActiveId] = useState(null);
@@ -2264,6 +2267,93 @@ function AdminChats() {
   };
 
   const unreadTotal = conversations.reduce((sum, item) => sum + Number(item.unread_admin || 0), 0);
+  const filteredConversations = useMemo(() => {
+    const term = query.trim().toLowerCase();
+    return conversations.filter(item => {
+      const text = `${item.visitor_name} ${item.visitor_email || ''} ${item.last_message || ''} ${item.public_id || ''}`.toLowerCase();
+      const matchesQuery = !term || text.includes(term);
+      const unread = Number(item.unread_admin || 0) > 0;
+      const status = String(item.status || '').toLowerCase();
+      const matchesTab = tab === 'All' || (tab === 'Unread' && unread) || (tab === 'Open' && status === 'open') || (tab === 'Closed' && status === 'closed');
+      return matchesQuery && matchesTab;
+    });
+  }, [conversations, query, tab]);
+
+  if (isMobile) {
+    const activeChats = openIds.map(id => chatsById[id] || conversations.find(item => String(item.id) === String(id))).filter(Boolean);
+    return <>
+      <AdminHeading
+        title="Live Chat Inbox"
+        description="Reply to website visitors in real time. Open several conversations side by side. New messages refresh automatically."
+        action={<div className="admin-chat-tools"><button type="button" className={`button button--secondary admin-sound-toggle ${soundEnabled ? 'is-on' : ''}`} onClick={() => setSoundEnabled(value => !value)}>{soundEnabled ? 'Sound On' : 'Sound Off'}</button><div className="admin-chat-unread">{unreadTotal > 0 ? <><MessageSquareText /> <span>{unreadTotal} unread</span></> : <><MessageSquareText /> <span>All caught up</span></>}</div></div>}
+      />
+      {toast && <div className="admin-chat-toast" role="status" aria-live="polite"><MessageSquareText /><div><strong>{toast.title}</strong><p>{toast.message}</p></div><button type="button" aria-label="Dismiss notification" onClick={() => setToast(null)}><X /></button></div>}
+      {error && <div className="admin-error" role="alert">{error}</div>}
+      {loading ? <AdminLoading /> : <section className="admin-mobile-section admin-chat-mobile-shell">
+        <div className="admin-mobile-search-row">
+          <label className="admin-mobile-search"><Search size={16} /><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Search chats..." /></label>
+          <button type="button" className="admin-mobile-filter-button" aria-label="Filter chats"><SlidersHorizontal size={16} /></button>
+        </div>
+        <div className="admin-mobile-tabs admin-chat-mobile-tabs">
+          {['All', 'Open', 'Unread', 'Closed'].map(item => <button key={item} type="button" className={tab === item ? 'is-active' : ''} aria-pressed={tab === item} onClick={() => setTab(item)}>{item}</button>)}
+        </div>
+        <div className="admin-chat-mobile-list">
+          {filteredConversations.length ? filteredConversations.map(item => {
+            const chatId = String(item.id);
+            const isOpen = openIds.includes(chatId);
+            const isActive = String(activeId) === chatId;
+            const unreadCount = Number(item.unread_admin || 0);
+            return <button type="button" key={item.id} className={`admin-chat-mobile-card ${isOpen ? 'is-open' : ''} ${isActive ? 'is-active' : ''}`.trim()} onClick={() => openConversation(chatId)}>
+              <div className="admin-chat-mobile-card__top">
+                <div className="admin-chat-mobile-avatar">{String(item.visitor_name || 'S').charAt(0).toUpperCase()}</div>
+                <div className="admin-chat-mobile-card__copy">
+                  <div>
+                    <b>{item.visitor_name}</b>
+                    <span>{item.visitor_email || 'No email provided'}</span>
+                  </div>
+                  <small>{item.last_message || 'No messages yet'}</small>
+                </div>
+                <div className="admin-chat-mobile-card__meta">
+                  {unreadCount > 0 && <span className="admin-chat-mobile-badge">{unreadCount}</span>}
+                  <small>{new Date(item.last_message_at.replace(' ', 'T')).toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' })}</small>
+                </div>
+              </div>
+            </button>;
+          }) : <div className="admin-chat-empty admin-chat-empty--mobile"><MessageSquareText /><b>No conversations yet</b><p>New website chats will appear here.</p></div>}
+        </div>
+        {activeChats.length ? <div className="admin-chat-mobile-thread-stack">
+          <div className="admin-chat-tabs admin-chat-tabs--mobile">
+            {openIds.map(id => {
+              const chat = chatsById[id] || conversations.find(item => String(item.id) === String(id));
+              if (!chat) return null;
+              return <div role="button" tabIndex={0} key={id} className={`admin-chat-tab ${String(activeId) === String(id) ? 'is-active' : ''}`} onClick={() => setActiveId(String(id))} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setActiveId(String(id)); } }}><span>{chat?.visitor_name || `Chat #${id}`}</span>{chat?.unread_admin > 0 && <b>{chat.unread_admin}</b>}<small>#{chat?.public_id || id}</small><button type="button" className="admin-chat-tab__close" aria-label={`Close ${chat?.visitor_name || `chat ${id}`}`} onClick={event => { event.stopPropagation(); closeConversation(id); }}><X /></button></div>;
+            })}
+          </div>
+          {activeChats.filter(chat => String(activeId) === String(chat.id)).map(chat => {
+            const messageItems = Array.isArray(chat.messages) ? chat.messages : [];
+            const chatId = String(chat.id);
+            return <article className={`admin-chat-thread-card admin-chat-thread-card--mobile ${String(activeId) === chatId ? 'is-active' : ''}`} key={chat.id}>
+              <header>
+                <div>
+                  <h2>{chat.visitor_name}</h2>
+                  <p>{chat.visitor_email || 'Email not provided'} · #{chat.public_id}</p>
+                </div>
+                <div className="admin-chat-thread-card__actions">
+                  <button type="button" className={`admin-chat-status is-${chat.status}`} onClick={() => changeStatus(chatId, chat.status === 'open' ? 'closed' : 'open')}>{chat.status === 'open' ? 'Close conversation' : 'Reopen conversation'}</button>
+                  <button type="button" className="admin-chat-close" aria-label={`Close ${chat.visitor_name}`} onClick={() => closeConversation(chatId)}><X /></button>
+                </div>
+              </header>
+              <div className="admin-chat-messages">{messageItems.length ? messageItems.map(item => <article className={`is-${item.sender}`} key={item.id}><b>{item.sender === 'visitor' ? chat.visitor_name : 'SiteArvo'}</b><p>{item.message}</p><time>{new Date(item.created_at.replace(' ', 'T')).toLocaleString('en-IN')}</time></article>) : <div className="admin-chat-empty admin-chat-empty--thread"><MessageSquareText /><b>No messages yet</b><p>This conversation summary is still loading or the visitor has not sent any messages.</p></div>}</div>
+              <form onSubmit={event => send(chatId, event)}>
+                <textarea rows="2" maxLength="1500" value={drafts[chatId] || ''} onChange={event => setDrafts(current => ({ ...current, [chatId]: event.target.value }))} placeholder="Type your reply..." disabled={chat.status === 'closed'} />
+                <button className="button" disabled={busyById[chatId] || chat.status === 'closed' || !(drafts[chatId] || '').trim()}><Send /> {busyById[chatId] ? 'Sending...' : 'Send Reply'}</button>
+              </form>
+            </article>;
+          })}
+        </div> : <button type="button" className="button admin-chat-mobile-open-button" onClick={() => conversations[0] && openConversation(String(conversations[0].id))} disabled={!conversations.length}><MessageSquareText /> {conversations.length ? 'Open Chat' : 'No chats yet'}</button>}
+      </section>}
+    </>;
+  }
 
   return <>
     <AdminHeading
