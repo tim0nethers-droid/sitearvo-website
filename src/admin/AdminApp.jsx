@@ -21,12 +21,11 @@ export default function AdminApp() {
   const [admin, setAdmin] = useState(undefined);
   const [notice, setNotice] = useState('');
   useEffect(() => { apiFetch('/auth/me').then(data => setAdmin(data?.id && data?.csrf ? data : null)).catch(() => setAdmin(null)); }, []);
-  if (admin === undefined) return <div className="admin-loading">Checking secure session...</div>;
   return (
     <AdminContext.Provider value={{ admin, setAdmin, notice, setNotice }}>
       <Routes>
-        <Route path="login" element={admin ? <Navigate to="/admin" replace /> : <AdminLogin />} />
-        <Route element={admin ? <AdminShell /> : <Navigate to="/admin/login" replace />}>
+        <Route path="login" element={admin === true ? <Navigate to="/admin" replace /> : <AdminLogin />} />
+        <Route element={admin === undefined ? <div className="admin-loading" aria-live="polite" /> : admin ? <AdminShell /> : <Navigate to="/admin/login" replace />}>
           <Route index element={<AdminDashboardNew />} />
           <Route path="analytics" element={<AdminAnalyticsNew />} />
           <Route path="leads" element={<AdminLeads />} />
