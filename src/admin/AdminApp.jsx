@@ -405,7 +405,6 @@ function AdminShell() {
         <header className="admin-topbar">
           <div className="admin-topbar__brand">
             <button className="admin-menu-toggle" onClick={() => setOpen(true)} aria-label="Open admin menu"><Menu /></button>
-            <Logo />
             <div className="admin-topbar__copy">
               <b>Catalog Manager</b>
               <span>Manage. Track. Grow.</span>
