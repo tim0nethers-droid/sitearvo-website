@@ -72,6 +72,22 @@ export default function Home() {
 
     <section className="stats"><div className="container stats-grid">{stats.map(([target, suffix, label]) => <div key={label}><Counter target={target} suffix={suffix} /><span>{label}</span></div>)}</div></section>
 
+    <section className="section">
+      <div className="container">
+        <div className="offer-strip">
+          <div>
+            <span className="eyebrow">Free 3 page website offer</span>
+            <h2>Launch a simple business website with a clear SEO path.</h2>
+            <p>Perfect for small businesses that want a professional first website with Home, About and Contact pages, responsive design and basic SEO foundations.</p>
+          </div>
+          <div className="offer-strip__actions">
+            <Link to="/free-3-page-website" className="button">View Free Offer <ArrowRight size={18} /></Link>
+            <Link to="/services/3-page-business-website" className="button button--secondary">See 3 Page Package</Link>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <HomeMarketplace />
 
     <section className="section"><div className="container"><SectionTitle eyebrow="Dynamic service catalog" title="Complete Digital Solutions" description="From websites and mobile apps to e-commerce and digital marketing, we provide everything your business needs to grow online." /><div className="services-grid">{homeServices.map(service => <ServiceCard key={service.slug || service.title} icon={getCatalogIcon(service.icon)} title={service.title} description={service.shortDescription || service.short} href={service.slug ? `/services/${service.slug}` : '/services'} />)}</div><div className="center-action"><Link to="/services" className="button button--secondary">View All Services <ArrowRight size={18} /></Link></div></div></section>

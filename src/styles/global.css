@@ -2747,6 +2747,20 @@ body.has-app-shell { background:#080a0d; }
   text-transform: uppercase;
   box-shadow: 0 10px 22px rgba(245, 168, 0, .2);
 }
+.offer-strip {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:1rem;
+  align-items:center;
+  padding:1.1rem 1.15rem;
+  border:1px solid rgba(245,168,0,.22);
+  border-radius:22px;
+  background:linear-gradient(135deg, rgba(245,168,0,.11), rgba(232,117,0,.06) 42%, rgba(255,255,255,.03));
+  box-shadow:0 18px 38px rgba(0,0,0,.18);
+}
+.offer-strip h2 { margin:.25rem 0 .45rem; font-size:clamp(1.3rem, 4vw, 1.8rem); line-height:1.1; }
+.offer-strip p { margin:0; color:var(--muted); max-width:68ch; line-height:1.6; }
+.offer-strip__actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:.7rem; }
 .catalog-price-wrap,
 .marketplace-card__price-comparison,
 .pricing-card__price,
