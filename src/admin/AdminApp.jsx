@@ -2448,8 +2448,19 @@ function AdminChats() {
   const [query, setQuery] = useState('');
   const [tab, setTab] = useState('All');
   const [conversations, setConversations] = useState([]);
-  const [openIds, setOpenIds] = useState([]);
-  const [activeId, setActiveId] = useState(null);
+  const [openIds, setOpenIds] = useState(() => {
+    if (typeof window === 'undefined') return [];
+    try {
+      const stored = JSON.parse(window.localStorage.getItem('sitearvo-admin-chat-open-ids-v1') || '[]');
+      return Array.isArray(stored) ? stored.filter(Boolean).map(String) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [activeId, setActiveId] = useState(() => {
+    if (typeof window === 'undefined') return null;
+    return window.localStorage.getItem('sitearvo-admin-chat-active-id-v1') || null;
+  });
   const [chatsById, setChatsById] = useState({});
   const [drafts, setDrafts] = useState({});
   const [loading, setLoading] = useState(true);
@@ -2465,6 +2476,15 @@ function AdminChats() {
 
   useEffect(() => { openIdsRef.current = openIds; }, [openIds]);
   useEffect(() => { activeIdRef.current = activeId; }, [activeId]);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem('sitearvo-admin-chat-open-ids-v1', JSON.stringify(openIds));
+  }, [openIds]);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (activeId) window.localStorage.setItem('sitearvo-admin-chat-active-id-v1', activeId);
+    else window.localStorage.removeItem('sitearvo-admin-chat-active-id-v1');
+  }, [activeId]);
   useEffect(() => {
     if (!toast) return undefined;
     const timer = window.setTimeout(() => setToast(null), 3200);
@@ -2551,6 +2571,9 @@ function AdminChats() {
       setOpenIds(current => {
         const normalized = current.map(item => String(item)).filter(item => nextIds.includes(item));
         if (normalized.length) {
+          if (activeIdRef.current && normalized.includes(activeIdRef.current)) {
+            return normalized;
+          }
           if (!normalized.includes(activeIdRef.current)) setActiveId(normalized.at(-1));
           return normalized;
         }
