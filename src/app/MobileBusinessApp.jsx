@@ -2,6 +2,7 @@ import {
   ArrowLeft,
   ArrowRight,
   Bell,
+  BarChart3,
   CalendarDays,
   CheckCircle2,
   CircleUserRound,
@@ -205,6 +206,30 @@ function AppQuickAction({ to, icon: Icon, label, hint }) {
   </Link>;
 }
 
+const dashboardToneStyles = {
+  gold: { background: 'rgba(245,168,0,.12)', color: 'var(--gold-light)' },
+  blue: { background: 'rgba(65,140,255,.12)', color: '#8cbcff' },
+  green: { background: 'rgba(56,181,120,.12)', color: '#8be1ac' },
+  orange: { background: 'rgba(232,117,0,.12)', color: '#ffbc80' },
+  purple: { background: 'rgba(142,92,255,.12)', color: '#c7adff' },
+  cyan: { background: 'rgba(61,201,202,.12)', color: '#97eff0' },
+  red: { background: 'rgba(255,92,92,.12)', color: '#ff9b9b' },
+  pink: { background: 'rgba(235,110,170,.12)', color: '#ffbdd7' },
+};
+
+function DashboardMiniCard({ icon: Icon, label, value, hint, tone = 'gold' }) {
+  return <article className="admin-mobile-metric-card app-dashboard-mini-card">
+    <span className="app-dashboard-mini-card__icon" style={dashboardToneStyles[tone] || dashboardToneStyles.gold}>
+      <Icon size={17} />
+    </span>
+    <div>
+      <span>{label}</span>
+      <strong>{value ?? 0}</strong>
+      {hint ? <small>{hint}</small> : null}
+    </div>
+  </article>;
+}
+
 function AppSectionHeader({ title, description, action, compact = false }) {
   return <div className={`app-section-header ${compact ? 'is-compact' : ''}`}>
     <div>
@@ -355,27 +380,86 @@ function AppDashboard() {
 
   const report = analytics?.report || {};
   const finance = dashboard?.finance_snapshot || {};
-  const orderCount = report?.summary?.orders?.current ?? safeList(orders).length ?? 0;
-  const revenue = finance.collected_this_month ?? report?.summary?.revenue?.current ?? 0;
+  const activeServices = dashboard?.active_services ?? safeList(catalogServices).length ?? 0;
+  const activeCategories = dashboard?.active_categories ?? new Set(safeList(catalogServices).map(item => item.category_slug || item.category_id || item.category_name || item.category || item.group).filter(Boolean)).size;
+  const fixedPackages = dashboard?.packages ?? safeList(catalogServices).filter(item => item.price_type === 'fixed' || item.is_fixed_price).length;
+  const newOrders = dashboard?.new_orders ?? safeList(orders).filter(order => String(order.status || '').toLowerCase() === 'new').length;
+  const newLeads = dashboard?.new_leads ?? newOrders;
+  const unreadChats = dashboard?.unread_chats ?? safeList(chats).filter(item => item.status !== 'closed').length;
+  const pendingQuotes = dashboard?.pending_quotes ?? 0;
+  const collectedThisMonth = finance.collected_this_month ?? report?.summary?.revenue?.current ?? 0;
+  const expensesThisMonth = finance.expenses_this_month ?? 0;
+  const netThisMonth = finance.net_this_month ?? Math.max(0, collectedThisMonth - expensesThisMonth);
+  const outstandingReceivables = finance.outstanding_receivables ?? 0;
   const activeProjects = dashboard?.active_projects ?? 0;
-  const supportTickets = safeList(chats).filter(item => item.status !== 'closed').length;
   const recentOrders = safeList(orders).slice(0, 4);
   const topPages = safeList(analytics?.top_pages).slice(0, 3);
+  const recentActivity = safeList(dashboard?.recent_activity).slice(0, 5);
   const today = new Date();
   const dateLabel = new Intl.DateTimeFormat('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }).format(today);
   const dayLabel = new Intl.DateTimeFormat('en-IN', { weekday: 'long' }).format(today);
+  const analyticsCards = [
+    { label: 'Total Pageviews', value: analytics?.total_pageviews ?? report?.summary?.visits?.current ?? 0, icon: LayoutDashboard, tone: 'purple', hint: 'All recorded visits' },
+    { label: 'Unique Visitors', value: analytics?.unique_visitors ?? report?.summary?.visitors?.current ?? 0, icon: UserRound, tone: 'blue', hint: 'Distinct people reached' },
+    { label: 'Today Visits', value: analytics?.today_pageviews ?? report?.summary?.today_visits?.current ?? 0, icon: CalendarDays, tone: 'green', hint: 'Traffic since midnight' },
+    { label: '7-Day Visits', value: analytics?.last_7_days_total ?? report?.summary?.last_7_days?.current ?? 0, icon: Sparkles, tone: 'orange', hint: 'Trailing seven days' },
+  ];
+  const businessCards = [
+    { label: 'Active Categories', value: activeCategories, icon: LayoutDashboard, tone: 'cyan', hint: 'Current catalog groups' },
+    { label: 'Active Services', value: activeServices, icon: ShoppingBag, tone: 'blue', hint: 'Published offerings' },
+    { label: 'Fixed Packages', value: fixedPackages, icon: CreditCard, tone: 'orange', hint: 'Pre-priced packages' },
+    { label: 'New Leads', value: newLeads, icon: CircleUserRound, tone: 'green', hint: 'New enquiries today' },
+    { label: 'Unread Chats', value: unreadChats, icon: MessageSquareText, tone: 'purple', hint: 'Waiting for a reply' },
+    { label: 'Pending Quotes', value: pendingQuotes, icon: TicketCheck, tone: 'pink', hint: 'Still to convert' },
+  ];
+  const financeCards = [
+    { label: 'Collected This Month', value: formatPrice(collectedThisMonth), icon: CreditCard, tone: 'green', hint: 'Confirmed income' },
+    { label: 'Expenses This Month', value: formatPrice(expensesThisMonth), icon: Clock3, tone: 'red', hint: 'Tracked spend' },
+    { label: 'Net This Month', value: formatPrice(netThisMonth), icon: Sparkles, tone: 'purple', hint: 'Revenue minus spend' },
+    { label: 'Outstanding Receivables', value: formatPrice(outstandingReceivables), icon: Headphones, tone: 'blue', hint: 'Still unpaid' },
+  ];
 
   return <AppPage
     title={`Hello, ${admin?.name?.split(' ')[0] || 'there'}!`}
     description="Here's what's happening with your business today."
     action={<div className="app-date-card"><CalendarDays size={16} /><div><b>{dateLabel}</b><span>{dayLabel}</span></div></div>}
   >
-    <div className="app-metric-grid">
-      <AppMetricCard icon={ShoppingBag} label="Total Orders" value={orderCount} hint={formatAnalyticsValue('orders', orderCount)} />
-      <AppMetricCard icon={CreditCard} label="Total Revenue" value={formatPrice(revenue)} hint="Collected revenue" tone="orange" />
-      <AppMetricCard icon={FolderKanban} label="Active Projects" value={activeProjects} hint="In progress or open" tone="blue" />
-      <AppMetricCard icon={Headphones} label="Support Tickets" value={supportTickets} hint="Open conversations" tone="green" />
-    </div>
+    <section className="admin-mobile-section">
+      <div className="admin-mobile-section__head">
+        <div>
+          <h2>Analytics Snapshot</h2>
+          <p>{formatAnalyticsRangeLabel(report.range?.key || 'last_7_days', report.range?.start, report.range?.end)}</p>
+        </div>
+        <Link className="text-link" to="/app/reports">Open Reports <BarChart3 size={16} /></Link>
+      </div>
+      <div className="admin-mobile-metrics">
+        {analyticsCards.map(card => <DashboardMiniCard key={card.label} {...card} />)}
+      </div>
+    </section>
+
+    <section className="admin-mobile-section">
+      <div className="admin-mobile-section__head">
+        <div>
+          <h2>Business Overview</h2>
+          <p>Catalog, leads, chats and conversion pipeline.</p>
+        </div>
+      </div>
+      <div className="admin-mobile-metrics">
+        {businessCards.map(card => <DashboardMiniCard key={card.label} {...card} />)}
+      </div>
+    </section>
+
+    <section className="admin-mobile-section">
+      <div className="admin-mobile-section__head">
+        <div>
+          <h2>Finance Snapshot</h2>
+          <p>Income, spend and outstanding receivables.</p>
+        </div>
+      </div>
+      <div className="admin-mobile-metrics">
+        {financeCards.map(card => <DashboardMiniCard key={card.label} {...card} />)}
+      </div>
+    </section>
 
     <section className="app-panel">
       <div className="app-panel__head">
@@ -387,6 +471,8 @@ function AppDashboard() {
         <AppQuickAction to="/app/projects/new" icon={FolderKanban} label="Add Project" hint="Plan delivery" />
         <AppQuickAction to="/app/support/new" icon={TicketCheck} label="Support Ticket" hint="Start a thread" />
         <AppQuickAction to="/app/reports" icon={Sparkles} label="Reports" hint="Review trends" />
+        <AppQuickAction to="/app/clients" icon={CircleUserRound} label="Clients" hint="Customer list" />
+        <AppQuickAction to="/app/notifications" icon={Bell} label="Notifications" hint="Latest updates" />
       </div>
     </section>
 
@@ -406,6 +492,27 @@ function AppDashboard() {
         compact
         height={260}
       />
+    </section>
+
+    <section className="app-panel">
+      <div className="app-panel__head">
+        <h2>Recent Activity</h2>
+        <Link to="/app/notifications">All Updates</Link>
+      </div>
+      <div className="app-list app-list--compact">
+        {recentActivity.length ? recentActivity.map(item => (
+          <div key={item.id || item.title || item.message} className="app-list__item is-static">
+            <div className="app-list__icon"><Sparkles size={16} /></div>
+            <div className="app-list__content">
+              <b>{item.title || item.label || item.type || 'Activity'}</b>
+              <span>{item.message || item.description || item.detail || 'Live SiteArvo update'}</span>
+            </div>
+            <div className="app-list__meta">
+              <strong>{formatShortDate(item.created_at || item.time || item.date)}</strong>
+            </div>
+          </div>
+        )) : <EmptyState title="No recent activity yet." description="Updates from orders, chats and projects will appear here." icon={Sparkles} />}
+      </div>
     </section>
 
     <section className="app-panel">

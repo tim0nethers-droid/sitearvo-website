@@ -2595,6 +2595,10 @@ body.has-app-shell { background:#080a0d; }
 .app-settings-actions .app-quick-action { min-height:112px; }
 .app-settings-actions .app-quick-action small { white-space:normal; }
 .app-settings-form { min-width:0; }
+.app-dashboard-mini-card { display:grid; gap:.6rem; min-height:112px; }
+.app-dashboard-mini-card__icon { width:32px; height:32px; display:grid; place-items:center; border-radius:11px; }
+.app-dashboard-mini-card strong { color:var(--white); font-size:1.1rem; line-height:1.15; letter-spacing:-.02em; }
+.app-dashboard-mini-card small { color:var(--muted); font-size:.68rem; line-height:1.35; }
 .app-reports-shell { display:grid; gap:1rem; }
 .app-reports-summary { grid-template-columns:repeat(4,minmax(0,1fr)); }
 .app-reports-grid { display:grid; grid-template-columns:minmax(0,1.35fr) minmax(300px,.95fr); gap:1rem; align-items:start; }
