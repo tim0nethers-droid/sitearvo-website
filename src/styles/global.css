@@ -2563,6 +2563,24 @@ body.has-app-shell { background:#080a0d; }
 .app-list__meta { display:grid; justify-items:end; gap:.2rem; text-align:right; }
 .app-list__meta strong { color:var(--gold-light); font-size:.9rem; }
 .app-list--compact .app-list__item { grid-template-columns:auto 1fr; }
+
+.app-notifications-shell { display:grid; gap:1rem; }
+.app-notifications-summary { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.85rem; }
+.app-notifications-toolbar { display:flex; align-items:center; justify-content:space-between; gap:.75rem; flex-wrap:wrap; }
+.app-notifications-toolbar button { min-height:40px; padding:.55rem .9rem; border:1px solid var(--border); border-radius:999px; color:var(--muted); background:#0b0e13; cursor:pointer; text-transform:capitalize; }
+.app-notifications-toolbar button.is-active { border-color:rgba(245,168,0,.28); color:var(--gold-light); background:rgba(245,168,0,.08); }
+.app-notifications-toolbar__meta { color:var(--muted); font-size:.78rem; letter-spacing:.02em; }
+.app-notification-types { display:flex; flex-wrap:wrap; gap:.55rem; }
+.app-notification-chip { display:inline-flex; align-items:center; gap:.45rem; min-height:34px; padding:.45rem .75rem; border:1px solid var(--border); border-radius:999px; color:var(--text); background:#0b0e13; font-size:.75rem; text-transform:capitalize; }
+.app-notification-chip b { display:grid; place-items:center; min-width:20px; height:20px; padding:0 .35rem; border-radius:999px; background:rgba(245,168,0,.12); color:var(--gold-light); font-size:.68rem; }
+.app-notification-chip.is-empty { color:var(--muted); }
+.app-notifications-list { gap:.75rem; }
+.app-notification-card { align-items:start; }
+.app-notification-card .app-list__icon { margin-top:.1rem; }
+.app-notification-card .app-list__meta { align-self:center; }
+.app-notification-card .app-list__meta strong { color:var(--muted); font-size:.72rem; text-transform:uppercase; letter-spacing:.08em; }
+.app-notification-card.is-unread { border-color:rgba(245,168,0,.18); box-shadow:0 0 0 1px rgba(245,168,0,.06) inset; }
+.app-notification-card.is-read { opacity:.84; }
 .app-detail-hero { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.8rem; }
 .app-detail-hero__card { display:grid; gap:.25rem; padding:.95rem; border:1px solid var(--border); border-radius:16px; background:#0b0e13; }
 .app-detail-hero__card span { color:var(--muted); font-size:.72rem; text-transform:uppercase; letter-spacing:.08em; }

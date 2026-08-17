@@ -1092,25 +1092,65 @@ function AppSettingsPage() {
 
 function AppNotificationsPage() {
   const { data, loading, error } = useResource('/admin/notifications');
+  const [filter, setFilter] = useState('all');
   const notifications = safeList(data);
   const unread = notifications.filter(item => !item.is_read);
+  const read = notifications.filter(item => item.is_read);
+  const total = notifications.length;
+  const visibleNotifications = useMemo(() => {
+    if (filter === 'unread') return unread;
+    if (filter === 'read') return read;
+    return notifications;
+  }, [filter, notifications, read, unread]);
+  const groupedCounts = useMemo(() => {
+    return notifications.reduce((accumulator, item) => {
+      const key = String(item.type || 'info').toLowerCase();
+      accumulator[key] = (accumulator[key] || 0) + 1;
+      return accumulator;
+    }, {});
+  }, [notifications]);
   const markAll = async () => {
     await Promise.all(unread.map(item => apiFetch(`/admin/notifications/${item.id}/read`, { method: 'PUT' }).catch(() => {})));
     window.location.reload();
   };
   if (loading) return <LoadingState title="Loading notifications..." />;
   if (error) return <ErrorState message={error} onRetry={() => window.location.reload()} />;
-  return <AppPage title="Notifications" description="Unread order, payment and project updates." action={<button type="button" className="button button--secondary" onClick={markAll}>Mark all as read</button>}>
-    <div className="app-list">
-      {notifications.length ? notifications.map(notification => <div key={notification.id} className={`app-list__item is-static ${notification.is_read ? 'is-read' : 'is-unread'}`}>
-        <div className="app-list__icon"><AppIcon icon="notifications" size={16} /></div>
-        <div className="app-list__content">
-          <b>{notification.title}</b>
-          <span>{notification.message}</span>
-          <small>{formatDateTime(notification.created_at)}</small>
-        </div>
-        <div className="app-list__meta"><AppStatusBadge status={notification.is_read ? 'Closed' : 'Open'} /></div>
-      </div>) : <EmptyState title="No notifications." description="You’re all caught up." icon={Bell} />}
+  return <AppPage
+    title="Notifications"
+    description="Unread order, payment and project updates in one polished feed."
+    action={<button type="button" className="button button--secondary" onClick={markAll} disabled={!unread.length}>Mark all as read</button>}
+  >
+    <div className="app-notifications-shell">
+      <div className="app-notifications-summary">
+        <AppMetricCard icon={Bell} label="Total" value={total} hint="All notifications" tone="gold" />
+        <AppMetricCard icon={MessageSquareText} label="Unread" value={unread.length} hint="Needs attention" tone="purple" />
+        <AppMetricCard icon={CheckCircle2} label="Read" value={read.length} hint="Already handled" tone="green" />
+        <AppMetricCard icon={Clock3} label="Latest" value={notifications[0] ? formatDateTime(notifications[0].created_at) : '—'} hint="Most recent alert" tone="blue" />
+      </div>
+
+      <div className="app-notifications-toolbar">
+        {['all', 'unread', 'read'].map(item => <button key={item} type="button" className={filter === item ? 'is-active' : ''} aria-pressed={filter === item} onClick={() => setFilter(item)}>{item === 'all' ? 'All' : item === 'unread' ? 'Unread' : 'Read'}</button>)}
+        <div className="app-notifications-toolbar__meta">{visibleNotifications.length} visible · {unread.length} unread</div>
+      </div>
+
+      <div className="app-notification-types">
+        {Object.entries(groupedCounts).length ? Object.entries(groupedCounts).map(([key, value]) => <span key={key} className="app-notification-chip">{key}<b>{value}</b></span>) : <span className="app-notification-chip is-empty">No types yet</span>}
+      </div>
+
+      <div className="app-list app-notifications-list">
+        {visibleNotifications.length ? visibleNotifications.map(notification => <div key={notification.id} className={`app-list__item app-notification-card is-static ${notification.is_read ? 'is-read' : 'is-unread'}`}>
+          <div className="app-list__icon"><AppIcon icon="notifications" size={16} /></div>
+          <div className="app-list__content">
+            <b>{notification.title}</b>
+            <span>{notification.message}</span>
+            <small>{formatDateTime(notification.created_at)}</small>
+          </div>
+          <div className="app-list__meta">
+            <AppStatusBadge status={notification.is_read ? 'Closed' : 'Open'} />
+            {!notification.is_read ? <strong>Unread</strong> : <strong>Read</strong>}
+          </div>
+        </div>) : <EmptyState title="No notifications." description="You’re all caught up." icon={Bell} />}
+      </div>
     </div>
   </AppPage>;
 }
