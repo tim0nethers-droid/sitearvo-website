@@ -878,26 +878,57 @@ function AppReportsPage() {
   const finance = dashboard?.finance_snapshot || {};
   const summary = report.summary || {};
   const topServices = safeList(report.top_services).slice(0, 5);
-  return <AppPage title="Reports" description="Revenue, orders and traffic overview from real SiteArvo data." action={<AnalyticsDateRange compact hideLabel range={range} onRangeChange={setRange} start={report.range?.start} end={report.range?.end} />}>
-    <div className="app-metric-grid">
-      <AppMetricCard icon={CreditCard} label="Total Revenue" value={formatPrice(finance.collected_this_month || summary.revenue?.current || 0)} />
-      <AppMetricCard icon={ShoppingBag} label="Total Orders" value={summary.orders?.current ?? 0} />
-      <AppMetricCard icon={UserRound} label="New Clients" value={summary.new_clients?.current ?? 0} />
-      <AppMetricCard icon={FolderKanban} label="Projects Completed" value={summary.projects_completed?.current ?? 0} />
-    </div>
-    <section className="app-panel">
-      <h2>Revenue Overview</h2>
-      <AnalyticsLineChart title="Revenue Overview" subtitle={formatAnalyticsRangeLabel(report.range?.key || range, report.range?.start, report.range?.end)} data={report.timeseries || []} series={[{ key: 'revenue', label: 'Revenue', color: 'gold' }]} compact height={260} />
-    </section>
-    <section className="app-panel">
-      <h2>Top Services</h2>
-      <div className="app-list app-list--compact">
-        {topServices.length ? topServices.map(item => <div key={item.slug || item.label} className="app-list__item is-static">
-          <div className="app-list__icon"><Sparkles size={16} /></div>
-          <div className="app-list__content"><b>{item.label}</b><span>{item.views} views · {item.visitors} visitors</span></div>
-        </div>) : <EmptyState title="No service analytics yet." description="Service trends will appear here when traffic is recorded." icon={Sparkles} />}
+  const reportMetrics = [
+    { label: 'Total Revenue', value: formatPrice(finance.collected_this_month || summary.revenue?.current || 0), icon: CreditCard, tone: 'gold', hint: 'Collected this month' },
+    { label: 'Total Orders', value: summary.orders?.current ?? 0, icon: ShoppingBag, tone: 'blue', hint: 'All-time order volume' },
+    { label: 'New Clients', value: summary.new_clients?.current ?? 0, icon: UserRound, tone: 'green', hint: 'New relationships' },
+    { label: 'Projects Completed', value: summary.projects_completed?.current ?? 0, icon: FolderKanban, tone: 'purple', hint: 'Finished work items' },
+  ];
+  const serviceHighlights = topServices.map(item => ({
+    label: item.label,
+    detail: `${item.views} views · ${item.visitors} visitors`,
+    value: item.views,
+  }));
+  const chartLabel = formatAnalyticsRangeLabel(report.range?.key || range, report.range?.start, report.range?.end);
+  return <AppPage
+    title="Reports"
+    description="Revenue, orders and traffic overview from real SiteArvo data."
+    action={<AnalyticsDateRange compact hideLabel range={range} onRangeChange={setRange} start={report.range?.start} end={report.range?.end} />}
+  >
+    <div className="app-reports-shell">
+      <div className="app-metric-grid app-reports-summary">
+        {reportMetrics.map(item => <AppMetricCard key={item.label} icon={item.icon} label={item.label} value={item.value} hint={item.hint} tone={item.tone} />)}
       </div>
-    </section>
+
+      <div className="app-reports-grid">
+        <section className="app-panel app-reports-chart">
+          <div className="app-panel__head"><h2>Revenue Overview</h2><span>{chartLabel}</span></div>
+          <AnalyticsLineChart title="Revenue Overview" subtitle={chartLabel} data={report.timeseries || []} series={[{ key: 'revenue', label: 'Revenue', color: 'gold' }]} compact height={260} />
+        </section>
+
+        <section className="app-panel app-reports-side">
+          <div className="app-panel__head"><h2>Quick insights</h2><Link to="/app/notifications">Notifications</Link></div>
+          <div className="app-reports-insights">
+            <div className="app-reports-insight"><span>This period</span><strong>{summary.orders?.current ?? 0} orders</strong><small>{summary.revenue?.current ? formatPrice(summary.revenue.current) : formatPrice(0)} in tracked revenue</small></div>
+            <div className="app-reports-insight"><span>Latest range</span><strong>{chartLabel}</strong><small>Switch ranges above to compare performance</small></div>
+            <div className="app-reports-insight"><span>Pipeline</span><strong>{finance.pending_quotes || 0} pending quotes</strong><small>{finance.unread_chats || 0} unread chats waiting</small></div>
+          </div>
+          <div className="app-reports-actions">
+            <AppQuickAction to="/app/orders" icon={ShoppingBag} label="Orders" hint="Review recent purchases" />
+            <AppQuickAction to="/app/clients" icon={UserRound} label="Clients" hint="Open account list" />
+            <AppQuickAction to="/app/projects" icon={FolderKanban} label="Projects" hint="Track progress" />
+            <AppQuickAction to="/app/support" icon={MessageSquareText} label="Support" hint="Open conversations" />
+          </div>
+        </section>
+      </div>
+
+      <section className="app-panel">
+        <div className="app-panel__head"><h2>Top Services</h2><span>By traffic</span></div>
+        <div className="app-reports-services">
+          {serviceHighlights.length ? serviceHighlights.map(item => <div key={item.label} className="app-reports-service"><div><b>{item.label}</b><span>{item.detail}</span></div><strong>{item.value}</strong></div>) : <EmptyState title="No service analytics yet." description="Service trends will appear here when traffic is recorded." icon={Sparkles} />}
+        </div>
+      </section>
+    </div>
   </AppPage>;
 }
 
