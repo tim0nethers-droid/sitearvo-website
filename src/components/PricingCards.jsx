@@ -35,9 +35,14 @@ export default function PricingCards({ limit = 6, categoryId = '' }) {
     const salePrice = effectivePrice(plan);
     const hasDiscount = Number.isFinite(regularPrice) && regularPrice > salePrice;
     const customizeLabel = salePrice === 0 ? 'Get Started' : 'Customize';
+    const isFreeThreePageOffer = plan.slug === '3-page-business-website' && salePrice === 0;
     return <article key={plan.id || plan.slug} className={`pricing-card ${plan.isFeatured ? 'popular' : ''}`}>
       <div className="pricing-card__icon"><AppIcon icon={plan.icon || 'layers3'} size={18} /></div>
-      {plan.isFeatured && <span className="popular-label">{salePrice === 0 ? 'FREE STARTER' : 'Featured'}</span>}
+      {isFreeThreePageOffer ? (
+        <span className="popular-label popular-label--gold">FREE 3 PAGE OFFER</span>
+      ) : plan.isFeatured ? (
+        <span className="popular-label">{salePrice === 0 ? 'FREE STARTER' : 'Featured'}</span>
+      ) : null}
       {plan.categoryTitle && <span className="package-category">{plan.categoryTitle}</span>}
       <h3>{plan.title}</h3><p>{plan.shortDescription}</p>
       <div className="price pricing-card__price">
@@ -45,10 +50,10 @@ export default function PricingCards({ limit = 6, categoryId = '' }) {
         <strong>{priceLabel(plan)}</strong>
         {hasDiscount && <small>Save {formatPrice(regularPrice - salePrice)}</small>}
       </div>
-      {salePrice === 0 && <span className="free-starter-badge">FREE STARTER</span>}
+      {salePrice === 0 && <span className="free-starter-badge">{isFreeThreePageOffer ? 'FREE 3 PAGE STARTER' : 'FREE STARTER'}</span>}
       {canOrder && <div className="package-facts package-facts--card">{plan.pagesIncluded && <span><b>{plan.pagesIncluded}</b> Pages</span>}{plan.deliveryTime && <span><b>{plan.deliveryTime}</b> Delivery</span>}{plan.revisions && <span><b>{plan.revisions}</b> Revisions</span>}</div>}
       <ul>{features.slice(0, 8).map(feature => <li key={feature}><Check size={17} />{feature}</li>)}</ul>
-      <div className="pricing-card-actions">{canOrder ? <><Link to={`/services/${plan.slug}`} className="button button--secondary">{customizeLabel}</Link><button type="button" className="button" onClick={() => addItem(plan)}><ShoppingCart size={17} /> Add to Cart</button></> : <Link to={configured.length ? `/services/${plan.slug}` : '/contact'} className={`button ${plan.isFeatured ? '' : 'button--secondary'}`} onClick={() => trackAnalyticsEvent('quote_requested', { service_slug: plan.slug, service_name: plan.title })}>{configured.length ? (plan.priceType === 'starting_from' ? 'Request Quote' : 'View Package') : 'Request Quote'}</Link>}</div>
+      <div className="pricing-card-actions">{canOrder ? <><Link to={`/services/${plan.slug}`} className="button button--secondary">{isFreeThreePageOffer ? 'View Free Offer' : customizeLabel}</Link><button type="button" className="button" onClick={() => addItem(plan)}><ShoppingCart size={17} /> Add to Cart</button></> : <Link to={configured.length ? `/services/${plan.slug}` : '/contact'} className={`button ${plan.isFeatured ? '' : 'button--secondary'}`} onClick={() => trackAnalyticsEvent('quote_requested', { service_slug: plan.slug, service_name: plan.title })}>{configured.length ? (plan.priceType === 'starting_from' ? 'Request Quote' : 'View Package') : 'Request Quote'}</Link>}</div>
     </article>;
   })}{usingFallback && <span className="sr-only">Live package pricing will appear after the catalog API is configured.</span>}</div>;
 }
