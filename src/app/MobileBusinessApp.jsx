@@ -1064,29 +1064,65 @@ function AppSettingsPage() {
       setBusy(false);
     }
   };
+  const settingsSummary = [
+    { label: 'Company', value: form.company_name || 'SiteArvo', hint: 'Brand identity', icon: Sparkles, tone: 'gold' },
+    { label: 'Currency', value: form.currency || 'INR', hint: 'Billing currency', icon: CreditCard, tone: 'blue' },
+    { label: 'Notifications', value: form.notify_email || 'Not set', hint: 'Email route', icon: Bell, tone: 'purple' },
+    { label: 'Tax Setup', value: form.tax_name || 'Default tax', hint: 'Finance defaults', icon: Settings, tone: 'green' },
+  ];
+  const systemHints = [
+    { label: 'Invoice notes', value: form.invoice_notes || 'No invoice note yet' },
+    { label: 'Tax ID field', value: form.business_tax_id || 'Not configured' },
+    { label: 'FY start month', value: form.financial_year_start_month || '4' },
+    { label: 'Business explanation', value: form.page_explanation || 'Add a short internal description' },
+  ];
   return <AppPage title="Settings" description="Company, customization and system preferences.">
-    <form className="app-form" onSubmit={submit}>
-      <fieldset>
-        <legend>General</legend>
-        <label>Company Information<input value={form.company_name || ''} onChange={event => setForm(current => ({ ...current, company_name: event.target.value }))} /></label>
-        <label>Business Settings<input value={form.page_explanation || ''} onChange={event => setForm(current => ({ ...current, page_explanation: event.target.value }))} /></label>
-        <label>Tax Settings<input value={form.tax_name || ''} onChange={event => setForm(current => ({ ...current, tax_name: event.target.value }))} /></label>
-      </fieldset>
-      <fieldset>
-        <legend>Customization</legend>
-        <label>Email Templates<input value={form.notify_email || ''} onChange={event => setForm(current => ({ ...current, notify_email: event.target.value }))} /></label>
-        <label>Invoice Settings<textarea rows="4" value={form.invoice_notes || ''} onChange={event => setForm(current => ({ ...current, invoice_notes: event.target.value }))} /></label>
-        <label>Custom Fields<input value={form.business_tax_id || ''} onChange={event => setForm(current => ({ ...current, business_tax_id: event.target.value }))} /></label>
-      </fieldset>
-      <fieldset>
-        <legend>System</legend>
-        <label>Users & Roles<input value={form.default_currency || 'INR'} onChange={event => setForm(current => ({ ...current, default_currency: event.target.value }))} /></label>
-        <label>Backup & Restore<input value={form.financial_year_start_month || '4'} onChange={event => setForm(current => ({ ...current, financial_year_start_month: event.target.value }))} /></label>
-        <label>API Settings<input value={form.currency || 'INR'} onChange={event => setForm(current => ({ ...current, currency: event.target.value }))} /></label>
-      </fieldset>
-      {status && <div className="app-form-status" role="status">{status}</div>}
-      <button className="button" disabled={busy}>{busy ? 'Saving...' : 'Save Settings'}</button>
-    </form>
+    <div className="app-settings-shell">
+      <div className="app-settings-summary">
+        {settingsSummary.map(item => <AppMetricCard key={item.label} icon={item.icon} label={item.label} value={item.value} hint={item.hint} tone={item.tone} />)}
+      </div>
+
+      <div className="app-settings-grid">
+        <form className="app-form app-settings-form" onSubmit={submit}>
+          <fieldset>
+            <legend>General</legend>
+            <label>Company Information<input value={form.company_name || ''} onChange={event => setForm(current => ({ ...current, company_name: event.target.value }))} /></label>
+            <label>Business Settings<input value={form.page_explanation || ''} onChange={event => setForm(current => ({ ...current, page_explanation: event.target.value }))} /></label>
+            <label>Tax Settings<input value={form.tax_name || ''} onChange={event => setForm(current => ({ ...current, tax_name: event.target.value }))} /></label>
+          </fieldset>
+          <fieldset>
+            <legend>Customization</legend>
+            <label>Email Templates<input value={form.notify_email || ''} onChange={event => setForm(current => ({ ...current, notify_email: event.target.value }))} /></label>
+            <label>Invoice Settings<textarea rows="4" value={form.invoice_notes || ''} onChange={event => setForm(current => ({ ...current, invoice_notes: event.target.value }))} /></label>
+            <label>Custom Fields<input value={form.business_tax_id || ''} onChange={event => setForm(current => ({ ...current, business_tax_id: event.target.value }))} /></label>
+          </fieldset>
+          <fieldset>
+            <legend>System</legend>
+            <label>Users & Roles<input value={form.default_currency || 'INR'} onChange={event => setForm(current => ({ ...current, default_currency: event.target.value }))} /></label>
+            <label>Backup & Restore<input value={form.financial_year_start_month || '4'} onChange={event => setForm(current => ({ ...current, financial_year_start_month: event.target.value }))} /></label>
+            <label>API Settings<input value={form.currency || 'INR'} onChange={event => setForm(current => ({ ...current, currency: event.target.value }))} /></label>
+          </fieldset>
+          {status && <div className="app-form-status" role="status">{status}</div>}
+          <button className="button" disabled={busy}>{busy ? 'Saving...' : 'Save Settings'}</button>
+        </form>
+
+        <aside className="app-settings-panel">
+          <div className="app-panel">
+            <div className="app-panel__head"><h2>Snapshot</h2><span className="app-settings-panel__note">Current state</span></div>
+            <div className="app-settings-hints">{systemHints.map(item => <div key={item.label} className="app-settings-hint"><span>{item.label}</span><strong>{item.value}</strong></div>)}</div>
+          </div>
+          <div className="app-panel">
+            <div className="app-panel__head"><h2>Quick tools</h2><span className="app-settings-panel__note">Shortcuts</span></div>
+            <div className="app-settings-actions">
+              <AppQuickAction to="/app/notifications" icon={Bell} label="Notifications" hint="Review alerts" />
+              <AppQuickAction to="/app/profile" icon={UserRound} label="Profile" hint="Update your account" />
+              <AppQuickAction to="/admin" icon={LayoutDashboard} label="Admin Dashboard" hint="Return to overview" />
+              <AppQuickAction to="/app/reports" icon={ClipboardList} label="Reports" hint="See summaries" />
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
   </AppPage>;
 }
 
