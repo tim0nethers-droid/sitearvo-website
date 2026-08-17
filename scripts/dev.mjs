@@ -16,7 +16,7 @@ function launch(command, args, env = {}) {
 }
 
 launch('node', ['server.mjs', '--api-only'], { PORT: '5176' });
-launch('vite', [], { SITEARVO_MOCK_API: '1' });
+launch('vite', ['--host', '0.0.0.0'], { SITEARVO_MOCK_API: '1' });
 
 const shutdown = () => {
   for (const child of children) {

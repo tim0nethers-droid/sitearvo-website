@@ -52,4 +52,21 @@ ${[...routes].sort().map(path => `  <url><loc>${escapeXml(`${domain}${path}`)}</
 </urlset>
 `;
 
-await writeFile(new URL('../public/sitemap.xml', import.meta.url), xml, 'utf8');
+const sitemapUrl = new URL('../public/sitemap.xml', import.meta.url);
+
+async function writeWithRetry(url, contents, encoding, attempts = 6) {
+  let lastError;
+  for (let index = 0; index < attempts; index += 1) {
+    try {
+      await writeFile(url, contents, encoding);
+      return;
+    } catch (error) {
+      lastError = error;
+      const delay = 250 * (index + 1);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+  throw lastError;
+}
+
+await writeWithRetry(sitemapUrl, xml, 'utf8');

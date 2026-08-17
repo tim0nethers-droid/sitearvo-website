@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowLeftRight, ArrowRight, ArrowUp, Banknote, BarChart3, BadgePercent, Boxes, CalendarRange, ChevronDown, CircleDollarSign, Copy, Download, Eye, EyeOff, FileText, FolderTree, Gauge, Image, Landmark, LayoutDashboard, LogOut, Menu, MessageSquareText, MoreVertical, PackagePlus, PiggyBank, Plus, ReceiptText, Save, ScrollText, Search, Send, Settings, SlidersHorizontal, Trash2, TrendingDown, TrendingUp, Wallet, X } from 'lucide-react';
+import { ArrowDown, ArrowLeftRight, ArrowRight, ArrowUp, Banknote, BarChart3, BadgePercent, Boxes, CalendarRange, ChevronDown, CircleDollarSign, Copy, Download, Eye, EyeOff, FileText, FolderTree, Gauge, Image, ImagePlus, Landmark, LayoutDashboard, LogOut, Menu, MessageSquareText, MoreVertical, PackagePlus, PiggyBank, Plus, ReceiptText, Save, ScrollText, Search, Send, Settings, SlidersHorizontal, Trash2, TrendingDown, TrendingUp, Wallet, X } from 'lucide-react';
 import { Bell, Blocks, BriefcaseBusiness, CalendarCheck2, CircleCheck, Clock3, Code2, CreditCard, Database, FilePlus2, FolderPlus, Gamepad2, Globe, LayoutGrid, Mail, MessageCircle, MessagesSquare, Monitor, MoreHorizontal, Package, PenTool, Puzzle, ReceiptIndianRupee, Server, ServerCog, Shield, ShoppingBag, ShoppingCart, Smartphone, UserPlus, Users } from 'lucide-react';
 import { TicketPercent } from 'lucide-react';
 import { ChevronRight, ChartNoAxesCombined, CircleHelp, DatabaseBackup, FilePenLine, FolderKanban, HandCoins, MessageSquareQuote, Undo2, UsersRound, WalletCards, Building2, ChartPie } from 'lucide-react';
@@ -380,11 +380,32 @@ function AdminLogin() {
 function AdminShell() {
   const { admin, setAdmin, notice } = useContext(AdminContext);
   const [open, setOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const topbarMenuRef = useRef(null);
+  const { data: shellStats } = useAdminData('/admin/dashboard');
   const navigate = useNavigate();
   const isMobile = useAdminViewport();
   useEffect(() => { document.title = 'Catalog Admin | SiteArvo'; }, []);
+  useEffect(() => {
+    const handlePointerDown = event => {
+      if (topbarMenuRef.current && !topbarMenuRef.current.contains(event.target)) setProfileOpen(false);
+    };
+    const handleEscape = event => {
+      if (event.key === 'Escape') setProfileOpen(false);
+    };
+    document.addEventListener('mousedown', handlePointerDown);
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, []);
   const logout = async () => { await apiFetch('/auth/logout', { method: 'POST' }).catch(() => {}); setAdmin(null); navigate('/admin/login'); };
   if (isMobile) return <AdminMobileShell admin={admin} notice={notice} logout={logout} />;
+  const adminName = String(admin?.name || 'SiteArvo Admin').trim();
+  const adminEmail = String(admin?.email || 'info@sitearvo.site').trim();
+  const adminInitial = adminName ? adminName.charAt(0).toUpperCase() : 'S';
+  const unreadNotifications = Number(shellStats?.unread_notifications || 0);
   return (
     <div className="admin-app">
       <aside className={open ? 'is-open' : ''}>
@@ -406,11 +427,47 @@ function AdminShell() {
           <div className="admin-topbar__brand">
             <button className="admin-menu-toggle" onClick={() => setOpen(true)} aria-label="Open admin menu"><Menu /></button>
             <div className="admin-topbar__copy">
-              <b>Catalog Manager</b>
-              <span>Manage. Track. Grow.</span>
+              <b>SiteArvo Catalog Manager</b>
+              <span>Changes publish to the database-backed catalog.</span>
             </div>
           </div>
-          <Link to="/" target="_blank" rel="noreferrer" className="admin-topbar__link">View Website</Link>
+          <div className="admin-topbar__actions">
+            <Link to="/" target="_blank" rel="noreferrer" className="admin-topbar__link">View Website</Link>
+            <Link to="/admin/notifications" className="admin-topbar__icon-button" aria-label="Open notifications">
+              <Bell size={17} />
+              {unreadNotifications > 0 ? <span className="admin-topbar__badge">{unreadNotifications > 99 ? '99+' : unreadNotifications}</span> : null}
+            </Link>
+            <div className="admin-topbar__profile-wrap" ref={topbarMenuRef}>
+              <button
+                type="button"
+                className="admin-topbar__profile"
+                onClick={() => setProfileOpen(current => !current)}
+                aria-haspopup="menu"
+                aria-expanded={profileOpen}
+                aria-label="Open admin profile menu"
+              >
+                <span className="admin-topbar__avatar">{adminInitial}</span>
+                <span className="admin-topbar__profile-copy">
+                  <strong>{adminName}</strong>
+                  <small>Administrator</small>
+                </span>
+                <ChevronDown className={`admin-topbar__chevron ${profileOpen ? 'is-open' : ''}`} size={16} />
+              </button>
+              {profileOpen && (
+                <div className="admin-topbar__menu" role="menu" aria-label="Admin profile menu">
+                  <div className="admin-topbar__menu-head">
+                    <b>{adminName}</b>
+                    <span>{adminEmail}</span>
+                  </div>
+                  <Link to="/admin/settings" role="menuitem" onClick={() => setProfileOpen(false)}><UserPlus size={16} /> Profile</Link>
+                  <Link to="/admin/settings" role="menuitem" onClick={() => setProfileOpen(false)}><Settings size={16} /> Settings</Link>
+                  <Link to="/admin/notifications" role="menuitem" onClick={() => setProfileOpen(false)}><Bell size={16} /> Notifications</Link>
+                  <Link to="/" target="_blank" rel="noreferrer" role="menuitem" onClick={() => setProfileOpen(false)}><ArrowRight size={16} /> View Website</Link>
+                  <button type="button" role="menuitem" onClick={() => { setProfileOpen(false); logout(); }}><LogOut size={16} /> Logout</button>
+                </div>
+              )}
+            </div>
+          </div>
         </header>
         {notice && <div className="admin-notice" role="status">{notice}</div>}
         <div className="admin-content"><AdminOutlet /></div>
@@ -440,7 +497,6 @@ function AdminMobileShell({ admin, notice, logout }) {
         <header className="admin-mobile-header">
           <button type="button" className="admin-mobile-header__button" onClick={openDrawer} aria-label="Open admin menu"><Menu /></button>
           <div className="admin-mobile-header__brand">
-            <Logo />
             <div className="admin-mobile-header__brand-copy">
               <b>SiteArvo Catalog Manager</b>
               <span>{meta.title}</span>
@@ -1105,23 +1161,39 @@ function relativeAnalyticsTimeLabel(value) {
 
 function AdminDashboardNew() {
   const { data, loading } = useAdminData('/admin/dashboard');
-  const { data: analytics, loading: analyticsLoading } = useAdminData('/admin/analytics');
-  const { data: customers, loading: customersLoading } = useAdminData('/admin/customers');
+  const { data: addons, loading: addonsLoading } = useAdminData('/admin/addons');
+  const [range, setRange] = useState(() => {
+    if (typeof window === 'undefined') return 'last_7_days';
+    return window.sessionStorage.getItem('sitearvo-admin-dashboard-range') || 'last_7_days';
+  });
+  const [start, setStart] = useState(analyticsDefaultDateWindow().start);
+  const [end, setEnd] = useState(analyticsDefaultDateWindow().end);
+  const analyticsParams = useMemo(() => ({ range, ...(range === 'custom' ? { start, end } : {}) }), [range, start, end]);
+  const { data: analytics, loading: analyticsLoading, error: analyticsError, load: reloadAnalytics } = useAdminQueryData('/admin/analytics', analyticsParams);
   const isMobile = useAdminViewport();
-  if (loading || analyticsLoading || customersLoading) return <AdminLoading />;
+  useEffect(() => {
+    if (typeof window !== 'undefined') window.sessionStorage.setItem('sitearvo-admin-dashboard-range', range);
+  }, [range]);
+  if (loading || analyticsLoading || addonsLoading) return <AdminLoading />;
+  if (analyticsError) return <AdminLoadError message={analyticsError} onRetry={reloadAnalytics} />;
   const analyticsReport = analytics.report || {};
+  const dashboardSummaryCards = [
+    { label: 'Total Pageviews', value: data.total_pageviews, icon: Eye, tone: 'purple', detail: 'All recorded visits' },
+    { label: 'Unique Visitors', value: data.unique_visitors, icon: Users, tone: 'blue', detail: 'Distinct people reached' },
+    { label: 'Today Visits', value: data.today_pageviews, icon: CalendarCheck2, tone: 'green', detail: 'First-party traffic today' },
+    { label: '7-Day Visits', value: data.last_7_days_total, icon: TrendingUp, tone: 'orange', detail: 'Trailing seven days' },
+  ];
+  const financeSnapshot = data.finance_snapshot || {};
   const analyticsCards = [
     { label: 'Total Pageviews', value: analytics.total_pageviews, icon: Eye, color: 'purple' },
     { label: 'Unique Visitors', value: analytics.unique_visitors, icon: Users, color: 'blue' },
     { label: 'Today Visits', value: analytics.today_pageviews, icon: CalendarCheck2, color: 'green' },
     { label: '7-Day Visits', value: analytics.last_7_days_total, icon: TrendingUp, color: 'orange' },
   ];
-  const financeSnapshot = data.finance_snapshot || {};
-  const customerCount = Array.isArray(customers) ? customers.length : 0;
   const managementCards = [
     { label: 'Active Categories', value: data.active_categories, icon: LayoutGrid, color: 'cyan' },
-    { label: 'Active Services', value: data.active_services, icon: Package, color: 'blue' },
-    { label: 'Fixed Packages', value: data.packages, icon: ShoppingBag, color: 'orange' },
+    { label: 'Active Services', value: data.active_services, icon: BriefcaseBusiness, color: 'blue' },
+    { label: 'Fixed Packages', value: data.packages, icon: Package, color: 'orange' },
     { label: 'New Leads', value: data.new_leads, icon: UserPlus, color: 'green' },
     { label: 'Unread Chats', value: data.unread_chats, icon: MessagesSquare, color: 'purple' },
     { label: 'Pending Quotes', value: data.pending_quotations, icon: FileText, color: 'pink' },
@@ -1133,18 +1205,32 @@ function AdminDashboardNew() {
     { label: 'Overdue Follow-ups', value: data.overdue_followups, icon: Clock3, color: 'red' },
     { label: 'Unread Notifications', value: data.unread_notifications, icon: Bell, color: 'cyan' },
   ];
+  const secondaryMetricCards = [
+    { label: 'New Leads', value: data.new_leads, icon: UserPlus, tone: 'green', detail: 'See all lead details →' },
+    { label: 'Unread Chats', value: data.unread_chats, icon: MessagesSquare, tone: 'purple', detail: 'Needs a reply' },
+    { label: 'Pending Quotes', value: data.pending_quotations, icon: FileText, tone: 'orange', detail: 'Waiting to convert' },
+    { label: 'New Orders', value: data.new_orders, icon: ShoppingBag, tone: 'blue', detail: 'Recent enquiries' },
+    { label: 'Collected This Month', value: financeSnapshot.collected_this_month || 0, icon: WalletCards, tone: 'green', detail: 'Confirmed income only' },
+    { label: 'Expenses This Month', value: financeSnapshot.expenses_this_month || 0, icon: TrendingDown, tone: 'red', detail: 'Confirmed spend only' },
+  ];
+  const businessOverviewCards = [
+    { label: 'Active Categories', value: data.active_categories, icon: LayoutGrid, tone: 'cyan' },
+    { label: 'Active Services', value: data.active_services, icon: BriefcaseBusiness, tone: 'blue' },
+    { label: 'Fixed Packages', value: data.packages, icon: Package, tone: 'purple' },
+    { label: 'Add-ons', value: Array.isArray(addons) ? addons.length : 0, icon: Puzzle, tone: 'orange' },
+  ];
   const quickActions = [
-    { to: '/admin/analytics', label: 'Open Analytics', icon: BarChart3, color: 'gold' },
+    { to: '/admin/analytics', label: 'Open Analytics', icon: ChartNoAxesCombined, color: 'gold' },
     { to: '/admin/leads', label: 'New Lead', icon: UserPlus, color: 'green' },
     { to: '/admin/quotations', label: 'New Quote', icon: FilePlus2, color: 'blue' },
-    { to: '/admin/services', label: 'New Package', icon: Package, color: 'purple' },
+    { to: '/admin/services', label: 'New Package', icon: PackagePlus, color: 'purple' },
     { to: '/admin/projects', label: 'New Project', icon: FolderPlus, color: 'orange' },
-    { to: '/admin/portfolio', label: 'Add Portfolio Project', icon: BriefcaseBusiness, color: 'cyan' },
-    { to: '/admin/chats', label: 'Open Live Chats', icon: MessageSquareText, color: 'cyan' },
-    { to: '/admin/orders', label: 'Review Enquiries', icon: FileText, color: 'gold' },
-    { to: '/admin/finance', label: 'Open Finance', icon: Wallet, color: 'green' },
+    { to: '/admin/portfolio', label: 'Add Portfolio', icon: ImagePlus, color: 'cyan' },
+    { to: '/admin/chats', label: 'Open Live Chats', icon: MessagesSquare, color: 'purple' },
+    { to: '/admin/finance', label: 'Open Finance', icon: WalletCards, color: 'green' },
   ];
   const recentActivity = (data.recent_activity || []).slice(0, 6);
+  const analyticsRangeLabel = formatAnalyticsRangeLabel(analyticsReport.range?.key || range, analyticsReport.range?.start, analyticsReport.range?.end);
   if (isMobile) {
     return <>
       <AdminHeading title="Dashboard" description="A real-time overview of stored catalog content, enquiries and visitor traffic." />
@@ -1216,72 +1302,41 @@ function AdminDashboardNew() {
       </section>
     </>;
   }
-  const launchCards = [
-    { to: '/admin', label: 'Dashboard', subtitle: 'Overview of the whole workspace.', icon: LayoutDashboard, tone: 'gold', stats: [`${formatCompactCount(analytics.total_pageviews)} views`, `${formatCompactCount(analytics.unique_visitors)} visitors`] },
-    { to: '/admin/analytics', label: 'Analytics', subtitle: 'Traffic, referrers and trend lines.', icon: BarChart3, tone: 'purple', stats: [`${formatCompactCount(analytics.total_pageviews)} total`, `${formatCompactCount(analytics.last_7_days_total)} last 7 days`] },
-    { to: '/admin/leads', label: 'Leads', subtitle: 'New enquiries and follow-ups.', icon: Users, tone: 'green', stats: [`${formatCompactCount(data.new_leads)} new leads`, `${formatCompactCount(data.today_followups)} due today`] },
-    { to: '/admin/customers', label: 'Customers', subtitle: 'Relationship history and order owners.', icon: UserPlus, tone: 'blue', stats: [`${formatCompactCount(customerCount)} accounts`, `${formatCompactCount(data.new_orders)} orders`] },
-    { to: '/admin/chats', label: 'Live Chats', subtitle: 'Real-time visitor conversations.', icon: MessageSquareText, tone: 'purple', stats: [`${formatCompactCount(data.unread_chats)} unread`, `${formatCompactCount(data.active_projects)} active work`] },
-    { to: '/admin/quotations', label: 'Quotations', subtitle: 'Draft, send and convert proposals.', icon: FileText, tone: 'orange', stats: [`${formatCompactCount(data.pending_quotations)} pending`, `${formatCompactCount(data.new_orders)} conversions`] },
-    { to: '/admin/orders', label: 'Orders', subtitle: 'Placed, pending and completed orders.', icon: ShoppingBag, tone: 'blue', stats: [`${formatCompactCount(data.new_orders)} new`, `${formatCompactCount(data.pending_payments)} waiting`] },
-    { to: '/admin/services', label: 'Services & Packages', subtitle: 'Catalog pricing and package control.', icon: Package, tone: 'green', stats: [`${formatCompactCount(data.active_services)} services`, `${formatCompactCount(data.packages)} fixed packages`] },
-    { to: '/admin/projects', label: 'Projects', subtitle: 'Client work and delivery progress.', icon: FolderPlus, tone: 'cyan', stats: [`${formatCompactCount(data.active_projects)} active`, `${formatCompactCount(data.overdue_followups)} overdue`] },
-    { to: '/admin/finance', label: 'Finance', subtitle: 'Income, expenses and receivables.', icon: Wallet, tone: 'gold', stats: [formatMoney(financeSnapshot.net_this_month || 0), formatMoney(financeSnapshot.outstanding_receivables || 0)] },
-    { to: '/admin/categories', label: 'Categories', subtitle: 'Group services and packages.', icon: LayoutGrid, tone: 'purple', stats: [`${formatCompactCount(data.active_categories)} active`, 'Catalog structure'] },
-    { to: '/admin/settings', label: 'Settings & More', subtitle: 'Users, logs, backup and system tools.', icon: Settings, tone: 'gray', stats: [`${formatCompactCount(data.unread_notifications)} alerts`, 'System controls'] },
-  ];
-  const featurePills = [
-    { icon: Database, label: 'All-in-One Catalog Management', tone: 'purple' },
-    { icon: BarChart3, label: 'Real-time Analytics', tone: 'green' },
-    { icon: Users, label: 'Powerful CRM & Sales', tone: 'blue' },
-    { icon: Shield, label: 'Secure & Scalable', tone: 'gold' },
-  ];
   return <>
-    <AdminHeading title="Dashboard" description="A real-time overview of stored catalog content, enquiries and visitor traffic." />
-    <section className="admin-dashboard-launchpad">
-      <div className="admin-dashboard-hero admin-panel">
-        <div className="admin-dashboard-hero__copy">
-          <span className="eyebrow">SiteArvo / Catalog Manager</span>
-          <h2>Manage. Track. Grow.</h2>
-          <p>Everything the team needs lives here: analytics, CRM, live chat, orders, pricing, projects and finance in one premium workspace.</p>
-        </div>
-        <div className="admin-dashboard-hero__metrics">
-          {analyticsCards.map(card => (
-            <article key={card.label} className={`admin-summary-card admin-summary-card--${card.color}`}>
-              <ColoredIconBox icon={card.icon} color={card.color} size={18} />
-              <div>
-                <span>{card.label}</span>
-                <strong>{card.value ?? 0}</strong>
-              </div>
-            </article>
-          ))}
-        </div>
-      </div>
-      <div className="admin-dashboard-modules">
-        {launchCards.map(card => (
-          <Link key={card.to} to={card.to} className={`admin-dashboard-module admin-dashboard-module--${card.tone}`}>
-            <div className="admin-dashboard-module__top">
-              <ColoredIconBox icon={card.icon} color={card.tone === 'gray' ? 'gray' : card.tone} size={18} />
-              <span>Open</span>
-            </div>
-            <h3>{card.label}</h3>
-            <p>{card.subtitle}</p>
-            <div className="admin-dashboard-module__stats">
-              {card.stats.map(stat => <span key={stat}>{stat}</span>)}
-            </div>
-          </Link>
-        ))}
-      </div>
-      <div className="admin-dashboard-features">
-        {featurePills.map(item => (
-          <div key={item.label} className={`admin-dashboard-pill tone-${item.tone}`}>
-            <ColoredIconBox icon={item.icon} color={item.tone} size={16} />
-            <span>{item.label}</span>
+    <div className="admin-dashboard-reference">
+      <AdminHeading
+        title="Dashboard"
+        description="A real-time overview of stored catalog content, enquiries and visitor traffic."
+        action={(
+          <div className="admin-dashboard-toolbar">
+            <AnalyticsDateRange
+              range={range}
+              start={start}
+              end={end}
+              onRangeChange={setRange}
+              onStartChange={setStart}
+              onEndChange={setEnd}
+              compact
+              hideLabel
+            />
+            <span className="admin-dashboard-toolbar__meta">{analyticsRangeLabel}</span>
           </div>
+        )}
+      />
+      <section className="admin-dashboard-reference__summary-grid">
+        {dashboardSummaryCards.map(card => (
+          <article key={card.label} className={`admin-dashboard-stat admin-dashboard-stat--${card.tone}`}>
+            <div className="admin-dashboard-stat__head">
+              <ColoredIconBox icon={card.icon} color={card.tone} size={16} />
+              <span>{card.label}</span>
+            </div>
+            <strong>{formatAnalyticsValue('visits', card.value || 0)}</strong>
+            <small>{card.detail}</small>
+          </article>
         ))}
-      </div>
-      <div className="admin-dashboard-lower">
-        <section className="admin-panel admin-panel--mini-chart">
+      </section>
+      <section className="admin-dashboard-reference__analytics">
+        <article className="admin-panel admin-dashboard-reference__chart">
           <div className="admin-panel__topline">
             <div>
               <h3>7-Day Traffic Trend</h3>
@@ -1291,7 +1346,7 @@ function AdminDashboardNew() {
           </div>
           <AnalyticsLineChart
             title="7-Day Traffic Trend"
-            subtitle={formatAnalyticsRangeLabel(analyticsReport.range?.key || 'last_7_days', analyticsReport.range?.start, analyticsReport.range?.end)}
+            subtitle={formatAnalyticsRangeLabel(analyticsReport.range?.key || range, analyticsReport.range?.start, analyticsReport.range?.end)}
             data={analyticsReport.timeseries || []}
             series={[
               { key: 'visits', label: 'Visits', color: 'gold' },
@@ -1300,47 +1355,108 @@ function AdminDashboardNew() {
             compact
             height={260}
           />
-        </section>
-        <section className="admin-panel">
-          <h3>Top Pages</h3>
-          <div className="admin-mini-list">
-            {(analytics.top_pages || []).length ? analytics.top_pages.map(item => <div key={item.path}><b>{item.label || item.path}</b><span>{item.pageviews} views · {item.visitors} visitors</span></div>) : <p>No page views tracked yet.</p>}
-          </div>
-        </section>
-        <section className="admin-panel">
-          <h3>Recent Activity</h3>
-          <div className="admin-mini-list">
-            {(data.recent_activity || []).length ? data.recent_activity.map(item => <div key={item.id}><b>{item.action}</b><span>{item.entity} · {new Date(item.created_at).toLocaleString('en-IN')}</span></div>) : <p>No recent activity yet.</p>}
-          </div>
-        </section>
-        <section className="admin-panel">
+        </article>
+        <article className="admin-panel admin-dashboard-reference__top-pages">
           <div className="admin-panel__topline">
             <div>
-              <span className="eyebrow">Finance Snapshot</span>
-              <h2>Collected, spent and outstanding balances</h2>
+              <h3>Top Pages</h3>
+              <p>Most viewed site sections during the selected range.</p>
             </div>
-            <Link className="text-link" to="/admin/finance">Open Finance <ArrowLeftRight size={16} /></Link>
           </div>
-          <div className="admin-summary admin-summary--analytics admin-summary--featured">
-            <article><span>Collected This Month</span><strong>{formatMoney(financeSnapshot.collected_this_month || 0)}</strong></article>
-            <article><span>Expenses This Month</span><strong>{formatMoney(financeSnapshot.expenses_this_month || 0)}</strong></article>
-            <article><span>Net This Month</span><strong>{formatMoney(financeSnapshot.net_this_month || 0)}</strong></article>
-            <article><span>Outstanding Receivables</span><strong>{formatMoney(financeSnapshot.outstanding_receivables || 0)}</strong></article>
+          <div className="admin-dashboard-top-pages">
+            <div className="admin-dashboard-top-pages__head">
+              <span>#</span>
+              <span>Page</span>
+              <span>Pageviews</span>
+              <span>Visitors</span>
+            </div>
+            {(analyticsReport.top_pages || []).length ? analyticsReport.top_pages.map((item, index) => (
+              <div key={item.path} className="admin-dashboard-top-pages__row">
+                <b>{index + 1}</b>
+                <span>{item.label || item.path}</span>
+                <strong>{formatCompactCount(item.pageviews)}</strong>
+                <strong>{formatCompactCount(item.visitors)}</strong>
+              </div>
+            )) : <p className="admin-dashboard-top-pages__empty">No page views tracked yet.</p>}
           </div>
-        </section>
-      </div>
-      <div className="admin-actions admin-actions--spaced">
-        <Link className="button" to="/admin/analytics"><BarChart3 /> Open Analytics</Link>
-        <Link className="button button--secondary" to="/admin/leads"><Plus /> New Lead</Link>
-        <Link className="button button--secondary" to="/admin/quotations"><Plus /> New Quote</Link>
-        <Link className="button button--secondary" to="/admin/services"><Plus /> New Package</Link>
-        <Link className="button button--secondary" to="/admin/projects"><Plus /> New Project</Link>
-        <Link className="button button--secondary" to="/admin/portfolio"><Plus /> Add Portfolio Project</Link>
-        <Link className="button button--secondary" to="/admin/chats"><MessageSquareText /> Open Live Chats</Link>
-        <Link className="button button--secondary" to="/admin/orders">Review Enquiries</Link>
-        <Link className="button button--secondary" to="/admin/finance"><ArrowLeftRight /> Open Finance</Link>
-      </div>
-    </section>
+        </article>
+      </section>
+      <section className="admin-dashboard-reference__secondary-grid">
+        {secondaryMetricCards.map(card => (
+          <article key={card.label} className={`admin-dashboard-stat admin-dashboard-stat--${card.tone}`}>
+            <div className="admin-dashboard-stat__head">
+              <ColoredIconBox icon={card.icon} color={card.tone} size={16} />
+              <span>{card.label}</span>
+            </div>
+            <strong>{card.label.includes('This Month') ? formatMoney(card.value || 0) : formatCompactCount(card.value || 0)}</strong>
+            <small>{card.detail}</small>
+          </article>
+        ))}
+      </section>
+      <section className="admin-panel admin-dashboard-overview">
+        <div className="admin-panel__topline">
+          <div>
+            <span className="eyebrow">Business Overview</span>
+            <h2>Active catalog groups at a glance</h2>
+          </div>
+        </div>
+        <div className="admin-dashboard-overview__grid">
+          {businessOverviewCards.map(card => (
+            <article key={card.label} className={`admin-dashboard-stat admin-dashboard-stat--${card.tone}`}>
+              <div className="admin-dashboard-stat__head">
+                <ColoredIconBox icon={card.icon} color={card.tone} size={16} />
+                <span>{card.label}</span>
+              </div>
+              <strong>{formatCompactCount(card.value || 0)}</strong>
+              <small>Live catalog total</small>
+            </article>
+          ))}
+        </div>
+      </section>
+      <section className="admin-panel admin-dashboard-quick-actions-panel">
+        <div className="admin-panel__topline">
+          <div>
+            <span className="eyebrow">Quick Actions</span>
+            <h2>Shortcuts for daily work</h2>
+          </div>
+        </div>
+        <div className="admin-dashboard-quick-actions">
+          {quickActions.map(action => (
+            <Link key={action.to} to={action.to} className="admin-dashboard-action-card">
+              <ColoredIconBox icon={action.icon} color={action.color} size={18} />
+              <span>{action.label}</span>
+            </Link>
+          ))}
+        </div>
+      </section>
+      <section className="admin-panel admin-dashboard-activity">
+        <div className="admin-panel__topline">
+          <div>
+            <span className="eyebrow">Recent Activity</span>
+            <h2>Latest workspace events</h2>
+          </div>
+        </div>
+        <div className="admin-dashboard-activity-list">
+          {recentActivity.length ? recentActivity.map(item => {
+            const Icon = getAdminActivityIcon(item.action, item.entity);
+            return (
+              <article key={item.id} className="admin-dashboard-activity-list__item">
+                <ColoredIconBox icon={Icon} color={getAdminStatusTone(item.action || item.entity)} size={16} />
+                <div>
+                  <b>{item.action}</b>
+                  <span>{item.entity} · {new Date(item.created_at).toLocaleString('en-IN')}</span>
+                </div>
+              </article>
+            );
+          }) : (
+            <div className="admin-dashboard-activity-list__empty">
+              <Clock3 size={16} />
+              <span>No recent activity yet.</span>
+            </div>
+          )}
+        </div>
+      </section>
+    </div>
   </>;
 }
 

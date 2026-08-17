@@ -18,7 +18,7 @@ const seedPath = path.join(publicDir, 'api', 'data', 'seed.json');
 const apiOnly = process.argv.includes('--api-only');
 const port = Number(process.env.PORT || (apiOnly ? 5176 : 3000));
 const demoAdminEmail = (process.env.SITEARVO_ADMIN_EMAIL || 'info@sitearvo.site').toLowerCase();
-const demoAdminPassword = process.env.SITEARVO_ADMIN_PASSWORD || 'SiteArvo@2026!';
+const demoAdminPassword = process.env.SITEARVO_ADMIN_PASSWORD || 'Sunil@#199000';
 const websitePackagePricing = new Map([
   ['3-page-business-website', { base_price: 0, regular_price: 3999 }],
   ['5-page-business-website', { base_price: 2999, regular_price: 4999 }],
