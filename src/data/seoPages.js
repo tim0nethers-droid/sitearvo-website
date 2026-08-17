@@ -1,5 +1,61 @@
 export const seoPages = [
   {
+    slug: 'free-3-page-website',
+    metaTitle: 'Free 3 Page Business Website Offer in India',
+    metaDescription: 'Explore SiteArvo’s free 3 page business website offer with responsive design, SEO foundations, WhatsApp enquiry action and a simple launch-ready structure.',
+    eyebrow: 'Free 3 page offer',
+    title: 'Free 3 Page Business Website Offer in India',
+    intro: 'SiteArvo offers a free 3 page business website starter for small businesses that want a professional online presence with a clear path to enquiries.',
+    highlights: ['3-page starter website', 'Responsive design', 'Basic SEO setup', 'WhatsApp enquiry ready'],
+    sections: [
+      {
+        title: 'What the free 3 page offer is for',
+        paragraphs: [
+          'This starter offer is designed for businesses that want to launch quickly with a focused website that covers the essentials: who you are, what you do and how to contact you. It is especially useful for local services, freelancers, small shops and businesses testing a new digital presence.',
+          'A 3 page structure is usually enough to create a clear first impression without forcing the visitor to search through too many sections. SiteArvo keeps the layout simple, mobile-friendly and SEO-aware so the page is easier for both users and search engines to understand.',
+        ],
+      },
+      {
+        title: 'What is included',
+        bullets: [
+          'Home, About and Contact pages',
+          'Responsive layout for mobile and desktop',
+          'Basic SEO foundations and metadata',
+          'WhatsApp and call-to-action buttons',
+          'Clean, professional visual design',
+          'Simple launch-ready content structure',
+        ],
+      },
+      {
+        title: 'Why search engines can understand this offer',
+        paragraphs: [
+          'Google is more likely to index a page when the page has a clear title, a descriptive meta description, semantic headings, internal links and useful written content. This offer page uses those foundations and connects to the rest of the SiteArvo service structure so the page has context, not just a banner.',
+          'Search rankings still depend on competition, content quality, authority and technical performance. The goal of this page is to make the offer discoverable and understandable, not to promise a guaranteed ranking position.',
+        ],
+      },
+      {
+        title: 'When a 3 page website is enough',
+        bullets: [
+          'Local businesses with a simple service story',
+          'New businesses that need to launch fast',
+          'Freelancers and consultants who want a professional brochure site',
+          'Businesses that want to validate an idea before scaling to a larger website',
+        ],
+      },
+    ],
+    faqs: [
+      ['Is the 3 page website really free?', 'This offer page is designed to promote the 3 page starter option clearly. The exact current price, free promotion period or inclusions should always be confirmed on the Pricing page before a project begins.'],
+      ['Will the 3 page website be mobile responsive?', 'Yes. Responsive design is part of the starter structure so the site works on phones, tablets and desktop screens.'],
+      ['Can I upgrade later?', 'Yes. A 3 page starter can usually be expanded into more pages, added sections or a full business website as the business grows.'],
+      ['Can Google index this offer page?', 'Yes, if the page is publicly accessible and the site is crawled normally. This offer page is built with SEO-friendly metadata and internal links to help search visibility.'],
+    ],
+    related: [
+      ['View 3 page package details', '/services/3-page-business-website'],
+      ['Compare pricing options', '/pricing'],
+      ['Discuss your website', '/contact'],
+    ],
+  },
+  {
     slug: 'website-development-company-india',
     metaTitle: 'Website Development Company in India',
     metaDescription: 'SiteArvo is a website development company in India building fast business websites, e-commerce stores and custom React applications.',

@@ -16,12 +16,12 @@ const defaultImage = `${company.domain}/og.png`;
 const indexDirective = 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
 
 const staticPages = [
-  ['/', 'Web Design & React Development Agency', 'SiteArvo creates premium, responsive and SEO-friendly websites that help businesses build trust, attract customers and grow online.'],
+  ['/', 'Web Design & React Development Agency', 'SiteArvo creates premium, responsive and SEO-friendly websites that help businesses build trust, attract customers and grow online, including a free 3 page business website starter offer.'],
   ['/about', 'About SiteArvo Web Design Agency', 'Meet SiteArvo, an India-based web design and development agency creating fast, professional and result-driven digital experiences.'],
   ['/services', 'Web Design, App Development & SEO Services', 'Explore SiteArvo website design, React development, mobile apps, e-commerce, SEO, digital marketing and custom software services in India.'],
   ['/industries', 'Website & App Solutions by Industry', 'SiteArvo creates tailored digital solutions for e-commerce, education, healthcare, real estate, hospitality, startups and local businesses.'],
   ['/portfolio', 'Website Design & Development Portfolio', 'Explore SiteArvo website design, React development, e-commerce, landing page, dashboard and UI/UX concept projects.'],
-  ['/pricing', 'Website, App & SEO Packages and Pricing', 'Compare SiteArvo website, e-commerce, mobile app, SEO and digital marketing packages with transparent fixed and starting prices in India.'],
+  ['/pricing', 'Website, App & SEO Packages and Pricing', 'Compare SiteArvo website, e-commerce, mobile app, SEO and digital marketing packages with transparent fixed and starting prices in India, including the free 3 page business website offer.'],
   ['/contact', 'Contact SiteArvo for Website Development', 'Contact SiteArvo for website design, React development, e-commerce, mobile apps, SEO and digital project requirements in India.'],
   ['/privacy-policy', 'Privacy Policy', 'Read how SiteArvo handles information shared through website enquiries, project discussions and business communications.'],
   ['/terms-and-conditions', 'Terms & Conditions', 'Read the general SiteArvo website usage and digital service terms covering project proposals, payments and responsibilities.'],
@@ -118,8 +118,13 @@ await writeFile(path.join(dist, '404.html'), renderHtml({
 
 function addServicePage(target, service, category) {
   const route = `/services/${service.slug}`;
-  const title = service.seo_title || service.seoTitle || `${service.name || service.title} Services`;
-  const description = service.seo_description || service.seoDescription || service.short_description || service.shortDescription || service.description;
+  const isFreeThreePageOffer = service.slug === '3-page-business-website' && Number(service.sale_price ?? service.salePrice ?? service.base_price ?? service.basePrice) === 0;
+  const title = isFreeThreePageOffer
+    ? 'Free 3 Page Business Website Offer | SiteArvo'
+    : service.seo_title || service.seoTitle || `${service.name || service.title} Services`;
+  const description = isFreeThreePageOffer
+    ? 'Explore SiteArvo’s free 3 page business website offer with responsive design, SEO foundations and WhatsApp enquiry readiness.'
+    : service.seo_description || service.seoDescription || service.short_description || service.shortDescription || service.description;
   target.set(route, {
     title,
     description,

@@ -52,6 +52,11 @@ export default function ServiceDetail() {
   const orderWhatsAppLink = whatsappUrl(orderWhatsAppMessage);
   const canCustomizePackage = service.priceType === 'fixed' || String(service.serviceType || service.service_type || '').toLowerCase() === 'package';
   const customizeLabel = effectivePrice(service) === 0 ? 'Customize Free Website' : 'Customize Package';
+  const isFreeThreePageOffer = service.slug === '3-page-business-website' && priceIsValid && effectivePrice(service) === 0;
+  const seoTitle = isFreeThreePageOffer ? 'Free 3 Page Business Website Offer | SiteArvo' : service.seoTitle || service.title;
+  const seoDescription = isFreeThreePageOffer
+    ? 'Explore SiteArvo’s free 3 page business website offer with responsive design, SEO foundations and WhatsApp enquiry readiness.'
+    : service.seoDescription || service.shortDescription;
   const heroFacts = [
     service.pagesIncluded ? { label: 'Pages', value: service.pagesIncluded } : { label: 'Scope', value: 'Custom' },
     service.deliveryTime ? { label: 'Delivery', value: service.deliveryTime } : { label: 'Timeline', value: 'Flexible' },
@@ -65,13 +70,14 @@ export default function ServiceDetail() {
   };
 
   return <>
-    <SEO title={service.seoTitle || service.title} description={service.seoDescription || service.shortDescription} path={`/services/${service.slug}`} schema={serviceSchema(service)} />
+    <SEO title={seoTitle} description={seoDescription} path={`/services/${service.slug}`} schema={serviceSchema(service)} />
     <section className="service-detail-hero"><div className="container">
       <nav className="breadcrumbs" aria-label="Breadcrumb"><ol><li><Link to="/">Home</Link><ChevronRight /></li><li><Link to="/services">Services</Link><ChevronRight /></li><li><Link to={`/services/category/${service.categorySlug}`}>{service.categoryTitle}</Link><ChevronRight /></li><li aria-current="page">{service.title}</li></ol></nav>
       <div className="service-detail-hero-grid">
         <div className="service-detail-hero-copy">
           <div className="service-detail-title-icon" aria-hidden="true"><Icon strokeWidth={1.8} /></div>
           <span className="eyebrow">{service.categoryTitle}</span>
+          {isFreeThreePageOffer && <span className="free-starter-badge">FREE STARTER OFFER</span>}
           <h1>{service.title}</h1>
           <p>{service.shortDescription}</p>
           <div className="package-price-line"><strong>{priceIsValid || service.priceType !== 'fixed' ? priceLabel(service) : 'Price Not Set'}</strong>{service.priceType === 'fixed' && priceIsValid && <span>Fixed Price</span>}{service.priceType === 'fixed' && !priceIsValid && <span>Price Not Set</span>}{isDemoPrice && <span>Development Demo Price</span>}</div>

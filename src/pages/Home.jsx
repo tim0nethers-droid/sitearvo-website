@@ -60,7 +60,7 @@ export default function Home() {
   const featuredServices = services.filter(service => service.isFeatured && service.isActive !== false && String(service.serviceType || '').toLowerCase() !== 'package').slice(0, 6);
   const homeServices = featuredServices.length ? featuredServices : homepageServiceCategories;
   return <>
-    <SEO title="Web Design & React Development Agency" description="SiteArvo creates premium, responsive and SEO-friendly websites that help businesses build trust, attract customers and grow online." schema={combineSchemas(homeSchema, faqSchema(faqQuestions))} />
+    <SEO title="Web Design & React Development Agency" description="SiteArvo creates premium, responsive and SEO-friendly websites that help businesses build trust, attract customers and grow online, including a free 3 page business website starter offer." schema={combineSchemas(homeSchema, faqSchema(faqQuestions))} />
     <section className="hero">
       <div className="hero-orb hero-orb--one"></div><div className="hero-orb hero-orb--two"></div>
       <div className="container hero-grid">
@@ -90,7 +90,7 @@ export default function Home() {
 
     <section className="section testimonials section--alt"><div className="container"><SectionTitle eyebrow="Client feedback" title="What Our Clients Say" /><div className="testimonials-grid">{testimonials.map(item => <article className="testimonial-card" key={item.name}><div className="stars" aria-label="5 out of 5 stars">{Array.from({ length: 5 }, (_, i) => <Star key={i} size={16} fill="currentColor" />)}</div><blockquote>“{item.quote}”</blockquote><div className="client"><span>{item.name.charAt(0)}</span><div><b>{item.name}</b><small>{item.role}</small></div></div></article>)}</div></div></section>
     <section className="section"><div className="container faq-layout"><SectionTitle align="left" eyebrow="Questions, answered" title="Frequently Asked Questions" description="Straightforward answers about timelines, technology, SEO, maintenance and deployment." /><FAQ /></div></section>
-    <section className="section seo-resource-strip"><div className="container"><SectionTitle eyebrow="Planning resources" title="Make a Better Website Decision" description="Practical guidance for choosing the right website scope, technology and budget." /><div className="seo-resource-grid"><Link to="/website-development-company-india">Website Development in India <ArrowRight /></Link><Link to="/small-business-website-design-india">Small Business Website Design <ArrowRight /></Link><Link to="/react-development-company-india">React Development in India <ArrowRight /></Link><Link to="/guides/website-development-cost-india">Website Development Cost Guide <ArrowRight /></Link></div></div></section>
+    <section className="section seo-resource-strip"><div className="container"><SectionTitle eyebrow="Planning resources" title="Make a Better Website Decision" description="Practical guidance for choosing the right website scope, technology and budget." /><div className="seo-resource-grid"><Link to="/free-3-page-website">Free 3 Page Website Offer <ArrowRight /></Link><Link to="/website-development-company-india">Website Development in India <ArrowRight /></Link><Link to="/small-business-website-design-india">Small Business Website Design <ArrowRight /></Link><Link to="/react-development-company-india">React Development in India <ArrowRight /></Link><Link to="/guides/website-development-cost-india">Website Development Cost Guide <ArrowRight /></Link></div></div></section>
     <CTA />
   </>;
 }
