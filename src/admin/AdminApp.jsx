@@ -133,6 +133,7 @@ const adminMobileNavItems = [
   { to: '/admin/chats', label: 'Chats', icon: MessageSquareText, color: 'purple' },
 ];
 const adminSidebarStorageKey = 'sitearvo-admin-sidebar-groups-v1';
+const adminSidebarCollapsedStorageKey = 'sitearvo-admin-sidebar-collapsed-groups-v1';
 
 function normalizeAdminPathname(pathname) {
   if (!pathname) return '/admin';
@@ -152,26 +153,48 @@ function getSidebarActiveGroupIds(pathname) {
 
 function useSidebarAccordionState(pathname) {
   const activeGroupIds = useMemo(() => getSidebarActiveGroupIds(pathname), [pathname]);
+  const [collapsedGroupIds, setCollapsedGroupIds] = useState(() => {
+    if (typeof window === 'undefined') return [];
+    try {
+      const stored = JSON.parse(window.localStorage.getItem(adminSidebarCollapsedStorageKey) || '[]');
+      return Array.isArray(stored) ? stored.filter(Boolean) : [];
+    } catch {
+      return [];
+    }
+  });
   const [openGroupIds, setOpenGroupIds] = useState(() => {
     if (typeof window === 'undefined') return activeGroupIds;
     try {
       const stored = JSON.parse(window.localStorage.getItem(adminSidebarStorageKey) || '[]');
-      return Array.isArray(stored) ? Array.from(new Set([...stored.filter(Boolean), ...activeGroupIds])) : activeGroupIds;
+      const storedOpen = Array.isArray(stored) ? stored.filter(Boolean) : [];
+      return Array.from(new Set([...storedOpen, ...activeGroupIds.filter(groupId => !collapsedGroupIds.includes(groupId))]));
     } catch {
-      return activeGroupIds;
+      return activeGroupIds.filter(groupId => !collapsedGroupIds.includes(groupId));
     }
   });
   useEffect(() => {
-    setOpenGroupIds(current => Array.from(new Set([...current, ...activeGroupIds])));
-  }, [activeGroupIds.join('|')]);
+    setOpenGroupIds(current => Array.from(new Set([...current, ...activeGroupIds.filter(groupId => !collapsedGroupIds.includes(groupId))])));
+  }, [activeGroupIds.join('|'), collapsedGroupIds.join('|')]);
   useEffect(() => {
     if (typeof window === 'undefined') return;
     window.localStorage.setItem(adminSidebarStorageKey, JSON.stringify(openGroupIds));
   }, [openGroupIds]);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem(adminSidebarCollapsedStorageKey, JSON.stringify(collapsedGroupIds));
+  }, [collapsedGroupIds]);
   const toggleGroup = groupId => {
-    setOpenGroupIds(current => (current.includes(groupId) ? current.filter(id => id !== groupId) : [...current, groupId]));
+    setOpenGroupIds(current => {
+      const isOpen = current.includes(groupId);
+      if (isOpen) {
+        setCollapsedGroupIds(collapsed => Array.from(new Set([...collapsed, groupId])));
+        return current.filter(id => id !== groupId);
+      }
+      setCollapsedGroupIds(collapsed => collapsed.filter(id => id !== groupId));
+      return [...current, groupId];
+    });
   };
-  const isOpen = groupId => openGroupIds.includes(groupId) || activeGroupIds.includes(groupId);
+  const isOpen = groupId => openGroupIds.includes(groupId);
   const isActiveGroup = groupId => activeGroupIds.includes(groupId);
   return { activeGroupIds, isOpen, isActiveGroup, toggleGroup };
 }
